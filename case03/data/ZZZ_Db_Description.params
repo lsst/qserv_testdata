@@ -1,0 +1,12 @@
+[table_info]
+
+tableName: ZZZ_Db_Description 
+
+schemaFile: ZZZ_Db_Description.sql
+
+# by default, every table inherits partitioningStrategy
+# from its database. If table is not partitioned, we
+# turn it off by specifying "off" here.
+# Allowed values are: "on", "off"
+partitioning: off
+
