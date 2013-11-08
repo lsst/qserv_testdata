@@ -2,5 +2,5 @@
 
 SELECT distinct run, field 
 FROM   Science_Ccd_Exposure
-WHERE  (run = 94) AND (field = 536);
+WHERE  run = 94 AND field = 536;
 
