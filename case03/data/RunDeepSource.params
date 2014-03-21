@@ -16,8 +16,8 @@ schemaFile: RunDeepSource.sql
 
 [sphBox]
 overlap:        0.0
-phiColName:     coord_ra
-thetaColName:   coord_decl
+lonColName:     coord_ra
+latColName:   coord_decl
 objIdColName:   id 
 
 # 0: none, 1: 1-level, 2: 2-level

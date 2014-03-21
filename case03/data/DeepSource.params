@@ -16,8 +16,8 @@ schemaFile: DeepSource.sql
 
 [sphBox]
 overlap:        0.0
-phiColName:     ra
-thetaColName:   decl
+lonColName:     ra
+latColName:   decl
 objIdColName:   deepSourceId 
 
 # 0: none, 1: 1-level, 2: 2-level
