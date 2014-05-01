@@ -6,7 +6,6 @@ schemaFile: DeepCoadd_Metadata.sql
 
 # by default, every table inherits partitioningStrategy
 # from its database. If table is not partitioned, we
-# turn it off by specifying "off" here.
-# Allowed values are: "on", "off"
-partitioning: off
-
+# turn it off by specifying "0" here.
+# Allowed values are: 0,1
+partitioning: 0
