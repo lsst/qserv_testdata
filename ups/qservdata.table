@@ -1,0 +1,2 @@
+setupRequired(qserv)
+setupRequired(partition)
