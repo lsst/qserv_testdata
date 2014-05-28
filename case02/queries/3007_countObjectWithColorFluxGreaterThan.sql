@@ -2,6 +2,6 @@
 -- See https://dev.lsstcorp.org/trac/wiki/db/Qserv/IN2P3/BenchmarkMarch2013
 -- Based on https://dev.lsstcorp.org/trac/wiki/db/queries/026
 
-SELECT COUNT(*)
+SELECT COUNT(*) AS OBJ_COUNT
  FROM Object
  WHERE gFlux_PS>1e-25
