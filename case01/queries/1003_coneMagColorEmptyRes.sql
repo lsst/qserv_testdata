@@ -4,7 +4,7 @@
 -- See ticket #2051
 
 
-SELECT COUNT(*)
+SELECT COUNT(*) as OBJ_COUNT
 FROM   Object
 WHERE  ra_PS BETWEEN 0 AND 4  -- noQserv
  AND   decl_PS BETWEEN -6 AND -5 -- noQserv

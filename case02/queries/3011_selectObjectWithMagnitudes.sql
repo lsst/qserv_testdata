@@ -3,7 +3,7 @@
 -- Based on https://dev.lsstcorp.org/trac/wiki/db/Qserv/OptimalPartitionSize
 
 SELECT objectId, ra_PS, decl_PS, 
-       scisql_fluxToAbMag(zFlux_PS) 
+       scisql_fluxToAbMag(zFlux_PS) AS fluxToAbMag
  FROM Object 
  WHERE scisql_fluxToAbMag(zFlux_PS)
        BETWEEN 20 AND 24
