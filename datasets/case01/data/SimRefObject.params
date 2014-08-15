@@ -1,12 +1,11 @@
 [table_info]
-
 tableName: SimRefObject 
-
+partitioning: 1
 schemaFile: SimRefObject.schema
-
-# by default, every table inherits partitioningStrategy
-# from its database. If table is not partitioned, we
-# turn it off by specifying "0" here.
-# Allowed values are: 0,1
-partitioning: 0
-
+compression: 0
+match: 0
+subChunks: 1
+dirTable: SimRefObject
+dirColName: refObjectId
+latColName: decl
+lonColName: ra

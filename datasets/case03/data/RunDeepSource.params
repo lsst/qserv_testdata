@@ -3,9 +3,9 @@ tableName: RunDeepSource
 partitioning: 1
 schemaFile: RunDeepSource.sql
 compression: 0
-isRefMatch: 0
-subChunks: 0
-dirTable: Object
+match: 0
+subChunks: 1
+dirTable: RunDeepSource
 latColName: coord_decl
 lonColName: coord_ra
-dirColName: objectId
+dirColName: id
