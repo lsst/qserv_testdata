@@ -81,9 +81,7 @@ class Benchmark():
                     "   eups distrib install qserv_testdata\n"+
                     "   setup qserv_testdata\n"+
                     "FOR NON-EUPS USERS :\n"+
-                    "Please fill 'testdata_dir' value in "+
-                    "~/.lsst/qserv.conf with the path of the directory " +
-                    "containing tests datasets or use --testdata-dir option.\n")
+                    "Please use --testdata-dir option.\n")
             sys.exit(errno.EIO)
         else :
             self.testdata_dir = self.config['qserv']['testdata_dir']
@@ -306,9 +304,17 @@ def add_generic_arguments(parser):
         )
 
     # directory containing test dataset
+    default_testdata_dir=None
+    if os.environ.get('QSERV_TESTDATA_DIR') is not None:
+        default_testdata_dir = os.path.join(
+            os.environ.get('QSERV_TESTDATA_DIR'), "datasets"
+        ) 
+
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
-            default=os.environ.get('QSERV_TESTDATA_DIR'),
-            help="full path to directory containing test datasets. This value is set, by precedence, by this option, then by QSERV_TESTDATA_DIR environment variable if not empty, and finally by setting testdata_dir value in ~/.lsst/qserv.conf"
+            default=default_testdata_dir,
+            help="""full path to directory containing test datasets. This value is set, by precedence, 
+by this option, and then by QSERV_TESTDATA_DIR/datasets/ if
+QSERV_TESTDATA_DIR environment variable is not empty."""
             )
 
     return parser
@@ -322,6 +328,7 @@ def init(args, logfile):
             log_path=config['qserv']['log_dir']
             )
     log = logging.getLogger()
+
     if args.testdata_dir is not None:
-	log.debug("Overriding ~/.lsst/qserv.conf testdata_dir value with {0}".format(args.testdata_dir))
-        config['qserv']['testdata_dir'] = args.testdata_dir
+       log.debug("Setting testdata_dir value with {0} in Qserv configuration".format(args.testdata_dir))
+       config['qserv']['testdata_dir'] = args.testdata_dir
