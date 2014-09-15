@@ -1,0 +1,5 @@
+.sconsign.dblite
+.sconf_temp
+config.log
+*.cfgc
+python/lsst/qserv/testdata/version.py
