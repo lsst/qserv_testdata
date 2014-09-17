@@ -3,9 +3,9 @@ tableName:  Object
 partitioning: 1
 schemaFile: Object.schema
 compression: 0
-isRefMatch: 0
+match: 0
 subChunks: 1
-secIndexColName: objectId
-dir: Object
+dirTable: Object
+dirColName: objectId
 latColName: decl_PS
 lonColName: ra_PS

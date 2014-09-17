@@ -3,9 +3,9 @@ tableName: DeepSource
 partitioning: 1
 schemaFile: DeepSource.sql
 compression: 0
-isRefMatch: 0
-subChunks: 0
-dirTable: Object
+match: 0
+subChunks: 1
+dirTable: DeepSource
 latColName: decl
 lonColName: ra
-dirColName: objectId
+dirColName: deepSourceId

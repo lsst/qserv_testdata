@@ -3,9 +3,9 @@ tableName: AvgForcedPhotYearly
 partitioning: 1
 schemaFile: AvgForcedPhotYearly.sql
 compression: 0
-isRefMatch: 0
+match: 0
 subChunks: 0
 dir: Object
 latColName: decl
 lonColName: ra
-dirColName: objectId
+dirColName: deepSourceId

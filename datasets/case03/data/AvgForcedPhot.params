@@ -3,9 +3,9 @@ tableName: AvgForcedPhot
 partitioning: 1
 schemaFile: AvgForcedPhot.sql
 compression: 0
-isRefMatch: 0
+match: 0
 subChunks: 0
-dirTable: Object
+dirTable: DeepSource 
 latColName: decl
 lonColName: ra
-dirColName: objectId
+dirColName: deepSourceId 

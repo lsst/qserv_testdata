@@ -3,7 +3,7 @@ tableName:  Source
 partitioning: 1
 schemaFile: Source.schema
 compression: 0
-isRefMatch: 0
+match: 0
 subChunks: 0
 dirTable: Object
 latColName: declObject
