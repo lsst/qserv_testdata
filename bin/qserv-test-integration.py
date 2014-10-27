@@ -33,4 +33,5 @@ if __name__ == '__main__':
 
     benchmark.init(args, logfile="qserv-test-integration")
     result = unittest.TextTestRunner(verbosity=2).run(suite())
-    sys.exit(not result.wasSuccessful())
+    retcode=int(not result.wasSuccessful())
+    sys.exit(retcode)
