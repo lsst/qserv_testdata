@@ -1,4 +1,5 @@
 setupRequired(qserv)
+setupRequired(sconsUtils)
 
 envAppend(PATH, ${PRODUCT_DIR}/bin)
 envAppend(PYTHONPATH, ${PRODUCT_DIR}/python)
