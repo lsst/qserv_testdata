@@ -289,8 +289,7 @@ class QservDataLoader():
 
     def masterCreateAndFeedMetaTable(self,table,chunk_id_list):
 
-        meta_table_prefix = "LSST__"
-        #meta_table_prefix = "%s__" % self._dbName
+        meta_table_prefix = "{0}__".format(self._dbName)
 
         meta_table_name = meta_table_prefix + table
 

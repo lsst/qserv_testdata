@@ -264,10 +264,7 @@ class Benchmark():
         for mode in mode_list:
             self._mode = mode
 
-            if self._mode == 'qserv':
-                self._dbName = "LSST"
-            else:
-                self._dbName = "qservTest_case%s_%s" % (self._case_id, self._mode)
+            self._dbName = "qservTest_case%s_%s" % (self._case_id, self._mode)
 
             if load_data:
                 self.connectAndInitDatabases()
