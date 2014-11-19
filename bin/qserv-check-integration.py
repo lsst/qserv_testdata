@@ -6,6 +6,7 @@ from lsst.qserv.tests import benchmark
 
 import argparse
 import os
+import sys
 import tarfile
 
 def parseArgs():
@@ -53,13 +54,19 @@ def main():
     bench.run(args.mode_list, args.load_data, args.stop_at_query)
     failed_queries = bench.analyzeQueryResults()
 
-    if len(failed_queries) == 0:
-        print "Test case%s succeed" % args.case_no
-    else:
-        print "Test case%s failed" % args.case_no
-
+    logger = logging.getLogger()
     if args.load_data == False:
-            print ("Please check that corresponding data are loaded, otherwise run {0} with -l option.".format(os.path.basename(__file__)))
+        logger.warn("Please check that case%s data are loaded, " +
+            "otherwise run %s with --load option.", args.case_no, os.path.basename(__file__))
+
+    if len(failed_queries) == 0:
+        logger.info("Test case%s succeed", args.case_no)
+        return_code=0
+    else:
+        logger.fatal("Test case%s failed", args.case_no)
+        return_code=1
+
+    sys.exit(return_code)
 
 if __name__ == '__main__':
     main()
