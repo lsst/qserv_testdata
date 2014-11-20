@@ -5,3 +5,4 @@ config.log
 *.cfgc
 *.pyc
 python/lsst/qserv/testdata/version.py
+.*.swp
