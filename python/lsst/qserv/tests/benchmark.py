@@ -246,6 +246,7 @@ class Benchmark():
         if (self._mode=='qserv'):
             self.dataLoader['qserv'].createCssDatabase()
             self.dataLoader['qserv'].configureQservMetaEmptyChunk()
+            self.dataLoader['qserv'].workerInsertXrootdExportPath()
 
             # restart xrootd in order to reload  export paths w.r.t loaded chunks, cf. #2478
             commons.restart('xrootd')

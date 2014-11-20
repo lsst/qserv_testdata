@@ -15,6 +15,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 from os.path import expanduser
 
 class QservDataLoader():
@@ -49,7 +50,7 @@ class QservDataLoader():
             "localhost:%s" % self.config['zookeeper']['port'],
             "-v",
              str(self.logger.getEffectiveLevel()),
-            "-f", 
+            "-f",
             os.path.join(self.config['qserv']['log_dir'], "qadm-%s.log" % self.dataConfig['data-name'])
             ]
         os.chdir(self._in_dirname)
@@ -89,20 +90,20 @@ class QservDataLoader():
 
 
     def configureQservMetaEmptyChunk(self):
-        
+
         self.logger.info("Configuring Qserv mono-node database")
 
-        
+
         chunk_id_list=self.workerGetNonEmptyChunkIds()
         self.masterCreateMetaDatabase()
         for table in self.dataConfig['partitioned-tables']:
             self.workerCreateTable1234567890(table)
             self.masterCreateAndFeedMetaTable(table,chunk_id_list)
-            
+
         for view in self.dataConfig['partitioned-sql-views']:
             self.workerCreateView1234567890(view)
             self.masterCreateAndFeedMetaTable(view,chunk_id_list)
-        
+
         # Create etc/emptychunk.txt
         empty_chunks_filename = os.path.join(self.config['qserv']['run_base_dir'],"etc","emptyChunks.txt")
         self.masterCreateEmptyChunksFile(chunk_id_list,  empty_chunks_filename)
@@ -268,16 +269,27 @@ class QservDataLoader():
         sql =  "CREATE TABLE {0}.{1}_1234567890 LIKE {0}.{1};\n".format(self._dbName,table)
         self._sqlInterface['sock'].execute(sql)
 
-        self.logger.info("%s table for empty chunk created" % table)
-        
+        self.logger.info("%s table for empty chunk created", table)
+
     def workerCreateView1234567890(self,table):
-        
+
         create_view_sql="SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '{0}' AND TABLE_NAME = '{1}';".format(self._dbName,table)
         rename_view_sql =  "RENAME TABLE {0}.{1} TO {0}.{1}_1234567890;".format(self._dbName,table)
         self._sqlInterface['sock'].execute(rename_view_sql)
         self._sqlInterface['sock'].execute(create_view_sql)
 
-        self.logger.info("%s view for empty chunk created" % table)
+        self.logger.info("%s view for empty chunk created", table)
+
+    def workerInsertXrootdExportPath(self):
+        sql = "SELECT * FROM qservw_worker.Dbs WHERE db='{0}';".format(self._dbName)
+        rows = self._sqlInterface['sock'].execute(sql)
+
+        if len(rows) == 0:
+            sql = "INSERT INTO qservw_worker.Dbs VALUES('{0}');".format(self._dbName)
+            self._sqlInterface['sock'].execute(sql)
+        elif len(rows) > 1:
+            self.logger.fatal("Duplicated value '%s' in qservw_worker.Dbs", self._dbName)
+            sys.exit(1)
 
     def masterCreateMetaDatabase(self):
         sql_instructions= [
