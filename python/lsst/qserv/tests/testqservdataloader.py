@@ -1,30 +1,34 @@
-
-from lsst.qserv.admin import commons
-from lsst.qserv.qservdataloader import QservDataLoader
-from lsst.qserv.datareader import DataReader
+from lsst.qserv.admin import commons, logger
+from lsst.qserv.tests.qservdataloader import QservDataLoader
+from lsst.qserv.tests.datareader import DataReader
 import os
+import sys
 import unittest
 
 class TestQservDataLoader(unittest.TestCase):
 
     def setUp(self):
         self.config = commons.read_user_config()
-        self.logger = commons.init_default_logger(
+        self.logger = logger.init_default_logger(
             "TestQservDataLoader",
             log_path=self.config['qserv']['log_dir']
             )
-        
-   
+
+
     def test_alterTable(self):
         case_id_list = ["01","02","03"]
 
         for case_id in case_id_list:
 
+            base_dir = os.getenv("QSERV_TESTDATA_DIR")
+
+            if base_dir is None:
+                self.logger.fatal("QSERV_TESTDATA_DIR environment missing.")
+                sys.exit(1)
+
             qserv_tests_dirname = os.path.join(
-                self.config['qserv']['base_dir'],
-                'qserv',
-                'tests',
-                'testdata',
+                base_dir,
+                'datasets',
                 "case%s" % case_id
             )
             input_dirname = os.path.join(qserv_tests_dirname,'data')
@@ -32,13 +36,14 @@ class TestQservDataLoader(unittest.TestCase):
             dataReader = DataReader(input_dirname, "case%s" % case_id)
             dataReader.readInputData()
 
-            test_name = "TestQservDataLoader%s" % case_id
-            out_dir = os.path.join(self.config['qserv']['tmp_dir'],test_name)
+            testDbName = "TestQservDataLoader%s" % case_id
+            out_dir = os.path.join(self.config['qserv']['tmp_dir'],testDbName)
             qservDataLoader = QservDataLoader(
                 self.config,
                 dataReader.dataConfig,
-                test_name,
-                out_dir
+                testDbName,
+                out_dir,
+                "TestQservDataLoader"
                 )
             qservDataLoader.connectAndInitDatabase()
             for table_name in dataReader.dataConfig['partitioned-tables']:
