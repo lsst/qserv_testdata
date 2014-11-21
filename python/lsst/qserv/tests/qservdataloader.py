@@ -95,7 +95,6 @@ class QservDataLoader():
 
 
         chunk_id_list=self.workerGetNonEmptyChunkIds()
-        self.masterCreateMetaDatabase()
         for table in self.dataConfig['partitioned-tables']:
             self.workerCreateTable1234567890(table)
             self.masterCreateAndFeedMetaTable(table,chunk_id_list)
@@ -105,7 +104,11 @@ class QservDataLoader():
             self.masterCreateAndFeedMetaTable(view,chunk_id_list)
 
         # Create etc/emptychunk.txt
-        empty_chunks_filename = os.path.join(self.config['qserv']['run_base_dir'],"etc","emptyChunks.txt")
+        empty_chunks_filename = os.path.join(
+            self.config['qserv']['run_base_dir'],
+            "etc",
+            "empty_{0}.txt".format(self._dbName)
+        )
         self.masterCreateEmptyChunksFile(chunk_id_list,  empty_chunks_filename)
 
 
@@ -291,25 +294,24 @@ class QservDataLoader():
             self.logger.fatal("Duplicated value '%s' in qservw_worker.Dbs", self._dbName)
             sys.exit(1)
 
-    def masterCreateMetaDatabase(self):
-        sql_instructions= [
-            "DROP DATABASE IF EXISTS qservMeta",
-            "CREATE DATABASE qservMeta"
-            ]
-        for sql in sql_instructions:
-            self._sqlInterface['sock'].execute(sql)
-
     def masterCreateAndFeedMetaTable(self,table,chunk_id_list):
 
         meta_table_prefix = "{0}__".format(self._dbName)
 
         meta_table_name = meta_table_prefix + table
 
-        sql = "USE qservMeta;"
-        sql += "CREATE TABLE {0} ({1}Id BIGINT NOT NULL PRIMARY KEY, chunkId INT, subChunkId INT);\n".format(meta_table_name, table.lower())
+        sql = "USE qservMeta;\n"
+        sql += "DROP TABLE IF EXISTS {0};\n".format(meta_table_name)
+
+        # Execute DROP before CREATE for sql error "Commands out of sync; you can't run this command now"
+        self._sqlInterface['sock'].execute(sql)
+
+        sql = "CREATE TABLE {0} ({1}Id BIGINT NOT NULL PRIMARY KEY, chunkId INT, subChunkId INT);\n"\
+            .format(meta_table_name, table.lower())
 
         # TODO : scan data on all workers here, with recovery on error
-        insert_sql =  "INSERT INTO {0} SELECT {1}Id, chunkId, subChunkId FROM {2}.{3}_%s;".format(meta_table_name, table.lower(), self._dbName, table)
+        insert_sql =  "INSERT INTO {0} SELECT {1}Id, chunkId, subChunkId FROM {2}.{3}_%s;"\
+            .format(meta_table_name, table.lower(), self._dbName, table)
         for chunkId in chunk_id_list :
             tmp =  insert_sql % chunkId
             sql += "\n" + tmp
