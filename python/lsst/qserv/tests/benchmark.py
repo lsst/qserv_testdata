@@ -70,21 +70,7 @@ class Benchmark():
             out_dirname_prefix = self.config['qserv']['tmp_dir']
         self._out_dirname = os.path.join(out_dirname_prefix, "qservTest_case%s" % case_id)
 
-        # TODO : check existence and "consistency"
-        if ( not 'testdata_dir' in self.config['qserv'].keys()
-            or self.config['qserv']['testdata_dir'] == None
-            or not os.path.isdir(self.config['qserv']['testdata_dir'])
-            ) :
-            self.logger.critical("Unable to find tests datasets.\n--\n" +
-                    "FOR EUPS USERS :\n"+
-                    "Please run :\n"+
-                    "   eups distrib install qserv_testdata\n"+
-                    "   setup qserv_testdata\n"+
-                    "FOR NON-EUPS USERS :\n"+
-                    "Please use --testdata-dir option.\n")
-            sys.exit(errno.EIO)
-        else :
-            self.testdata_dir = self.config['qserv']['testdata_dir']
+        self.testdata_dir = self.config['qserv']['testdata_dir']
 
         qserv_tests_dirname = os.path.join(
             self.testdata_dir,
@@ -312,9 +298,9 @@ def add_generic_arguments(parser):
 
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
             default=default_testdata_dir,
-            help="""full path to directory containing test datasets. This value is set, by precedence, 
+            help="""absolute path to directory containing test datasets. This value is set, by precedence,
 by this option, and then by QSERV_TESTDATA_DIR/datasets/ if
-QSERV_TESTDATA_DIR environment variable is not empty."""
+QSERV_TESTDATA_DIR environment variable is not empty"""
             )
 
     return parser
@@ -329,6 +315,15 @@ def init(args, logfile):
             )
     log = logging.getLogger()
 
-    if args.testdata_dir is not None:
-       log.debug("Setting testdata_dir value with {0} in Qserv configuration".format(args.testdata_dir))
+    if args.testdata_dir is not None and os.path.isdir(args.testdata_dir):
+       log.debug(
+            "Setting testdata_dir value to %s",
+            args.testdata_dir
+        )
        config['qserv']['testdata_dir'] = args.testdata_dir
+    else:
+        log.fatal(
+            "Unable to find tests datasets. (testdata_dir value is %s)",
+            args.testdata_dir
+        )
+        sys.exit(errno.EIO)
