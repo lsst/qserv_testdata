@@ -180,18 +180,6 @@ class Benchmark():
         return ' '.join(qText), pragmas
 
 
-    def gunzip(self, table_name, zipped_data_filename):
-        # check if the corresponding data file exists
-        if not os.path.exists(zipped_data_filename):
-            raise Exception, "File: '%s' not found" %  zipped_data_filename
-
-        tmp_suffix = ("%s%s" % (table_name,self.dataReader.dataConfig['data-extension']))
-        tmp_data_file = os.path.join(self._out_dirname,tmp_suffix)
-
-        self.logger.info("Unzipping: %s into %s" %  (zipped_data_filename, tmp_data_file))
-        commons.run_command(["gunzip", "-c", zipped_data_filename], stdout_file=tmp_data_file)
-        return tmp_data_file
-
     def loadData(self):
         """
         Creates tables and load data for input file located in caseXX/data/
@@ -200,18 +188,16 @@ class Benchmark():
 
         for table_name in  self.dataReader.tables:
             self.logger.debug("Using data of %s" % table_name)
-            (schema_filename, data_filename, zipped_data_filename) =  self.dataReader.getSchemaAndDataFilenames(table_name)
+            tmp_dir = os.path.join(self._out_dirname, "tmp-load")
+            input_files = self.dataReader.prepareInputData(table_name, self._mode, tmp_dir)
 
-            if zipped_data_filename is not None :
-                tmp_data_file = self.gunzip(table_name, zipped_data_filename)
-                input_filename = tmp_data_file
-            else:
-                input_filename = data_filename
+            print "XXXXXXXXXXXXXXXXXXXXXxx {0}".format(input_files)
 
-            self.dataLoader[self._mode].createAndLoadTable(table_name, schema_filename, input_filename)
-
-            if zipped_data_filename is not None :
-                os.unlink(tmp_data_file)
+            self.dataLoader[self._mode].createAndLoadTable(table_name, *input_files)
+        
+            # remove possibly unzipped input data files
+            if os.path.exists(tmp_dir):
+                shutil.rmtree(tmp_dir)
 
     def cleanup(self):
         # cleanup of previous tests

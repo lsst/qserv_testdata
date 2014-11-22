@@ -28,10 +28,14 @@ class MysqlDataLoader():
         self._sqlInterface = dict()
         self.chunk_id_list = None
 
-    def createAndLoadTable(self, table_name, schema_filename, input_filename):
+    def createAndLoadTable(self, table_name, input_filename, schema_filename):
         self.logger.debug("MysqlDataLoader.createAndLoadTable(%s, %s, %s)" % (table_name, schema_filename, input_filename))
 
-        if (table_name in self.dataConfig['partitioned-tables']) and ('Duplication' in self.dataConfig) and self.dataConfig['Duplication']:
+        if (table_name in self.dataConfig['partitioned-tables']
+            and 'Duplication' in self.dataConfig
+            and self.dataConfig['Duplication']
+        ):
+
             self.logger.info("Loading schema of duplicated table %s" % table_name)
             self.createPartitionedTable(table_name, schema_filename)
             self.loadPartitionedTable(table_name, input_filename)
