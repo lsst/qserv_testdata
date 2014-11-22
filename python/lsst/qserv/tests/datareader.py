@@ -21,16 +21,13 @@ class DataReader():
 
     def analyze(self):
 
-        #self.dataConfig['Object']['ra-column'] = schemaDict['Object'].indexOf("`ra_PS`")
-        #self.dataConfig['Object']['decl-column'] = schemaDict['Object'].indexOf("`decl_PS`")
-        #self.dataConfig['Object']['chunk-column-id'] = schemaDict['Object'].indexOf("`chunkId`")
-
         # TODO : use meta service instead of hard-coded parameters
         self.log.debug("DataReader.analyze() : Data name is : %s" %self.dataName )
 
         self.dataConfig['sql-views'] = []
         self.dataConfig['partitioned-sql-views'] = []
         self.dataConfig['data-name']=self.dataName
+        self.dataConfig['partition-extension']='.cfg'
 
         if self.dataName=="case01":
             self.dataConfig['partitioned-tables'] = ["Object", "Source"]
@@ -183,7 +180,7 @@ class DataReader():
             self.dataConfig['zip-extension']='.gz'
             self.dataConfig['delimiter']=','
 
-            self.dataConfig['Duplication'] = True
+            self.dataConfig['duplication'] = True
             self.dataConfig['nbNodes'] = 300
             self.dataConfig['currentNodeID'] = 42
             self.dataConfig['dataDirName'] = self.dataDirName
@@ -216,24 +213,46 @@ class DataReader():
                     self.tables.append(filename)
         self.log.debug("%s.readTableList() found : %s" %  (self.__class__.__name__, self.tables))
 
-    #def setMetaFileLocation(self):
-    #    for table_name in self.tables:
-    #        prefix = os.path.join(self.dataDirName, table_name)
-    #        self.dataConfig[table_name]['meta-file']=  prefix + self.dataConfig['meta-extension']
+    def gunzip(self, table_name, zipped_data_filename, tmp_dir):
+        # check if the corresponding data file exists
+        if not os.path.exists(zipped_data_filename):
+            raise Exception, "File: '%s' not found" %  zipped_data_filename
+
+        tmp_suffix = ("%s%s" % (table_name,self.dataConfig['data-extension']))
+        tmp_data_file = os.path.join(tmp_dir, tmp_suffix)
+	if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+
+        self.log.info("Unzipping: %s into %s" %  (zipped_data_filename, tmp_data_file))
+        commons.run_command(["gunzip", "-c", zipped_data_filename], stdout_file=tmp_data_file)
+        return tmp_data_file
 
 
-    def getSchemaAndDataFilenames(self, table_name):
+
+    def prepareInputData(self, table_name, mode, tmp_dir):
         zipped_data_filename = None
         data_filename = None
         if table_name in self.tables:
             prefix = os.path.join(self.dataDirName, table_name)
             schema_filename = prefix + self.dataConfig['schema-extension']
+            partition_filename = prefix + self.dataConfig['partition-extension']
             if table_name not in self.dataConfig['sql-views']:
                 if self.dataConfig['zip-extension'] is not None:
                     zipped_data_filename = prefix + self.dataConfig['data-extension'] + self.dataConfig['zip-extension']
                 else:
                     data_filename = prefix + self.dataConfig['data-extension']
-            return (schema_filename, data_filename, zipped_data_filename)
+            if zipped_data_filename is not None :
+                input_filename = self.gunzip(table_name, zipped_data_filename, tmp_dir)
+            else:
+                input_filename = data_filename
+	    if mode == 'qserv':	
+            	return (input_filename, schema_filename, partition_filename) 
+	    elif mode == 'mysql':	
+            	return (input_filename, schema_filename)
+	    else:
+		raise Exception, "{0}.prepareInputData(): undefined target database: {1}"\
+		.format(self.__class__.__name__, mode)
+
         else:
-            raise Exception, "%s.getDataFiles(): '%s' table isn't described in input data" %  (self.__class__.__name__, table_name)
+            raise Exception, "%s.prepareInputData(): '%s' table isn't described in input data" %  (self.__class__.__name__, table_name)
 

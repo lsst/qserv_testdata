@@ -27,6 +27,8 @@ class QservDataLoader():
         self._in_dirname = in_dirname
         self._out_dirname = out_dirname
 
+        self._partition_basedir = os.path.join(self._out_dirname,"partitioned-data")
+
         #self.logger = commons.console_logger(logging_level)
         #self.logger = commons.file_logger(
         #    log_file_prefix,
@@ -56,37 +58,29 @@ class QservDataLoader():
         out = commons.run_command(css_load_cmd, "loadMetadata.kv")
         self.logger.info("CSS meta successfully loaded for db : %s" % self._dbName)
 
-    def createAndLoadTable(self, table_name, schema_filename, input_filename):
+    def createAndLoadTable(self, table_name, input_filename, schema_filename, partition_filename):
         self.logger.debug("QservDataLoader.createAndLoadTable(%s, %s, %s)" % (table_name, schema_filename, input_filename))
 
         if table_name in self.dataConfig['partitioned-tables']:
             self.logger.info("Loading schema of partitioned table %s" % table_name)
             self.createPartitionedTable(table_name, schema_filename)
-            self.loadPartitionedTable(table_name, input_filename)
+            # TODO: improve code structure, duplication and partition should be tear apart
+            self.logger.info("Partitioning and loading data for table  '%s' in Qserv mono-node database" % table_name)
+            if self.dataConfig.get('duplication'):
+                self.logger.info("-----\nQserv Duplicating data for table  '%s' -----\n" % table)
+                partition_dirname = self.duplicateAndPartitionData(table_name, input_filename)
+            else:
+                partition_dirname = self.partitionData(table_name, input_filename, partition_filename)
+
+            self.loadPartitionedData(partition_dirname,table_name)
+
         elif table_name in self.dataConfig['sql-views']:
             self.logger.info("Creating schema for table %s as a view" % table_name)
             self._sqlInterface['cmd'].executeFromFile(schema_filename)
+
         else:
             self.logger.info("Creating and loading non-partitioned table %s" % table_name)
             self._sqlInterface['cmd'].createAndLoadTable(table_name, schema_filename, input_filename, self.dataConfig['delimiter'])
-
-    def loadPartitionedTable(self, table, data_filename):
-        ''' Duplicate, partition and load Qserv data like Source and Object
-        '''
-
-        # TODO : create index and alter table with chunkId and subChunkId
-        # "\nCREATE INDEX obj_objectid_idx on Object ( objectId );\n";
-
-        self.logger.info("Partitioning and loading data for table  '%s' in Qserv mono-node database" % table)
-
-        if ('Duplication' in self.dataConfig) and self.dataConfig['Duplication']:
-            self.logger.info("-----\nQserv Duplicating data for table  '%s' -----\n" % table)
-            partition_dirname = self.duplicateAndPartitionData(table, data_filename)
-        else:
-            partition_dirname = self.partitionData(table, data_filename)
-
-        self.loadPartitionedData(partition_dirname,table)
-
 
     def configureQservMetaEmptyChunk(self):
         
@@ -160,7 +154,7 @@ class QservDataLoader():
         self.logger.info("Duplicating and partitioning table  '%s' from file '%s'\n" % (table, data_filename))
 
         partition_scriptname = "partition.py"
-        partition_dirname = os.path.join(self._out_dirname,table+"_partition")
+        partition_dirname = os.path.join(self._partition_basedir, table)
 
         if os.path.exists(partition_dirname):
             shutil.rmtree(partition_dirname)
@@ -205,31 +199,27 @@ class QservDataLoader():
         return partition_dirname
 
 
-    def partitionData(self,table, data_filename):
+    def partitionData(self,table, data_filename, partition_filename):
         # partition data
 
-        partition_scriptname = "partition.py"
-        partition_dirname = os.path.join(self._out_dirname,table+"_partition")
+        partition_scriptname = "sph-partition"
+        partition_dirname = os.path.join(self._partition_basedir, table)
+
         if os.path.exists(partition_dirname):
             shutil.rmtree(partition_dirname)
         os.makedirs(partition_dirname)
 
-            # python %s -PObject -t 2  -p 4 %s --delimiter '\t' -S 10 -s 2 --output-dir %s" % (self.partition_scriptname, data_filename, partition_dirname
         partition_data_cmd = [
             partition_scriptname,
-            '--output-dir', partition_dirname,
-            '--chunk-prefix', table,
-            '--theta-column', str(self.dataConfig[table]['ra-column']),
-            '--phi-column', str(self.dataConfig[table]['decl-column']),
-            '--num-stripes=%s' % self.dataConfig['num-stripes'],
-            '--num-sub-stripes=%s' % self.dataConfig['num-substripes'],
-            '--delimiter', self.dataConfig['delimiter']
+            '--verbose', 
+            '--config-file', partition_filename,
+            '--in', data_filename,
+            '--out.dir', partition_dirname,
             ]
 
-        if self.dataConfig[table]['chunk-column-id'] != None :
-            partition_data_cmd.extend(['--chunk-column', str(self.dataConfig[table]['chunk-column-id'])])
-
-        partition_data_cmd.append(data_filename)
+        # TODO To study before removal
+        #if self.dataConfig[table]['chunk-column-id'] != None :
+        #    partition_data_cmd.extend(['--chunk-column', str(self.dataConfig[table]['chunk-column-id'])])
 
         out = commons.run_command(partition_data_cmd)
 
