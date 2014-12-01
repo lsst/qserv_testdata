@@ -30,7 +30,7 @@ are read from ~/.lsst/qserv.conf.''',
               default = 7999,
               help="Stop at query with given number")
     parser.add_argument("-l", "--load", action="store_true", dest="load_data", default=False,
-              help="Run queries on previously loaded data")
+              help="Load test dataset prior to query execution")
     parser.add_argument("-o", "--out-dir", dest="out_dirname",
               help="Full path to directory for storing temporary results. The results will be stored in <OUTDIR>/qservTest_case<CASENO>/")
     args = parser.parse_args()
