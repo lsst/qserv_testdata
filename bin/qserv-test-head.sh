@@ -97,7 +97,7 @@ fi
 
 killall mysqld mysql-proxy xrootd java python ||
 {
-    printf "Unable to kill some Qserv services\n"
+    printf "WARN: Unable to kill some Qserv services\n"
 }
 
 # "scons install" doesn't use all proc
@@ -117,3 +117,10 @@ else
     qserv-test-integration.py
 fi
 "${QSERV_RUN_DIR}"/bin/qserv-stop.sh
+
+(
+ln -sf "${QSERV_RUN_DIR}"/bin/qserv-stop.sh &&
+ln -sf "${QSERV_RUN_DIR}"/bin/qserv-start.sh &&
+ln -sf "${QSERV_RUN_DIR}"/bin/qserv-status.sh
+) ||
+printf "WARN: Unable to symlink Qserv startup scripts/n"
