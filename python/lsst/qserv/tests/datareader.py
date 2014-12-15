@@ -98,13 +98,13 @@ class DataReader():
             self.tables=['Science_Ccd_Exposure_Metadata_coadd_r', 'AvgForcedPhotYearly', 'Science_Ccd_Exposure_Metadata', 'RunDeepSource',  'RunDeepForcedSource', 'DeepForcedSource', 'ZZZ_Db_Description', 'RefObject', 'RefDeepSrcMatch', 'Science_Ccd_Exposure_coadd_r', 'Science_Ccd_Exposure', 'AvgForcedPhot', 'DeepCoadd_To_Htm10', 'Science_Ccd_Exposure_To_Htm10_coadd_r', 'LeapSeconds', 'DeepCoadd', 'DeepCoadd_Metadata', 'DeepSource', 'Filter']
 
             self.dataConfig['sql-views'] = ['DeepForcedSource','DeepSource']
-            
+
             self.dataConfig['partitioned-tables'] = ["AvgForcedPhot",
                                                 "AvgForcedPhotYearly",
                                                 "RefObject",
                                                 "RunDeepSource",
                                                 "RunDeepForcedSource"]
-            
+
             self.dataConfig['partitioned-sql-views'] = ['DeepForcedSource','DeepSource']
 
             for table in self.dataConfig['partitioned-tables']:
@@ -215,12 +215,6 @@ class DataReader():
                 if fileext == self.dataConfig['schema-extension']:
                     self.tables.append(filename)
         self.log.debug("%s.readTableList() found : %s" %  (self.__class__.__name__, self.tables))
-
-    #def setMetaFileLocation(self):
-    #    for table_name in self.tables:
-    #        prefix = os.path.join(self.dataDirName, table_name)
-    #        self.dataConfig[table_name]['meta-file']=  prefix + self.dataConfig['meta-extension']
-
 
     def getSchemaAndDataFilenames(self, table_name):
         zipped_data_filename = None

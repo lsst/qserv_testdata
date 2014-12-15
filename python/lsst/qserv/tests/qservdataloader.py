@@ -28,11 +28,6 @@ class QservDataLoader():
         self._in_dirname = in_dirname
         self._out_dirname = out_dirname
 
-        #self.logger = commons.console_logger(logging_level)
-        #self.logger = commons.file_logger(
-        #    log_file_prefix,
-        #    log_path=self.config['qserv']['log_dir']
-        #)
         self.logger = logging.getLogger()
         self.sock_connection_params = {
             'config' : self.config,
