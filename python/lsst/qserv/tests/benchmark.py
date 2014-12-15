@@ -31,14 +31,12 @@
 __author__ = "Jacek Becla, Fabrice Jammes"
 
 import logging
-import optparse
 import shutil
-import tarfile
 import time
 
 from lsst.qserv.tests import qservdataloader, mysqldataloader, datareader
-from lsst.qserv.admin import commons, download, logger
-from lsst.qserv.tests.sql import cmd, connection, const
+from lsst.qserv.admin import commons, logger
+from lsst.qserv.tests.sql import cmd, const
 import errno
 import os
 import re
@@ -52,13 +50,13 @@ class Benchmark():
 
     def __init__(self, case_id, out_dirname_prefix,
                  log_file_prefix='qserv-tests',
-                 logging_level=logging.INFO ):
+                 logging_level=logging.INFO):
 
         self.logger = logging.getLogger()
         self.dataLoader = dict()
         self._sqlInterface = dict()
-        self._mode=None
-        self._dbName=None
+        self._mode = None
+        self._dbName = None
 
         self.config = commons.getConfig()
 
@@ -67,7 +65,7 @@ class Benchmark():
         self._case_id = case_id
         self._logFilePrefix = log_file_prefix
 
-        if out_dirname_prefix == None :
+        if out_dirname_prefix is None :
             out_dirname_prefix = self.config['qserv']['tmp_dir']
         self._out_dirname = os.path.join(out_dirname_prefix, "qservTest_case%s" % case_id)
 
@@ -183,11 +181,12 @@ class Benchmark():
         """
         Creates tables and load data for input file located in caseXX/data/
         """
-        self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname, self._mode))
+        self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname,
+                                                             self._mode))
 
-        for table_name in  self.dataReader.tables:
+        for table_name in self.dataReader.tables:
             self.logger.debug("Using data of %s" % table_name)
-            (schema_filename, data_filename, zipped_data_filename) =  self.dataReader.getSchemaAndDataFilenames(table_name)
+            (schema_filename, data_filename, zipped_data_filename) = self.dataReader.getSchemaAndDataFilenames(table_name)
 
             if zipped_data_filename is not None :
                 tmp_data_file = self.gunzip(table_name, zipped_data_filename)
@@ -296,7 +295,7 @@ def add_generic_arguments(parser):
     if os.environ.get('QSERV_TESTDATA_DIR') is not None:
         default_testdata_dir = os.path.join(
             os.environ.get('QSERV_TESTDATA_DIR'), "datasets"
-        ) 
+        )
 
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
             default=default_testdata_dir,
