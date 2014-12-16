@@ -215,18 +215,16 @@ class Benchmark():
         self.dataLoader[self._mode].connectAndInitDatabase()
 
     def finalize(self):
-        if (self._mode=='qserv'):
-            self.dataLoader['qserv'].createCssDatabase()
-            self.dataLoader['qserv'].configureQservMetaEmptyChunk()
+        if (self._mode == 'qserv'):
             self.dataLoader['qserv'].workerInsertXrootdExportPath()
 
-            # restart xrootd in order to reload  export paths w.r.t loaded chunks, cf. #2478
+            # Reload xroot export paths w.r.t loaded chunks
             commons.restart('xrootd')
 
-            # Qserv fails to start if CSS db is empty, so starting it again may be required
+            # Reload Qserv meta-data
             commons.restart('qserv-czar')
 
-        # in order to close socket connections
+        # Close socket connections
         del(self.dataLoader[self._mode])
 
     def run(self, mode_list, load_data, stop_at_query=7999):
