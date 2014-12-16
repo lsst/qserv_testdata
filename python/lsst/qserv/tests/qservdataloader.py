@@ -54,6 +54,8 @@ class QservDataLoader():
         self.logger.info("Partitioning and loading data for table  '%s'" +
                          "in Qserv mono-node database", table)
 
+        tmp_dir = self.config['qserv']['tmp_dir']
+        run_dir = self.config['qserv']['run_base_dir']
         loader_cmd = [
             'qserv-data-loader.py',
             '--verbose-all',
@@ -62,12 +64,19 @@ class QservDataLoader():
                                                "common.cfg")),
             '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
                                                table + ".cfg")),
-            '--chunks-dir={0}'.format(os.path.join(self._out_dirname,
+            '--chunks-dir={0}'.format(os.path.join(tmp_dir,
                                                    "loader_chunks",
                                                    table)),
+            '--css-remove',
             '--user={0}'.format(self.config['mysqld']['user']),
             '--password={0}'.format(self.config['mysqld']['pass']),
             '--socket={0}'.format(self.config['mysqld']['sock']),
+            '--empty-chunks={0}'.format(os.path.join(run_dir,
+                                                     "var", "lib", "qserv",
+                                                     "empty_" +
+                                                     self._dbName +
+                                                     ".txt")),
+            '--delete-tables',
             self._dbName,
             table,
             self.dataReader.getSchemaFile(table),
