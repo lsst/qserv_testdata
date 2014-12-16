@@ -20,9 +20,10 @@ from os.path import expanduser
 
 class QservDataLoader():
 
-    def __init__(self, config, data_config, db_name, in_dirname, out_dirname, log_file_prefix='qserv-loader', logging_level=logging.DEBUG):
+    def __init__(self, config, data_reader, db_name, in_dirname, out_dirname, log_file_prefix='qserv-loader', logging_level=logging.DEBUG):
         self.config = config
-        self.dataConfig = data_config
+        self.dataReader = data_reader
+        self.dataConfig = data_reader.dataConfig
         self._dbName = db_name
 
         self._in_dirname = in_dirname
@@ -52,36 +53,48 @@ class QservDataLoader():
         out = commons.run_command(css_load_cmd, "loadMetadata.kv")
         self.logger.info("CSS meta successfully loaded for db : %s" % self._dbName)
 
-    def createAndLoadTable(self, table_name, schema_filename, input_filename):
-        self.logger.debug("QservDataLoader.createAndLoadTable(%s, %s, %s)" % (table_name, schema_filename, input_filename))
-
-        if table_name in self.dataConfig['partitioned-tables']:
-            self.logger.info("Loading schema of partitioned table %s" % table_name)
-            self.createPartitionedTable(table_name, schema_filename)
-            self.loadPartitionedTable(table_name, input_filename)
-        elif table_name in self.dataConfig['sql-views']:
-            self.logger.info("Creating schema for table %s as a view" % table_name)
+    def createAndLoadTable(self, table):
+        if table in self.dataConfig['partitioned-tables']:
+            self.logger.info("Create, load partitioned table %s",
+                             table)
+            self._createLoadPartTable(table)
+        elif table in self.dataConfig['sql-views']:
+            self.logger.info("Creating schema for table %s as a view",
+                             table)
             self._sqlInterface['cmd'].executeFromFile(schema_filename)
         else:
-            self.logger.info("Creating and loading non-partitioned table %s" % table_name)
-            self._sqlInterface['cmd'].createAndLoadTable(table_name, schema_filename, input_filename, self.dataConfig['delimiter'])
+            self.logger.info("Create, load non-partitioned table %s", table)
+            #self._sqlInterface['cmd'].createAndLoadTable(table, schema_filename, input_filename, self.dataConfig['delimiter'])
 
-    def loadPartitionedTable(self, table, data_filename):
-        ''' Duplicate, partition and load Qserv data like Source and Object
+    def _createLoadPartTable(self, table):
+        ''' Partition and load Qserv data like Source and Object
         '''
 
-        # TODO : create index and alter table with chunkId and subChunkId
-        # "\nCREATE INDEX obj_objectid_idx on Object ( objectId );\n";
+        self.logger.info("Partitioning and loading data for table  '%s'" +
+                         "in Qserv mono-node database", table)
 
-        self.logger.info("Partitioning and loading data for table  '%s' in Qserv mono-node database" % table)
+        loader_cmd = [
+            'qserv-data-loader.py',
+            '--verbose-all',
+            '-vvv',
+            '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
+                                               "common.cfg")),
+            '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
+                                               table + ".cfg")),
+            '--chunks-dir={0}'.format(os.path.join(self._out_dirname,
+                                                   "loader_chunks",
+                                                   table)),
+            '--user={0}'.format(self.config['mysqld']['user']),
+            '--password={0}'.format(self.config['mysqld']['pass']),
+            '--socket={0}'.format(self.config['mysqld']['sock']),
+            self._dbName,
+            table,
+            self.dataReader.getSchemaFile(table),
+            self.dataReader.getInputDataFile(table)
+        ]
 
-        if ('Duplication' in self.dataConfig) and self.dataConfig['Duplication']:
-            self.logger.info("-----\nQserv Duplicating data for table  '%s' -----\n" % table)
-            partition_dirname = self.duplicateAndPartitionData(table, data_filename)
-        else:
-            partition_dirname = self.partitionData(table, data_filename)
-
-        self.loadPartitionedData(partition_dirname,table)
+        out = commons.run_command(loader_cmd)
+        self.logger.info("Partitioned {0} data loaded (stdout : {1})".format(table,out))
 
 
     def configureQservMetaEmptyChunk(self):
@@ -293,20 +306,20 @@ class QservDataLoader():
 
         meta_table_prefix = "{0}__".format(self._dbName)
 
-        meta_table_name = meta_table_prefix + table
+        meta_table = meta_table_prefix + table
 
         sql = "USE qservMeta;\n"
-        sql += "DROP TABLE IF EXISTS {0};\n".format(meta_table_name)
+        sql += "DROP TABLE IF EXISTS {0};\n".format(meta_table)
 
         # Execute DROP before CREATE for sql error "Commands out of sync; you can't run this command now"
         self._sqlInterface['sock'].execute(sql)
 
         sql = "CREATE TABLE {0} ({1}Id BIGINT NOT NULL PRIMARY KEY, chunkId INT, subChunkId INT);\n"\
-            .format(meta_table_name, table.lower())
+            .format(meta_table, table.lower())
 
         # TODO : scan data on all workers here, with recovery on error
         insert_sql =  "INSERT INTO {0} SELECT {1}Id, chunkId, subChunkId FROM {2}.{3}_%s;"\
-            .format(meta_table_name, table.lower(), self._dbName, table)
+            .format(meta_table, table.lower(), self._dbName, table)
         for chunkId in chunk_id_list :
             tmp =  insert_sql % chunkId
             sql += "\n" + tmp
