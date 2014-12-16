@@ -7,7 +7,7 @@ class DataReader():
 
     def __init__(self, data_dir_name, data_name=None):
         self.log = logging.getLogger()
-        self.dataDirName = data_dir_name
+        self._dataDirName = data_dir_name
         self.dataName = data_name
         self.dataConfig = dict()
         self.dataConfig['data-name'] = data_name
@@ -15,11 +15,11 @@ class DataReader():
         self.tables = []
 
     def readInputData(self):
-        self.analyze()
-        self.readTableList()
+        self._analyze()
+        self._readTableList()
         #self.setMetaFileLocation()
 
-    def analyze(self):
+    def _analyze(self):
 
         #self.dataConfig['Object']['ra-column'] = schemaDict['Object'].indexOf("`ra_PS`")
         #self.dataConfig['Object']['decl-column'] = schemaDict['Object'].indexOf("`decl_PS`")
@@ -30,6 +30,7 @@ class DataReader():
 
         self.dataConfig['sql-views'] = []
         self.dataConfig['partitioned-sql-views'] = []
+        self.dataConfig['input-dir']=self._dataDirName
         self.dataConfig['data-name']=self.dataName
 
         if self.dataName=="case01":
@@ -186,7 +187,6 @@ class DataReader():
             self.dataConfig['Duplication'] = True
             self.dataConfig['nbNodes'] = 300
             self.dataConfig['currentNodeID'] = 42
-            self.dataConfig['dataDirName'] = self.dataDirName
 
             self.dataConfig['Object']['ra-fieldname'] = "ra_PS"
             self.dataConfig['Object']['decl-fieldname'] = "decl_PS"
@@ -207,27 +207,30 @@ class DataReader():
             self.dataConfig['Source']['chunk-column-id'] = None
 
 
-    def readTableList(self):
-        files = os.listdir(self.dataDirName)
-        if self.tables==[]:
-            for f in files:
-                filename, fileext = os.path.splitext(f)
-                if fileext == self.dataConfig['schema-extension']:
-                    self.tables.append(filename)
+    def _readTableList(self):
+        files = os.listdir(self._dataDirName)
+        for f in files:
+            filename, fileext = os.path.splitext(f)
+            if fileext == self.dataConfig['schema-extension']:
+                self.tables.append(filename)
         self.log.debug("%s.readTableList() found : %s" %  (self.__class__.__name__, self.tables))
 
-    def getSchemaAndDataFilenames(self, table_name):
-        zipped_data_filename = None
-        data_filename = None
-        if table_name in self.tables:
-            prefix = os.path.join(self.dataDirName, table_name)
-            schema_filename = prefix + self.dataConfig['schema-extension']
-            if table_name not in self.dataConfig['sql-views']:
-                if self.dataConfig['zip-extension'] is not None:
-                    zipped_data_filename = prefix + self.dataConfig['data-extension'] + self.dataConfig['zip-extension']
-                else:
-                    data_filename = prefix + self.dataConfig['data-extension']
-            return (schema_filename, data_filename, zipped_data_filename)
+    def getSchemaFile(self, table_name):
+        if table_name not in self.tables:
+            raise
         else:
-            raise Exception, "%s.getDataFiles(): '%s' table isn't described in input data" %  (self.__class__.__name__, table_name)
+            prefix = os.path.join(self._dataDirName, table_name)
+            schema_filename = prefix + self.dataConfig['schema-extension']
+            return schema_filename
+
+    def getInputDataFile(self, table_name):
+        if table_name not in self.tables:
+            raise
+        data_filename = None
+        if table_name not in self.dataConfig['sql-views']:
+            prefix = os.path.join(self._dataDirName, table_name)
+            data_filename = prefix + self.dataConfig['data-extension']
+            if self.dataConfig['zip-extension'] is not None:
+                data_filename += self.dataConfig['zip-extension']
+        return data_filename
 
