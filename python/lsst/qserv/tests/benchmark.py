@@ -182,21 +182,8 @@ class Benchmark():
         """
         self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname,
                                                              self._mode))
-
-        for table_name in self.dataReader.tables:
-            self.logger.debug("Using data of %s" % table_name)
-            (schema_filename, data_filename, zipped_data_filename) = self.dataReader.getSchemaAndDataFilenames(table_name)
-
-            if zipped_data_filename is not None :
-                tmp_data_file = self.gunzip(table_name, zipped_data_filename)
-                input_filename = tmp_data_file
-            else:
-                input_filename = data_filename
-
-            self.dataLoader[self._mode].createAndLoadTable(table_name, schema_filename, input_filename)
-
-            if zipped_data_filename is not None :
-                os.unlink(tmp_data_file)
+        for table in self.dataReader.tables:
+            self.dataLoader[self._mode].createAndLoadTable(table)
 
     def cleanup(self):
         # cleanup of previous tests
@@ -210,15 +197,15 @@ class Benchmark():
         if (self._mode=='mysql'):
             self.dataLoader[self._mode] = mysqldataloader.MysqlDataLoader(
                 self.config,
-                self.dataReader.dataConfig,
+                self.dataReader,
                 self._dbName,
                 self._out_dirname,
                 self._logFilePrefix
                 )
-        elif (self._mode=='qserv'):
+        elif (self._mode == 'qserv'):
             self.dataLoader[self._mode] = qservdataloader.QservDataLoader(
                 self.config,
-                self.dataReader.dataConfig,
+                self.dataReader,
                 self._dbName,
                 self._in_dirname,
                 self._out_dirname,
