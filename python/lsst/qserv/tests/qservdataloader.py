@@ -35,24 +35,13 @@ class QservDataLoader():
         self._sqlInterface = dict()
 
     def createAndLoadTable(self, table):
-        if table in self.dataConfig['partitioned-tables']:
-            self.logger.info("Create, load partitioned table %s",
-                             table)
-            self._createLoadPartTable(table)
-        elif table in self.dataConfig['sql-views']:
-            self.logger.info("Creating schema for table %s as a view",
-                             table)
-            self._sqlInterface['cmd'].executeFromFile(schema_filename)
-        else:
-            self.logger.info("Create, load non-partitioned table %s", table)
-            #self._sqlInterface['cmd'].createAndLoadTable(table, schema_filename, input_filename, self.dataConfig['delimiter'])
+        self._callLoader(table)
 
-    def _createLoadPartTable(self, table):
-        ''' Partition and load Qserv data like Source and Object
-        '''
-
-        self.logger.info("Partitioning and loading data for table  '%s'" +
-                         "in Qserv mono-node database", table)
+    def _callLoader(self, table):
+        """
+        Call Qserv loader
+        """
+        self.logger.info("Create, load partitioned table %s", table)
 
         tmp_dir = self.config['qserv']['tmp_dir']
         run_dir = self.config['qserv']['run_base_dir']
@@ -62,11 +51,6 @@ class QservDataLoader():
             '-vvv',
             '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
                                                "common.cfg")),
-            '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
-                                               table + ".cfg")),
-            '--chunks-dir={0}'.format(os.path.join(tmp_dir,
-                                                   "loader_chunks",
-                                                   table)),
             '--css-remove',
             '--user={0}'.format(self.config['mysqld']['user']),
             '--password={0}'.format(self.config['mysqld']['pass']),
@@ -76,12 +60,23 @@ class QservDataLoader():
                                                      "empty_" +
                                                      self._dbName +
                                                      ".txt")),
-            '--delete-tables',
+            '--delete-tables']
+
+        if table in self.dataConfig['partitioned-tables']:
+            loader_cmd += [
+                '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
+                                                   table + ".cfg")),
+                '--chunks-dir={0}'.format(os.path.join(tmp_dir,
+                                                       "loader_chunks",
+                                                       table))]
+        else:
+            loader_cmd += ['--skip-partition', '--one-table']
+
+        loader_cmd += [
             self._dbName,
             table,
             self.dataReader.getSchemaFile(table),
-            self.dataReader.getInputDataFile(table)
-        ]
+            self.dataReader.getInputDataFile(table)]
 
         out = commons.run_command(loader_cmd)
         self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
