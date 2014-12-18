@@ -176,7 +176,9 @@ class Benchmark():
             self.dataLoader[self._mode].createLoadTable(table)
 
     def cleanup(self):
-        # cleanup of previous tests
+        """
+        Cleanup of previous tests temporary ant output files
+        """
         if os.path.exists(self._out_dirname):
             shutil.rmtree(self._out_dirname)
         os.makedirs(self._out_dirname)
@@ -266,7 +268,6 @@ def add_generic_arguments(parser):
         help="verbosity level"
         )
 
-    # directory containing test dataset
     default_testdata_dir=None
     if os.environ.get('QSERV_TESTDATA_DIR') is not None:
         default_testdata_dir = os.path.join(
