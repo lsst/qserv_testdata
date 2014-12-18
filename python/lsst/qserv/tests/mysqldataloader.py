@@ -16,11 +16,6 @@ class MysqlDataLoader():
 
         self._out_dirname = out_dirname
 
-        #self.logger = commons.console_logger(logging_level)
-        #self.logger = commons.file_logger(
-        #    log_file_prefix,
-        #    log_path=self.config['qserv']['log_dir']
-        #)
         self.logger = logging.getLogger()
         self.sock_connection_params = {
             'config' : self.config,
@@ -41,7 +36,7 @@ class MysqlDataLoader():
         
     def _callLoader(self, table):
         '''
-        Call Qserv loader
+        Call Qserv loader to load plain-MySQL table
          '''
 
         self.logger.info("Create, load partitioned table %s", table)

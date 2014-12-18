@@ -1,9 +1,15 @@
-from lsst.qserv.admin import commons, const
 import logging
 import os
 import tempfile
+import UserDict
 
-class DataReader():
+from lsst.qserv.admin import commons, const
+
+class DataReader(UserDict.UserDict):
+    """
+    Class which holds all test data meta-configuration.
+    Implemented as a dictionary with some extra methods.
+    """
 
     def __init__(self, data_dir_name, data_name=None):
         self.log = logging.getLogger()
@@ -17,16 +23,8 @@ class DataReader():
     def readInputData(self):
         self._analyze()
         self._readTableList()
-        #self.setMetaFileLocation()
 
     def _analyze(self):
-
-        #self.dataConfig['Object']['ra-column'] = schemaDict['Object'].indexOf("`ra_PS`")
-        #self.dataConfig['Object']['decl-column'] = schemaDict['Object'].indexOf("`decl_PS`")
-        #self.dataConfig['Object']['chunk-column-id'] = schemaDict['Object'].indexOf("`chunkId`")
-
-        # TODO : use meta service instead of hard-coded parameters
-        self.log.debug("DataReader.analyze() : Data name is : %s" %self.dataName )
 
         self.dataConfig['sql-views'] = []
         self.dataConfig['partitioned-sql-views'] = []
@@ -36,28 +34,9 @@ class DataReader():
         if self.dataName=="case01":
             self.dataConfig['partitioned-tables'] = ["Object", "Source"]
 
-            """ Fill column position (zero-based index) """
-            self.dataConfig['Object']=dict()
-            self.dataConfig['Source']=dict()
-
             self.dataConfig['schema-extension']='.schema'
             self.dataConfig['data-extension']='.tsv'
             self.dataConfig['zip-extension']='.gz'
-            self.dataConfig['delimiter']='\t'
-
-            # TODO : read from CSS db.params file
-            self.dataConfig['num-stripes'] = 85
-            self.dataConfig['num-substripes'] = 12
-
-            self.dataConfig['Object']['ra-column'] = 2
-            self.dataConfig['Object']['decl-column'] = 4
-            self.dataConfig['Object']['chunk-column-id'] = 227
-
-            self.dataConfig['Source']['ra-column'] = 33
-            self.dataConfig['Source']['decl-column'] = 34
-
-            # chunkId and subChunkId will be added
-            self.dataConfig['Source']['chunk-column-id'] = None
 
             self.log.debug("Data configuration : %s" % self.dataConfig)
 
@@ -66,28 +45,9 @@ class DataReader():
 
             self.dataConfig['partitioned-tables'] = ["Object", "Source"]
 
-            """ Fill column position (zero-based index) """
-            self.dataConfig['Object']=dict()
-            self.dataConfig['Source']=dict()
-
             self.dataConfig['schema-extension']='.sql'
             self.dataConfig['data-extension']='.txt'
             self.dataConfig['zip-extension']='.gz'
-            self.dataConfig['delimiter']=','
-
-            # TODO : read from CSS db.params file
-            self.dataConfig['num-stripes'] = 85
-            self.dataConfig['num-substripes'] = 12
-
-            self.dataConfig['Object']['ra-column'] = 2
-            self.dataConfig['Object']['decl-column'] = 4
-            self.dataConfig['Object']['chunk-column-id'] = 225
-
-            self.dataConfig['Source']['ra-column'] = 32
-            self.dataConfig['Source']['decl-column'] = 33
-            # chunkId and subChunkId will be added
-            self.dataConfig['Source']['chunk-column-id'] = None
-
 
             self.log.debug("Data configuration : %s" % self.dataConfig)
 
@@ -136,76 +96,6 @@ class DataReader():
 
             self.dataConfig['RunDeepForcedSource']['ra-column'] = 1
             self.dataConfig['RunDeepForcedSource']['decl-column'] = 2
-
-
-        # for PT1.2
-        elif self.dataName=="case04":
-
-            self.dataConfig['partitioned-tables'] = ["Object", "Source"]
-
-            """ Fill column position (zero-based index) """
-            self.dataConfig['Object']=dict()
-            self.dataConfig['Source']=dict()
-
-            self.dataConfig['schema-extension']='.schema'
-            self.dataConfig['data-extension']='.csv'
-            self.dataConfig['zip-extension']='.gz'
-            self.dataConfig['delimiter']=','
-
-            self.dataConfig['Object']['ra-fieldname'] = "ra_PS"
-            self.dataConfig['Object']['decl-fieldname'] = "decl_PS"
-            self.dataConfig['Source']['ra-fieldname'] = "ra"
-            self.dataConfig['Source']['decl-fieldname'] = "decl"
-
-            self.dataConfig['Object']['ra-column'] = 2
-            self.dataConfig['Object']['decl-column'] = 4
-            self.dataConfig['Object']['chunk-column-id'] = 227
-
-            # self.dataConfig['Source']['ra-column'] = 7
-            # self.dataConfig['Source']['decl-column'] = 10
-
-            self.dataConfig['Source']['ra-column'] = 33
-            self.dataConfig['Source']['decl-column'] = 34
-
-            # chunkId and subChunkId will be added
-            self.dataConfig['Source']['chunk-column-id'] = None
-
-        # for duplicated/replicated PT1.2
-        elif self.dataName=="case05":
-
-            self.dataConfig['partitioned-tables'] = ["Object", "Source"]
-
-            """ Fill column position (zero-based index) """
-            self.dataConfig['Object']=dict()
-            self.dataConfig['Source']=dict()
-
-            self.dataConfig['schema-extension']='.schema'
-            self.dataConfig['data-extension']='.csv'
-            self.dataConfig['zip-extension']='.gz'
-            self.dataConfig['delimiter']=','
-
-            self.dataConfig['Duplication'] = True
-            self.dataConfig['nbNodes'] = 300
-            self.dataConfig['currentNodeID'] = 42
-
-            self.dataConfig['Object']['ra-fieldname'] = "ra_PS"
-            self.dataConfig['Object']['decl-fieldname'] = "decl_PS"
-            self.dataConfig['Source']['ra-fieldname'] = "ra"
-            self.dataConfig['Source']['decl-fieldname'] = "decl"
-
-            self.dataConfig['Object']['ra-column'] = 2
-            self.dataConfig['Object']['decl-column'] = 4
-            self.dataConfig['Object']['chunk-column-id'] = 227
-
-            # self.dataConfig['Source']['ra-column'] = 7
-            # self.dataConfig['Source']['decl-column'] = 10
-
-            self.dataConfig['Source']['ra-column'] = 33
-            self.dataConfig['Source']['decl-column'] = 34
-
-            # chunkId and subChunkId will be added
-            self.dataConfig['Source']['chunk-column-id'] = None
-
 
     def _readTableList(self):
         files = os.listdir(self._dataDirName)

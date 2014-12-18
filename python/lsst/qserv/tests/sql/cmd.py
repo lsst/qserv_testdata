@@ -7,7 +7,9 @@ import const
 
 # TODO: replace all SQL by SQLConnection    
 class Cmd():
-    """ SQLCmd is a class for managing SQL cmd via a shell client"""
+    """
+    Run mysql client
+    """
     def __init__(self,
                  config,
                  mode,                 
@@ -31,8 +33,6 @@ class Cmd():
         
         if mode==const.MYSQL_PROXY :
             self._addQservCmdParams()
-        elif mode==const.QSERV_LOAD :
-            self._addQservSockCmdParams()
         elif mode==const.MYSQL_SOCK :
             self._addMySQLSockCmdParams()
         elif mode==const.MYSQL_NET :

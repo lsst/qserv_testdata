@@ -48,22 +48,28 @@ def main():
 
     args = parseArgs()
 
+    logger = logging.getLogger()
+
     benchmark.init(args, logfile="qserv-check-integration-dataset{0}".format(args.case_no))
 
     bench = benchmark.Benchmark(args.case_no, args.out_dirname)
     bench.run(args.mode_list, args.load_data, args.stop_at_query)
-    failed_queries = bench.analyzeQueryResults()
 
-    logger = logging.getLogger()
-    if len(failed_queries) == 0:
-        logger.info("Test case%s succeed", args.case_no)
-        return_code=0
+    return_code=0
+    if (len(args.mode_list) > 1):
+        logger.info("Performing result comparison for databases: %s", args.mode_list)
+        failed_queries = bench.analyzeQueryResults()
+
+        if len(failed_queries) == 0:
+            logger.info("Test case%s succeed", args.case_no)
+            return_code=0
+        else:
+            if args.load_data == False:
+                logger.warn("Please check that case%s data are loaded, " +
+                    "otherwise run %s with --load option.", args.case_no, os.path.basename(__file__))
+            logger.fatal("Test case%s failed", args.case_no)
     else:
-        if args.load_data == False:
-            logger.warn("Please check that case%s data are loaded, " +
-                "otherwise run %s with --load option.", args.case_no, os.path.basename(__file__))
-        logger.fatal("Test case%s failed", args.case_no)
-        return_code=1
+        logger.info("No result comparison")
 
     sys.exit(return_code)
 
