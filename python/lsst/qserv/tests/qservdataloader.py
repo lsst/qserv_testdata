@@ -27,7 +27,7 @@ class QservDataLoader():
         self._out_dirname = out_dirname
 
         self.logger = logging.getLogger()
-        self.sock_connection_params = {
+        self.sock_params = {
             'config': self.config,
             'mode': const.MYSQL_SOCK
             }
@@ -83,30 +83,32 @@ class QservDataLoader():
 
     def connectAndInitDatabase(self):
 
-        self._sqlInterface['sock'] = connection.Connection(**self.sock_connection_params)
+        self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
 
         self.logger.info("Drop and create Qserv database: %s", self._dbName)
-        sql_instructions= [
+        sql_instructions = [
             "DROP DATABASE IF EXISTS %s" % self._dbName,
             "CREATE DATABASE %s" % self._dbName,
-            # TODO : "GRANT ALL ON %s.* TO '%s'@'*'" % (self._dbName, self._qservUser, self._qservHost)
-            "GRANT ALL ON %s.* TO 'qsmaster'@'localhost'" % (self._dbName),
-            "USE %s" %  self._dbName
+            ("GRANT ALL ON {0}.* TO '{1}'@'localhost'"
+             .format(self._dbName, self.config['qserv']['user'])),
+            "USE {0}".format(self._dbName)
             ]
 
         for sql in sql_instructions:
             self._sqlInterface['sock'].execute(sql)
 
-        cmd_connection_params =   self.sock_connection_params
+        cmd_connection_params = self.sock_params
         cmd_connection_params['database'] = self._dbName
         self._sqlInterface['cmd'] = cmd.Cmd(**cmd_connection_params)
 
     def workerInsertXrootdExportPath(self):
-        sql = "SELECT * FROM qservw_worker.Dbs WHERE db='{0}';".format(self._dbName)
+        sql = ("SELECT * FROM qservw_worker.Dbs WHERE db='{0}';"
+               .format(self._dbName))
         rows = self._sqlInterface['sock'].execute(sql)
 
         if len(rows) == 0:
-            sql = "INSERT INTO qservw_worker.Dbs VALUES('{0}');".format(self._dbName)
+            sql = ("INSERT INTO qservw_worker.Dbs VALUES('{0}');"
+                   .format(self._dbName))
             self._sqlInterface['sock'].execute(sql)
         elif len(rows) > 1:
             self.logger.fatal("Duplicated value '%s' in qservw_worker.Dbs", self._dbName)
