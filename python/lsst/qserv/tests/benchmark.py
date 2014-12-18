@@ -32,15 +32,16 @@ __author__ = "Jacek Becla, Fabrice Jammes"
 
 import logging
 import shutil
-
-from lsst.qserv.tests import qservdataloader, mysqldataloader, datareader
-from lsst.qserv.admin import commons, logger
-from lsst.qserv.tests.sql import cmd, const
 import errno
 import os
 import re
 import stat
 import sys
+
+
+from lsst.qserv.tests import qservdataloader, mysqldataloader, datareader
+from lsst.qserv.admin import commons, logger
+from lsst.qserv.tests.sql import cmd, const
 
 from filecmp import dircmp
 
@@ -163,19 +164,6 @@ class Benchmark():
 
         return ' '.join(qText), pragmas
 
-
-    def gunzip(self, table_name, zipped_data_filename):
-        # check if the corresponding data file exists
-        if not os.path.exists(zipped_data_filename):
-            raise Exception, "File: '%s' not found" %  zipped_data_filename
-
-        tmp_suffix = ("%s%s" % (table_name,self.dataReader.dataConfig['data-extension']))
-        tmp_data_file = os.path.join(self._out_dirname,tmp_suffix)
-
-        self.logger.info("Unzipping: %s into %s" %  (zipped_data_filename, tmp_data_file))
-        commons.run_command(["gunzip", "-c", zipped_data_filename], stdout_file=tmp_data_file)
-        return tmp_data_file
-
     def loadData(self):
         """
         Creates tables and load data for input file located in caseXX/data/
@@ -183,7 +171,7 @@ class Benchmark():
         self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname,
                                                              self._mode))
         for table in self.dataReader.tables:
-            self.dataLoader[self._mode].createAndLoadTable(table)
+            self.dataLoader[self._mode].createLoadTable(table)
 
     def cleanup(self):
         # cleanup of previous tests
@@ -207,12 +195,11 @@ class Benchmark():
                 self.config,
                 self.dataReader,
                 self._dbName,
-                self._in_dirname,
                 self._out_dirname,
                 self._logFilePrefix
             )
         self.logger.debug("Initializing database for %s mode" % self._mode)
-        self.dataLoader[self._mode].connectAndInitDatabase()
+        self.dataLoader[self._mode].connectCreateDatabase()
 
     def finalize(self):
         if (self._mode == 'qserv'):
@@ -257,7 +244,10 @@ class Benchmark():
 
         if len(dcmp.diff_files)!=0:
             for query_name in dcmp.diff_files:
-                message="{0} and {1} differ".format(os.path.join(mysql_out_dir,query_name), os.path.join(qserv_out_dir,query_name))
+                message="{0} and {1} differ".format(os.path.join(mysql_out_dir,
+                                                                 query_name),
+                                                    os.path.join(qserv_out_dir,
+                                                                 query_name))
                 self.logger.error(message)
                 failing_queries.append(query_name)
 
