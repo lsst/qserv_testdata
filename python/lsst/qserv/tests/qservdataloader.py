@@ -13,7 +13,6 @@ class QservDataLoader():
     def __init__(self, config,
                  data_reader,
                  db_name,
-                 in_dirname,
                  out_dirname,
                  log_file_prefix='qserv-loader',
                  logging_level=logging.DEBUG):
@@ -23,7 +22,6 @@ class QservDataLoader():
         self.dataConfig = data_reader.dataConfig
         self._dbName = db_name
 
-        self._in_dirname = in_dirname
         self._out_dirname = out_dirname
 
         self.logger = logging.getLogger()
@@ -34,7 +32,7 @@ class QservDataLoader():
 
         self._sqlInterface = dict()
 
-    def createAndLoadTable(self, table):
+    def createLoadTable(self, table):
         self._callLoader(table)
 
     def _callLoader(self, table):
@@ -81,7 +79,7 @@ class QservDataLoader():
         out = commons.run_command(loader_cmd)
         self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
 
-    def connectAndInitDatabase(self):
+    def connectCreateDatabase(self):
 
         self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
 
