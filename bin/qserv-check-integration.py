@@ -57,17 +57,18 @@ def main():
 
     return_code=0
     if (len(args.mode_list) > 1):
-        logger.info("Performing result comparison for databases: %s", args.mode_list)
         failed_queries = bench.analyzeQueryResults()
 
         if len(failed_queries) == 0:
-            logger.info("Test case%s succeed", args.case_no)
+            logger.info("Test case #%s succeed", args.case_no)
             return_code=0
         else:
             if args.load_data == False:
                 logger.warn("Please check that case%s data are loaded, " +
-                    "otherwise run %s with --load option.", args.case_no, os.path.basename(__file__))
-            logger.fatal("Test case%s failed", args.case_no)
+                            "otherwise run %s with --load option.",
+                            args.case_no,
+                            os.path.basename(__file__))
+            logger.fatal("Test case #%s failed", args.case_no)
     else:
         logger.info("No result comparison")
 

@@ -67,9 +67,10 @@ class Benchmark():
         self._case_id = case_id
         self._logFilePrefix = log_file_prefix
 
-        if out_dirname_prefix is None :
+        if not out_dirname_prefix:
             out_dirname_prefix = self.config['qserv']['tmp_dir']
-        self._out_dirname = os.path.join(out_dirname_prefix, "qservTest_case%s" % case_id)
+        self._out_dirname = os.path.join(out_dirname_prefix,
+                                         "qservTest_case%s" % case_id)
 
         self.testdata_dir = self.config['qserv']['testdata_dir']
 
@@ -80,7 +81,8 @@ class Benchmark():
 
         self._in_dirname = os.path.join(qserv_tests_dirname,'data')
 
-        self.dataReader = datareader.DataReader(self._in_dirname, "case%s" % self._case_id)
+        self.dataReader = datareader.DataReader(self._in_dirname,
+                                                "case%s" % self._case_id)
 
         self._queries_dirname = os.path.join(qserv_tests_dirname,"queries")
 
@@ -106,10 +108,14 @@ class Benchmark():
             os.chmod(myOutDir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         qDir = self._queries_dirname
-        self.logger.info("Testing queries from %s" % qDir)
+        self.logger.debug("Testing queries from %s" % qDir)
         queries = sorted(os.listdir(qDir))
+        queryCount = 0
+        queryRunCount = 0
         for qFN in queries:
+            queryCount += 1
             if qFN.endswith(".sql"):
+                queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
                     query_filename = os.path.join(qDir,qFN)
 
@@ -118,11 +124,17 @@ class Benchmark():
 
                     outFile = os.path.join(myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
-                    self.logger.info("LAUNCHING QUERY : {1} against {0}, SQL : {2} pragmas : {3}\n".format(self._mode, qFN, qText, pragmas))
-
+                    self.logger.info("Launch: {1} against: {0}"
+                                     .format(self._mode, qFN))
+                    self.logger.debug("SQL: {0} pragmas: {1}\n"
+                                      .format(self._mode, qFN, qText, pragmas))
                     column_names = 'noheader' not in pragmas
-                    self._sqlInterface['query'].execute(qText, outFile, column_names)
+                    self._sqlInterface['query'].execute(qText,
+                                                        outFile,
+                                                        column_names)
 
+        self.logger.info("Test case #{1}: {0} queries launched on a total of {2}"
+                         .format(queryRunCount, self._case_id, queryCount))
 
     def _parseFile(self, qF, withQserv):
         '''
@@ -168,11 +180,11 @@ class Benchmark():
 
     def loadData(self):
         """
-        Creates tables and load data for input file located in caseXX/data/
+        Creates orderedTables and load data for input file located in caseXX/data/
         """
         self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname,
                                                              self._mode))
-        for table in self.dataReader.tables:
+        for table in self.dataReader.orderedTables:
             self.dataLoader[self._mode].createLoadTable(table)
 
     def cleanup(self):
@@ -203,7 +215,7 @@ class Benchmark():
                 self._logFilePrefix
             )
         self.logger.debug("Initializing database for %s mode" % self._mode)
-        self.dataLoader[self._mode].connectCreateDatabase()
+        self.dataLoader[self._mode].prepareDatabase()
 
     def finalize(self):
         if (self._mode == 'qserv'):
@@ -224,7 +236,7 @@ class Benchmark():
     def run(self, mode_list, load_data, stop_at_query=7999):
 
         self.cleanup()
-        self.dataReader.readInputData()
+        self.dataReader.analyzeInputData()
 
         for mode in mode_list:
             self._mode = mode
@@ -247,16 +259,21 @@ class Benchmark():
         mysql_out_dir = os.path.join(outputs_dir,"mysql")
         qserv_out_dir = os.path.join(outputs_dir,"qserv")
 
-        dcmp = dircmp( mysql_out_dir, qserv_out_dir)
+        dcmp = dircmp(mysql_out_dir, qserv_out_dir)
 
-        if len(dcmp.diff_files)!=0:
+        if self.dataReader.notLoadedTables:
+            self.logger.info("Tables/Views not loaded: %s",
+                             self.dataReader.notLoadedTables)
+
+        if not dcmp.diff_files:
+            self.logger.info("MySQL/Qserv results are identical")
+        else:
             for query_name in dcmp.diff_files:
-                message="{0} and {1} differ".format(os.path.join(mysql_out_dir,
-                                                                 query_name),
-                                                    os.path.join(qserv_out_dir,
-                                                                 query_name))
-                self.logger.error(message)
                 failing_queries.append(query_name)
+            self.logger.error("MySQL/Qserv differs for {0} queries:"
+                         .format(len(failing_queries)))
+            self.logger.error("Broken queries list in {0}: {1}"
+                              .format(qserv_out_dir, failing_queries))
 
         return failing_queries
 
