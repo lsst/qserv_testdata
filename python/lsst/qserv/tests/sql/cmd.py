@@ -41,7 +41,7 @@ class Cmd():
         self._mysql_cmd.append("--batch")
 
         if (database is not None):
-             self._mysql_cmd.append( "%s" % database )
+            self._mysql_cmd.append( "%s" % database )
         
         self.logger.debug("SQLCmd._mysql_cmd %s" % self._mysql_cmd )
         
