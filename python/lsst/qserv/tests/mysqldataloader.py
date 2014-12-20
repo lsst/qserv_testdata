@@ -1,9 +1,7 @@
 from  lsst.qserv.admin import commons
-from  lsst.qserv.tests.sql import const, cmd, connection, schema
+from  lsst.qserv.tests.sql import const, cmd, connection
 import logging
 import os
-import re
-import shutil
 
 class MysqlDataLoader():
 
