@@ -31,15 +31,15 @@ class MysqlDataLoader():
         #    self._sqlInterface['cmd'].executeFromFile(schema_filename)
         #else:
         #    self.logger.info("Creating and loading non-partitioned table %s" % table_name)
-            
+
         self._callLoader(table)
-        
+
     def _callLoader(self, table):
         '''
         Call Qserv loader to load plain-MySQL table
          '''
 
-        self.logger.info("Create, load partitioned table %s", table)
+        self.logger.info("Create, load table %s", table)
 
         tmp_dir = self.config['qserv']['tmp_dir']
         run_dir = self.config['qserv']['run_base_dir']
@@ -53,21 +53,27 @@ class MysqlDataLoader():
             '--user={0}'.format(self.config['mysqld']['user']),
             '--password={0}'.format(self.config['mysqld']['pass']),
             '--socket={0}'.format(self.config['mysqld']['sock']),
-            '--delete-tables']
-
-        loader_cmd += ['--skip-partition', '--one-table']
-
-        loader_cmd += [
+            '--delete-tables',
+            '--skip-partition',
+            '--one-table',
             self._dbName,
             table,
-            self.dataReader.getSchemaFile(table),
-            self.dataReader.getInputDataFile(table)]
+            self.dataReader.getSchemaFile(table)]
+
+        data = self.dataReader.getInputDataFile(table)
+        if data is not None:
+            loader_cmd.append(self.dataReader.getInputDataFile(table))
 
         out = commons.run_command(loader_cmd)
         self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
 
 
-    def connectCreateDatabase(self):
+    def prepareDatabase(self):
+        """
+        Connect to MySQL via sock
+        Create MySQL database
+        Create MySQL command-line client
+        """
 
         self._sqlInterface['sock'] = connection.Connection(**self.sock_connection_params)
 
@@ -77,4 +83,4 @@ class MysqlDataLoader():
         cmd_connection_params =   self.sock_connection_params
         cmd_connection_params['database'] = self._dbName
         self._sqlInterface['cmd'] = cmd.Cmd(**cmd_connection_params)
-        
+
