@@ -288,9 +288,10 @@ def add_generic_arguments(parser):
 
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
             default=default_testdata_dir,
-            help="""absolute path to directory containing test datasets. This value is set, by precedence,
-by this option, and then by QSERV_TESTDATA_DIR/datasets/ if
-QSERV_TESTDATA_DIR environment variable is not empty"""
+            help="Absolute path to directory containing test datasets." +
+            "This value is set, by precedence, by this option, " +
+            "and then by QSERV_TESTDATA_DIR/datasets/ if QSERV_TESTDATA_DIR" +
+            "environment variable is not empty"
             )
 
     return parser
@@ -306,11 +307,10 @@ def init(args, logfile):
     log = logging.getLogger()
 
     if args.testdata_dir is not None and os.path.isdir(args.testdata_dir):
-       log.debug(
-            "Setting testdata_dir value to %s",
-            args.testdata_dir
+        log.debug("Setting testdata_dir value to %s",
+                  args.testdata_dir
         )
-       config['qserv']['testdata_dir'] = args.testdata_dir
+        config['qserv']['testdata_dir'] = args.testdata_dir
     else:
         log.fatal(
             "Unable to find tests datasets. (testdata_dir value is %s)",
