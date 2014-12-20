@@ -17,10 +17,7 @@ class TestDataSet(unittest.TestCase):
         bench = Benchmark(case_id, out_dirname_prefix = self.config['qserv']['tmp_dir'])
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()
-        nb_failed_queries = len(failed_queries)
-        if  nb_failed_queries != 0:
-            msg = "Queries with different results between Qserv and MySQL : %s" % failed_queries
-            self.logger.error(msg)
+        if failed_queries:
             self.fail(msg)
    
     def test_case01(self):
