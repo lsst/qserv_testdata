@@ -34,7 +34,7 @@ class TestQservDataLoader(unittest.TestCase):
             input_dirname = os.path.join(qserv_tests_dirname,'data')
 
             dataReader = DataReader(input_dirname, "case%s" % case_id)
-            dataReader.readInputData()
+            dataReader.analyzeInputData()
 
             testDbName = "TestQservDataLoader%s" % case_id
             out_dir = os.path.join(self.config['qserv']['tmp_dir'],testDbName)
@@ -47,7 +47,7 @@ class TestQservDataLoader(unittest.TestCase):
                 )
             qservDataLoader.connectAndInitDatabase()
             for table_name in dataReader.dataConfig['partitioned-tables']:
-                (schema_filename, data_filename, zipped_data_filename) =  dataReader.getSchemaAndDataFilenames(table_name)
+                schema_filename = dataReader.getSchemaFile(table_name)
                 qservDataLoader._sqlInterface['cmd'].executeFromFile(schema_filename)
                 qservDataLoader.alterTable(table_name)
 
