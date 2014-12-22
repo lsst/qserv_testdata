@@ -58,20 +58,28 @@ class QservDataLoader():
             '--password={0}'.format(self.config['mysqld']['pass']),
             '--socket={0}'.format(self.config['mysqld']['sock']),
             # TODO: load emptyChunk only for director table
-            '--empty-chunks={0}'.format(os.path.join(run_dir,
-                                                     "var", "lib", "qserv",
-                                                     "empty_" +
-                                                     self._dbName +
-                                                     ".txt")),
-            '--delete-tables']
+            '--delete-tables',
+            # WARN: required to unzip input data file
+            '--chunks-dir={0}'.format(os.path.join(tmp_dir,
+                                                   "loader_chunks",
+                                                   table))]
 
         if table in self.dataConfig['partitioned-tables']:
-            loader_cmd += [
-                '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
-                                                   table + ".cfg")),
-                '--chunks-dir={0}'.format(os.path.join(tmp_dir,
-                                                       "loader_chunks",
-                                                       table))]
+            loader_cmd += ['--config={0}'
+                           .format(os.path.join(self.dataConfig['input-dir'],
+                                                table + ".cfg"))]
+
+            # WARN emptyChunks.txt might also be intersection of
+            # all empltyChunkk file: seel with D. Wang and A. Salnikov
+            if table is self.dataConfig['tables'].get('director', None):
+                loader_cmd += ['--empty-chunks={0}'
+                           .format(os.path.join(run_dir, "var", "lib",
+                                                "qserv", "empty_" +
+                                                self._dbName +
+                                                ".txt"))]
+            else:
+                loader_cmd += ["--index-db={0}".format("")]
+
         else:
             loader_cmd += ['--skip-partition', '--one-table']
 
@@ -94,9 +102,8 @@ class QservDataLoader():
 
         self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
 
-        self.logger.info("Drop Qserv database from CSS: %s", self._dbName)
-
-        self.logger.info("Drop and create Qserv database: %s", self._dbName)
+        self.logger.info("Drop and create MySQL database for Qserv: %s",
+                         self._dbName)
         sql_instructions = [
             "DROP DATABASE IF EXISTS %s" % self._dbName,
             "CREATE DATABASE %s" % self._dbName,
@@ -111,10 +118,10 @@ class QservDataLoader():
         cmd_connection_params = self.sock_params
         cmd_connection_params['database'] = self._dbName
         self._sqlInterface['cmd'] = cmd.Cmd(**cmd_connection_params)
-        
-        self.logger.info("Drop CSS database")
+
+        self.logger.info("Drop CSS database for Qserv")
         self.dropCssDatabase()
-        
+
     def dropCssDatabase(self):
         script = "qserv-admin.py"
         cmd = [script,
@@ -125,7 +132,7 @@ class QservDataLoader():
                "-f",
                os.path.join(self.config['qserv']['log_dir'],
                             "qadm-%s.log" % self.dataConfig['data-name'])]
-        
+
         with tempfile.NamedTemporaryFile('w+t') as f:
             f.write('DROP DATABASE {0};'.format(self._dbName))
             f.flush()

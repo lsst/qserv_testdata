@@ -29,10 +29,7 @@ and set all parameters related to test dataset.
 
 import logging
 import os
-import tempfile
 import UserDict
-
-from lsst.qserv.admin import commons, const
 
 class DataReader(object):
     """
@@ -46,6 +43,8 @@ class DataReader(object):
         self.dataName = data_name
         self.dataConfig = dict()
         self.dataConfig['data-name'] = data_name
+
+        self.dataConfig['tables'] = dict()
 
         self.orderedTables = []
         self.notLoadedTables = []
@@ -72,6 +71,8 @@ class DataReader(object):
         self.dataConfig['data-name']=self.dataName
 
         if self.dataName=="case01":
+
+            self.dataConfig['tables']['director'] = ["Object"]
             self.dataConfig['partitioned-tables'] = ["Object", "Source"]
 
             self.dataConfig['schema-extension']='.schema'
@@ -81,6 +82,7 @@ class DataReader(object):
         # for PT1.1
         elif self.dataName=="case02":
 
+            self.dataConfig['tables']['director'] = ["Object"]
             self.dataConfig['partitioned-tables'] = ["Object", "Source"]
 
             self.dataConfig['schema-extension']='.sql'
