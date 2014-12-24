@@ -101,9 +101,11 @@ class QservDataLoader():
     def prepareDatabase(self):
         """
         Connect to MySQL via sock
-        Create MySQL database
-        Create MySQL command-line client
+        Drop and create MySQL database
         Drop CSS database
+        Assume that other meta-data will be removed by the user-friendly
+        loader (qservMeta, emptyChunks file)
+        Create MySQL command-line client
         """
 
         self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
