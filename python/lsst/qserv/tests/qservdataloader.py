@@ -52,7 +52,7 @@ class QservDataLoader():
         """
         Call Qserv loader
         """
-        self.logger.info("Create, load partitioned table %s", table)
+        self.logger.info("Partition data, create and load table %s", table)
 
         tmp_dir = self.config['qserv']['tmp_dir']
         loader_cmd = [
