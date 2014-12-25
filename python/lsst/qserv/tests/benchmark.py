@@ -22,13 +22,14 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-""" This test tool :
+"""
+Integration test tool :
 - loads multiple datasets in Qserv and MySQL,
 - launches queries against them
-- checks if results between both DB are the same
-"""
+- checks if results between both databases are identical
 
-__author__ = "Jacek Becla, Fabrice Jammes"
+@author = "Jacek Becla, Fabrice Jammes"
+"""
 
 import logging
 import shutil
@@ -39,16 +40,16 @@ import os
 import re
 import stat
 import sys
-
-
-from lsst.qserv.tests import qservdataloader, mysqldataloader, datareader
-from lsst.qserv.admin import commons, logger
-from lsst.qserv.tests.sql import cmd, const
-
 from filecmp import dircmp
 
+from lsst.qserv.admin import commons, logger
+from lsst.qserv.tests import dataconfig
+from lsst.qserv.tests import qservloader
+from lsst.qserv.tests import mysqlloader
+from lsst.qserv.tests.sql import cmd, const
 
-class Benchmark():
+
+class Benchmark(object):
 
     def __init__(self, case_id, out_dirname_prefix,
                  log_file_prefix='qserv-tests',
@@ -81,7 +82,7 @@ class Benchmark():
 
         self._in_dirname = os.path.join(qserv_tests_dirname,'data')
 
-        self.dataReader = datareader.DataReader(self._in_dirname,
+        self.dataReader = dataconfig.DataConfig(self._in_dirname,
                                                 "case%s" % self._case_id)
 
         self._queries_dirname = os.path.join(qserv_tests_dirname,"queries")
@@ -199,7 +200,7 @@ class Benchmark():
     def connectAndInitDatabases(self):
         self.logger.debug("Creation of data loader for %s mode" % self._mode)
         if (self._mode=='mysql'):
-            self.dataLoader[self._mode] = mysqldataloader.MysqlDataLoader(
+            self.dataLoader[self._mode] = mysqlloader.MysqlLoader(
                 self.config,
                 self.dataReader,
                 self._dbName,
@@ -207,7 +208,7 @@ class Benchmark():
                 self._logFilePrefix
                 )
         elif (self._mode == 'qserv'):
-            self.dataLoader[self._mode] = qservdataloader.QservDataLoader(
+            self.dataLoader[self._mode] = qservloader.QservLoader(
                 self.config,
                 self.dataReader,
                 self._dbName,
@@ -225,7 +226,7 @@ class Benchmark():
             commons.restart('xrootd')
 
             # Reload Qserv meta-data
-            commons.restart('qserv-czar')
+            # commons.restart('qserv-czar')
 
             # Hack: Qserv init.d script doesn't check Qserv startup is complete
             time.sleep(2)

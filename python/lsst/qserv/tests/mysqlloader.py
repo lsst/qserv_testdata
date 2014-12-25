@@ -1,15 +1,43 @@
+# LSST Data Management System
+# Copyright 2014 AURA/LSST.
+#
+# This product includes software developed by the
+# LSST Project (http://www.lsst.org/).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
+# see <http://www.lsstcorp.org/LegalNotices/>.
+
+"""
+Module defining MySQL loader class for integration test and related methods.
+
+Public functions are used in benchmark module, using duck-typing interface.
+Wrap Qserv user-friendly loader.
+
+@author  Fabrice Jammes, IN2P3/SLAC
+"""
+
 from  lsst.qserv.admin import commons
 from  lsst.qserv.tests.sql import const, cmd, connection
 import logging
 import os
 
-class MysqlDataLoader():
+class MysqlLoader(object):
 
     def __init__(self, config, data_reader, db_name, out_dirname,
                  log_file_prefix='qserv-loader', logging_level=logging.DEBUG):
         self.config = config
-        self.dataReader = data_reader
-        self.dataConfig = data_reader.dataConfig
+        self.dataConfig = data_reader
         self._dbName = db_name
 
         self._out_dirname = out_dirname
@@ -23,13 +51,6 @@ class MysqlDataLoader():
         self._sqlInterface = dict()
 
     def createLoadTable(self, table):
-
-        #if table_name in self.dataConfig['sql-views']:
-        #    self.logger.info("Creating schema for table %s as a view" % table_name)
-        #    self._sqlInterface['cmd'].executeFromFile(schema_filename)
-        #else:
-        #    self.logger.info("Creating and loading non-partitioned table %s" % table_name)
-
         self._callLoader(table)
 
     def _callLoader(self, table):
@@ -39,13 +60,11 @@ class MysqlDataLoader():
 
         self.logger.info("Create, load table %s", table)
 
-        tmp_dir = self.config['qserv']['tmp_dir']
-        run_dir = self.config['qserv']['run_base_dir']
         loader_cmd = [
             'qserv-data-loader.py',
             '--verbose-all',
             '-vvv',
-            '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
+            '--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                "common.cfg")),
             '--no-css',
             '--user={0}'.format(self.config['mysqld']['user']),
@@ -56,11 +75,11 @@ class MysqlDataLoader():
             '--one-table',
             self._dbName,
             table,
-            self.dataReader.getSchemaFile(table)]
+            self.dataConfig.getSchemaFile(table)]
 
-        data = self.dataReader.getInputDataFile(table)
+        data = self.dataConfig.getInputDataFile(table)
         if data is not None:
-            loader_cmd.append(self.dataReader.getInputDataFile(table))
+            loader_cmd.append(self.dataConfig.getInputDataFile(table))
 
         out = commons.run_command(loader_cmd)
         self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
