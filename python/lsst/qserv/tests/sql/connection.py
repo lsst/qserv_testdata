@@ -23,18 +23,18 @@ class Connection():
           }
 
         if (database is not None):
-           socket_connection_params['db']=database
+            socket_connection_params['db']=database
         if (config['mysqld']['pass'] is not None):
-           socket_connection_params['passwd']=config['mysqld']['pass']
+            socket_connection_params['passwd']=config['mysqld']['pass']
 
         #if (socket is not None):
         #  socket_connection_params['unix_socket']=socket
            
         try :
-          self._connection = sql.connect(**socket_connection_params)
+            self._connection = sql.connect(**socket_connection_params)
         except:
-          self.logger.fatal("SQL connection error %s" % socket_connection_params )
-          sys.exit(1)
+            self.logger.fatal("SQL connection error %s" % socket_connection_params )
+            sys.exit(1)
 
         self._cursor = None
        

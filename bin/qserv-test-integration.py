@@ -2,7 +2,7 @@
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests.testdataset import TestDataSet, suite
+from lsst.qserv.tests.testintegration import TestIntegration, suite
 
 import argparse
 import logging
