@@ -1,5 +1,31 @@
-# Loads partition and load data set and then configure Qserv
-# used by test procedure
+# LSST Data Management System
+# Copyright 2014 AURA/LSST.
+#
+# This product includes software developed by the
+# LSST Project (http://www.lsst.org/).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
+# see <http://www.lsstcorp.org/LegalNotices/>.
+
+"""
+Module defining Qserv loader class for integration test.
+
+Public functions are used in benchmark module, using duck-typing interface.
+Wrap Qserv user-friendly loader.
+
+@author  Fabrice Jammes, IN2P3/SLAC
+"""
 
 import logging
 import os
@@ -9,7 +35,7 @@ import tempfile
 from lsst.qserv.admin import commons
 from lsst.qserv.tests.sql import const, cmd, connection
 
-class QservDataLoader():
+class QservLoader(object):
 
     def __init__(self, config,
                  data_reader,
@@ -19,8 +45,7 @@ class QservDataLoader():
                  logging_level=logging.DEBUG):
 
         self.config = config
-        self.dataReader = data_reader
-        self.dataConfig = data_reader.dataConfig
+        self.dataConfig = data_reader
         self._dbName = db_name
 
 
@@ -59,7 +84,7 @@ class QservDataLoader():
             'qserv-data-loader.py',
             '--verbose-all',
             '-vvv',
-            '--config={0}'.format(os.path.join(self.dataConfig['input-dir'],
+            '--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                "common.cfg")),
             '--css-remove',
             '--user={0}'.format(self.config['mysqld']['user']),
@@ -72,15 +97,14 @@ class QservDataLoader():
                                                    "loader_chunks",
                                                    table))]
 
-        if table in self.dataConfig['partitioned-tables']:
+        if table in self.dataConfig.partitionedTables:
             loader_cmd += ['--config={0}'
-                           .format(os.path.join(self.dataConfig['input-dir'],
+                           .format(os.path.join(self.dataConfig.dataDir,
                                                 table + ".cfg"))]
 
             # WARN emptyChunks.txt might also be intersection of
             # all empltyChunkk file: seel with D. Wang and A. Salnikov
-            directors=self.dataConfig['tables'].get('director')
-            if directors and table in directors:
+            if table in self.dataConfig.directors:
                 loader_cmd += ['--empty-chunks={0}'
                                .format(self._emptyChunksFile)]
             else:
@@ -92,8 +116,8 @@ class QservDataLoader():
         loader_cmd += [
             self._dbName,
             table,
-            self.dataReader.getSchemaFile(table),
-            self.dataReader.getInputDataFile(table)]
+            self.dataConfig.getSchemaFile(table),
+            self.dataConfig.getInputDataFile(table)]
 
         out = commons.run_command(loader_cmd)
         self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
@@ -139,7 +163,7 @@ class QservDataLoader():
                str(self.logger.getEffectiveLevel()),
                "-f",
                os.path.join(self.config['qserv']['log_dir'],
-                            "qadm-%s.log" % self.dataConfig['data-name'])]
+                            "qadm-%s.log" % self.dataConfig.dataName)]
 
         with tempfile.NamedTemporaryFile('w+t') as f:
             f.write('DROP DATABASE {0};'.format(self._dbName))

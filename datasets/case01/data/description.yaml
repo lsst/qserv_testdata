@@ -1,0 +1,9 @@
+tables:
+    load-order:
+    directors: ["Object"]
+    partitioned-tables: ["Object", "Source"]
+    views:
+extensions:
+    data: '.tsv'
+    schema: '.schema'
+    zip: '.gz'
