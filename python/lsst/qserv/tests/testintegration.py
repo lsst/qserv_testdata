@@ -36,7 +36,7 @@ class TestIntegration(unittest.TestCase):
 
     def setUp(self):
         self.config = commons.getConfig()
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(__name__)
         self.modeList = ['mysql','qserv']
         self.loadData = True
 
