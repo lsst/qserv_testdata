@@ -26,29 +26,25 @@ Wrap Qserv user-friendly loader.
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
-
-from  lsst.qserv.admin import commons
-from  lsst.qserv.tests.sql import const, cmd, connection
 import logging
 import os
 
-class MysqlLoader(object):
+from lsst.qserv.admin import commons
+from lsst.qserv.tests.dbloader import DbLoader
+from lsst.qserv.tests.sql import const, cmd, connection
 
-    def __init__(self, config, data_reader, db_name, out_dirname,
-                 log_file_prefix='qserv-loader', logging_level=logging.DEBUG):
-        self.config = config
-        self.dataConfig = data_reader
-        self._dbName = db_name
 
-        self._out_dirname = out_dirname
+class MysqlLoader(DbLoader):
 
-        self.logger = logging.getLogger()
-        self.sock_connection_params = {
-            'config' : self.config,
-            'mode' : const.MYSQL_SOCK
-            }
+    def __init__(self, config,
+                 data_reader,
+                 db_name,
+                 out_dirname):
 
-        self._sqlInterface = dict()
+        super(self.__class__, self).__init__(config,
+                                             data_reader,
+                                             db_name,
+                                             out_dirname)
 
     def createLoadTable(self, table):
         self._callLoader(table)
@@ -60,30 +56,16 @@ class MysqlLoader(object):
 
         self.logger.info("Create, load table %s", table)
 
-        loader_cmd = [
-            'qserv-data-loader.py',
-            '--verbose-all',
-            '-vvv',
-            '--config={0}'.format(os.path.join(self.dataConfig.dataDir,
-                                               "common.cfg")),
-            '--no-css',
-            '--user={0}'.format(self.config['mysqld']['user']),
-            '--password={0}'.format(self.config['mysqld']['pass']),
-            '--socket={0}'.format(self.config['mysqld']['sock']),
-            '--delete-tables',
-            '--skip-partition',
-            '--one-table',
-            self._dbName,
-            table,
-            self.dataConfig.getSchemaFile(table)]
+        loaderCmd = self.loaderCmdCommonOpts(table)
 
-        data = self.dataConfig.getInputDataFile(table)
-        if data is not None:
-            loader_cmd.append(self.dataConfig.getInputDataFile(table))
+        loaderCmd += ['--no-css',
+                      '--skip-partition',
+                      '--one-table']
 
-        out = commons.run_command(loader_cmd)
-        self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
+        loaderCmd += self.loaderCmdCommonArgs(table)
 
+        out = commons.run_command(loaderCmd)
+        self.logger.info("%s data loaded (stdout : %s)", table, out)
 
     def prepareDatabase(self):
         """
@@ -92,12 +74,11 @@ class MysqlLoader(object):
         Create MySQL command-line client
         """
 
-        self._sqlInterface['sock'] = connection.Connection(**self.sock_connection_params)
+        self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
 
         self._sqlInterface['sock'].dropAndCreateDb(self._dbName)
         self._sqlInterface['sock'].setDb(self._dbName)
 
-        cmd_connection_params =   self.sock_connection_params
+        cmd_connection_params = self.sock_params
         cmd_connection_params['database'] = self._dbName
         self._sqlInterface['cmd'] = cmd.Cmd(**cmd_connection_params)
-

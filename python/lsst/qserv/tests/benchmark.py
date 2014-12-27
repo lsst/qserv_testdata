@@ -40,10 +40,8 @@ import stat
 import sys
 from filecmp import dircmp
 
-from lsst.qserv.admin import commons, logger
-from lsst.qserv.tests import dataconfig
-from lsst.qserv.tests import qservloader
-from lsst.qserv.tests import mysqlloader
+from lsst.qserv.admin import commons
+from lsst.qserv.tests import dataconfig, qservloader, mysqlloader
 from lsst.qserv.tests.sql import cmd, const
 
 
@@ -53,7 +51,7 @@ class Benchmark(object):
                  log_file_prefix='qserv-tests',
                  logging_level=logging.INFO):
 
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(__name__)
         self.dataLoader = dict()
         self._sqlInterface = dict()
         self._mode = None
@@ -78,29 +76,29 @@ class Benchmark(object):
             "case%s" % self._case_id
         )
 
-        self._in_dirname = os.path.join(qserv_tests_dirname,'data')
+        self._in_dirname = os.path.join(qserv_tests_dirname, 'data')
 
         self.dataReader = dataconfig.DataConfig(self._in_dirname,
                                                 "case%s" % self._case_id)
 
-        self._queries_dirname = os.path.join(qserv_tests_dirname,"queries")
+        self._queries_dirname = os.path.join(qserv_tests_dirname, "queries")
 
     def runQueries(self, stopAt):
         self.logger.debug("Running queries : (stop-at : %s)" % stopAt)
         if self._mode == 'qserv':
             withQserv = True
-            self._sqlInterface['query'] = cmd.Cmd(config = self.config,
-                                                  mode = const.MYSQL_PROXY,
-                                                  database = self._dbName
+            self._sqlInterface['query'] = cmd.Cmd(config=self.config,
+                                                  mode=const.MYSQL_PROXY,
+                                                  database=self._dbName
                                                   )
         else:
             withQserv = False
-            self._sqlInterface['query'] = cmd.Cmd(config = self.config,
-                                                mode = const.MYSQL_SOCK,
-                                                database = self._dbName
-                                                )
+            self._sqlInterface['query'] = cmd.Cmd(config=self.config,
+                                                  mode=const.MYSQL_SOCK,
+                                                  database=self._dbName
+                                                  )
 
-        myOutDir = os.path.join(self._out_dirname, "outputs",self._mode)
+        myOutDir = os.path.join(self._out_dirname, "outputs", self._mode)
         if not os.access(myOutDir, os.F_OK):
             os.makedirs(myOutDir)
             # because mysqld will write there
@@ -116,12 +114,13 @@ class Benchmark(object):
             if qFN.endswith(".sql"):
                 queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
-                    query_filename = os.path.join(qDir,qFN)
+                    query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
                     qText, pragmas = self._parseFile(qF, withQserv)
 
-                    outFile = os.path.join(myOutDir, qFN.replace('.sql', '.txt'))
+                    outFile = os.path.join(
+                        myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
                     self.logger.info("Launch: {1} against: {0}"
                                      .format(self._mode, qFN))
@@ -194,24 +193,21 @@ class Benchmark(object):
             shutil.rmtree(self._out_dirname)
         os.makedirs(self._out_dirname)
 
-
     def connectAndInitDatabases(self):
         self.logger.debug("Creation of data loader for %s mode" % self._mode)
-        if (self._mode=='mysql'):
+        if (self._mode == 'mysql'):
             self.dataLoader[self._mode] = mysqlloader.MysqlLoader(
                 self.config,
                 self.dataReader,
                 self._dbName,
-                self._out_dirname,
-                self._logFilePrefix
-                )
+                self._out_dirname
+            )
         elif (self._mode == 'qserv'):
             self.dataLoader[self._mode] = qservloader.QservLoader(
                 self.config,
                 self.dataReader,
                 self._dbName,
-                self._out_dirname,
-                self._logFilePrefix
+                self._out_dirname
             )
         self.logger.debug("Initializing database for %s mode" % self._mode)
         self.dataLoader[self._mode].prepareDatabase()
@@ -224,7 +220,7 @@ class Benchmark(object):
             commons.restart('xrootd')
 
             # Reload Qserv meta-data
-            # commons.restart('qserv-czar')
+            commons.restart('qserv-czar')
 
         # Close socket connections
         del(self.dataLoader[self._mode])
@@ -250,10 +246,10 @@ class Benchmark(object):
 
         outputs_dir = os.path.join(self._out_dirname, "outputs")
 
-        failing_queries=[]
+        failing_queries = []
 
-        mysql_out_dir = os.path.join(outputs_dir,"mysql")
-        qserv_out_dir = os.path.join(outputs_dir,"qserv")
+        mysql_out_dir = os.path.join(outputs_dir, "mysql")
+        qserv_out_dir = os.path.join(outputs_dir, "qserv")
 
         dcmp = dircmp(mysql_out_dir, qserv_out_dir)
 
@@ -267,50 +263,42 @@ class Benchmark(object):
             for query_name in dcmp.diff_files:
                 failing_queries.append(query_name)
             self.logger.error("MySQL/Qserv differs for {0} queries:"
-                         .format(len(failing_queries)))
+                              .format(len(failing_queries)))
             self.logger.error("Broken queries list in {0}: {1}"
                               .format(qserv_out_dir, failing_queries))
 
         return failing_queries
 
+
 def add_generic_arguments(parser):
 
-    verbose_arg_values = logger.verbose_dict.keys()
-    parser.add_argument("-v", "--verbose-level", dest="verbose_str", choices=verbose_arg_values,
-        default='INFO',
-        help="verbosity level"
-        )
-
-    default_testdata_dir=None
+    default_testdata_dir = None
     if os.environ.get('QSERV_TESTDATA_DIR') is not None:
         default_testdata_dir = os.path.join(
             os.environ.get('QSERV_TESTDATA_DIR'), "datasets"
         )
 
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
-            default=default_testdata_dir,
-            help="Absolute path to directory containing test datasets." +
-            "This value is set, by precedence, by this option, " +
-            "and then by QSERV_TESTDATA_DIR/datasets/ if QSERV_TESTDATA_DIR" +
-            "environment variable is not empty"
-            )
+                        default=default_testdata_dir,
+                        help="Absolute path to directory containing test datasets." +
+                        "This value is set, by precedence, by this option, " +
+                        "and then by QSERV_TESTDATA_DIR/datasets/ if QSERV_TESTDATA_DIR" +
+                        "environment variable is not empty"
+                        )
 
     return parser
+
 
 def init(args, logfile):
 
     config = commons.read_user_config()
-    logger.init_default_logger(
-            logfile,
-            args.verbose_level,
-            log_path=config['qserv']['log_dir']
-            )
-    log = logging.getLogger()
+
+    log = logging.getLogger(__name__)
 
     if args.testdata_dir is not None and os.path.isdir(args.testdata_dir):
         log.debug("Setting testdata_dir value to %s",
                   args.testdata_dir
-        )
+                  )
         config['qserv']['testdata_dir'] = args.testdata_dir
     else:
         log.fatal(

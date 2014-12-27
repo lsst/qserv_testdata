@@ -40,7 +40,7 @@ class DataConfig(dict):
     """
 
     def __init__(self, data_dir_name, data_name):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger(__name__)
         self.dataDir = data_dir_name
         self.dataName = data_name
 
