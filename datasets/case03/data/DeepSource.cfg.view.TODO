@@ -5,7 +5,7 @@
 # TODO: DM-1728
 
 # Table primary key column.
-id  = id 
+id  = id
 
 # Partitioning parameters.
 part = {
@@ -16,7 +16,7 @@ part = {
     subChunks = 0
 }
 
-dirTable = "TODO"                                                                                                                                                               
+dirTable = "TODO"
 dirColName = "TODO"
 
 in.csv = {

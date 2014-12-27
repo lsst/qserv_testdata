@@ -7,8 +7,8 @@ tables:
         'LeapSeconds', 'DeepCoadd', 'DeepCoadd_Metadata', 'Filter']
     directors:          ["Object"]
     views:              ['DeepForcedSource','DeepSource']
-    partitioned-views:  ['DeepForcedSource','DeepSource'] 
-    partitioned-tables: ['RunDeepSource', 'RunDeepForcedSource'] 
+    partitioned-views:  ['DeepForcedSource','DeepSource']
+    partitioned-tables: ['RunDeepSource', 'RunDeepForcedSource']
 extensions:
     data:   '.txt'
     schema: '.sql'
