@@ -8,7 +8,7 @@ tables:
     directors:          ["Object"]
     views:              ['DeepForcedSource','DeepSource']
     partitioned-views:  ['DeepForcedSource','DeepSource'] 
-    partitioned-tables: ['RefObject', 'RunDeepSource', 'RunDeepForcedSource'] 
+    partitioned-tables: ['RunDeepSource', 'RunDeepForcedSource'] 
 extensions:
     data:   '.txt'
     schema: '.sql'
