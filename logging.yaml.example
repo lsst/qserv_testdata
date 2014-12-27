@@ -42,12 +42,12 @@ handlers:
 loggers:
 
     lsst.qserv.tests:
-        level: DEBUG 
+        level: DEBUG
         handlers: [console]
         propagate: no
 
     lsst.qserv.tests.sql:
-        level: INFO 
+        level: INFO
         handlers: [console]
         propagate: no
 
