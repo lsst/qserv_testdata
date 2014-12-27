@@ -33,44 +33,34 @@ import sys
 import tempfile
 
 from lsst.qserv.admin import commons
+from lsst.qserv.tests.dbloader import DbLoader
 from lsst.qserv.tests.sql import const, cmd, connection
 
-class QservLoader(object):
+
+class QservLoader(DbLoader):
 
     def __init__(self, config,
                  data_reader,
                  db_name,
-                 out_dirname,
-                 log_file_prefix='qserv-loader',
-                 logging_level=logging.DEBUG):
+                 out_dirname):
 
-        self.config = config
-        self.dataConfig = data_reader
-        self._dbName = db_name
-
+        super(self.__class__, self).__init__(config,
+                                             data_reader,
+                                             db_name,
+                                             out_dirname)
 
         run_dir = self.config['qserv']['run_base_dir']
         self._emptyChunksFile = os.path.join(run_dir, "var", "lib",
-                                         "qserv", "empty_" +
-                                         self._dbName +
-                                         ".txt")
-
-        self._out_dirname = out_dirname
-
-        self.logger = logging.getLogger()
-        self.sock_params = {
-            'config': self.config,
-            'mode': const.MYSQL_SOCK
-            }
-
-        self._sqlInterface = dict()
+                                             "qserv", "empty_" +
+                                             self._dbName +
+                                             ".txt")
 
     def createLoadTable(self, table):
         """
         Create and load a table in Qserv
         """
         self._callLoader(table)
-        # Create emptyChunks file in cas it not exist
+        # Create emptyChunks file in case it doesn't exist
         open(self._emptyChunksFile, 'a').close()
 
     def _callLoader(self, table):
@@ -79,48 +69,29 @@ class QservLoader(object):
         """
         self.logger.info("Partition data, create and load table %s", table)
 
-        tmp_dir = self.config['qserv']['tmp_dir']
-        loader_cmd = [
-            'qserv-data-loader.py',
-            '--verbose-all',
-            '-vvv',
-            '--config={0}'.format(os.path.join(self.dataConfig.dataDir,
-                                               "common.cfg")),
-            '--css-remove',
-            '--user={0}'.format(self.config['mysqld']['user']),
-            '--password={0}'.format(self.config['mysqld']['pass']),
-            '--socket={0}'.format(self.config['mysqld']['sock']),
-            # TODO: load emptyChunk only for director table
-            '--delete-tables',
-            # WARN: required to unzip input data file
-            '--chunks-dir={0}'.format(os.path.join(tmp_dir,
-                                                   "loader_chunks",
-                                                   table))]
+        loaderCmd = self.loaderCmdCommonOpts(table)
+
+        loaderCmd += ['--css-remove']
 
         if table in self.dataConfig.partitionedTables:
-            loader_cmd += ['--config={0}'
+            loaderCmd += ['--config={0}'
                            .format(os.path.join(self.dataConfig.dataDir,
                                                 table + ".cfg"))]
-
-            # WARN emptyChunks.txt might also be intersection of
-            # all empltyChunkk file: seel with D. Wang and A. Salnikov
-            if table in self.dataConfig.directors:
-                loader_cmd += ['--empty-chunks={0}'
-                               .format(self._emptyChunksFile)]
-            else:
-                loader_cmd += ["--index-db={0}".format("")]
-
         else:
-            loader_cmd += ['--skip-partition', '--one-table']
+            loaderCmd += ['--skip-partition', '--one-table']
 
-        loader_cmd += [
-            self._dbName,
-            table,
-            self.dataConfig.getSchemaFile(table),
-            self.dataConfig.getInputDataFile(table)]
+        # WARN emptyChunks.txt might also be intersection of
+        # all empltyChunkk file: seel with D. Wang and A. Salnikov
+        if table in self.dataConfig.directors:
+            loaderCmd += ['--empty-chunks={0}'.format(self._emptyChunksFile)]
+        else:
+            loaderCmd += ["--index-db={0}".format("")]
 
-        out = commons.run_command(loader_cmd)
-        self.logger.info("Partitioned %s data loaded (stdout : %s)", table, out)
+        loaderCmd += self.loaderCmdCommonArgs(table)
+
+        out = commons.run_command(loaderCmd)
+        self.logger.info(
+            "Partitioned %s data loaded (stdout : %s)", table, out)
 
     def prepareDatabase(self):
         """
@@ -142,7 +113,7 @@ class QservLoader(object):
             ("GRANT ALL ON {0}.* TO '{1}'@'localhost'"
              .format(self._dbName, self.config['qserv']['user'])),
             "USE {0}".format(self._dbName)
-            ]
+        ]
 
         for sql in sql_instructions:
             self._sqlInterface['sock'].execute(sql)
@@ -171,7 +142,6 @@ class QservLoader(object):
             out = commons.run_command(cmd, f.name)
             self.logger.info("Drop CSS database: %s",
                              self._dbName)
-
 
     def workerInsertXrootdExportPath(self):
         sql = ("SELECT * FROM qservw_worker.Dbs WHERE db='{0}';"

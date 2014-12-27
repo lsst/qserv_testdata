@@ -23,7 +23,7 @@ class Cmd():
       """
         self.config = config
       
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(__name__)
         self.logger.debug("SQL cmd creation")
         
         self.buildMysqlCmd(mode,database)
