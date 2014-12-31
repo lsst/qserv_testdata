@@ -47,9 +47,7 @@ from lsst.qserv.tests.sql import cmd, const
 
 class Benchmark(object):
 
-    def __init__(self, case_id, out_dirname_prefix,
-                 log_file_prefix='qserv-tests',
-                 logging_level=logging.INFO):
+    def __init__(self, case_id, out_dirname_prefix):
 
         self.logger = logging.getLogger(__name__)
         self.dataLoader = dict()
@@ -62,7 +60,6 @@ class Benchmark(object):
         self.noQservLine = re.compile('[\w\-\."%% ]*-- noQserv')
 
         self._case_id = case_id
-        self._logFilePrefix = log_file_prefix
 
         if not out_dirname_prefix:
             out_dirname_prefix = self.config['qserv']['tmp_dir']
@@ -270,7 +267,14 @@ class Benchmark(object):
         return failing_queries
 
 
-def add_generic_arguments(parser):
+def add_arguments(parser):
+
+    default_log_conf = "{0}/.lsst/logging.yaml".format(os.path.expanduser('~'))
+    parser.add_argument("-V", "--log-cfg", dest="log_conf",
+                    default=default_log_conf,
+                    help="Absolute path to yaml file containing python" +
+                    " standard logger configuration file"
+                        )
 
     default_testdata_dir = None
     if os.environ.get('QSERV_TESTDATA_DIR') is not None:
@@ -280,16 +284,16 @@ def add_generic_arguments(parser):
 
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
                         default=default_testdata_dir,
-                        help="Absolute path to directory containing test datasets." +
-                        "This value is set, by precedence, by this option, " +
-                        "and then by QSERV_TESTDATA_DIR/datasets/ if QSERV_TESTDATA_DIR" +
-                        "environment variable is not empty"
+                        help="Absolute path to directory containing test " +
+                        "datasets. This value is set, by precedence, by this" +
+                        " option, and then by QSERV_TESTDATA_DIR/datasets/ " +
+                        "if QSERV_TESTDATA_DIR environment variable is not "+
+                        "empty"
                         )
-
     return parser
 
 
-def init(args, logfile):
+def init(args):
 
     config = commons.read_user_config()
 
