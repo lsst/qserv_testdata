@@ -46,7 +46,7 @@ def parseArgs():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
 
-    parser = benchmark.add_generic_arguments(parser)
+    parser = benchmark.add_arguments(parser)
 
     parser.add_argument("-i", "--case-no", dest="case_no",
               default="01",
@@ -75,13 +75,10 @@ def main():
 
     args = parseArgs()
 
-    logger.setup_logging("{0}/.lsst/logging.yaml"
-                         .format(os.path.expanduser('~')))
-
+    logger.setup_logging(args.log_conf)
     log = logging.getLogger(__name__)
 
-    benchmark.init(args, logfile="qserv-check-integration-dataset{0}".format(args.case_no))
-
+    benchmark.init(args)
     bench = benchmark.Benchmark(args.case_no, args.out_dirname)
     bench.run(args.mode_list, args.load_data, args.stop_at_query)
 

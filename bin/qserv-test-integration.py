@@ -49,7 +49,7 @@ are read from ~/.lsst/qserv.conf.''',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser = benchmark.add_generic_arguments(parser)
+    parser = benchmark.add_arguments(parser)
 
     args = parser.parse_args()
 
@@ -58,10 +58,9 @@ are read from ~/.lsst/qserv.conf.''',
 if __name__ == '__main__':
     args = parseArgs()
 
-    logger.setup_logging("{0}/.lsst/logging.yaml"
-                         .format(os.path.expanduser('~')))
+    logger.setup_logging(args.log_conf)
 
-    benchmark.init(args, logfile="qserv-test-integration")
+    benchmark.init(args)
     result = unittest.TextTestRunner(verbosity=2).run(suite())
     retcode = int(not result.wasSuccessful())
     sys.exit(retcode)
