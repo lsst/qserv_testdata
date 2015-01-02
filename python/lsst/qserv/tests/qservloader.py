@@ -89,7 +89,11 @@ class QservLoader(DbLoader):
 
         loaderCmd += self.loaderCmdCommonArgs(table)
 
-        out = commons.run_command(loaderCmd)
+        # Use same logging configuration for loader and integration test
+        # command line, this allow to redirect loader to sys.stdout, sys.stderr
+        out = commons.run_command(loaderCmd,
+                                  stdout=sys.stdout,
+                                  stderr=sys.stderr)
         self.logger.info(
             "Partitioned %s data loaded (stdout : %s)", table, out)
 
