@@ -49,7 +49,8 @@ are read from ~/.lsst/qserv.conf.''',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser = benchmark.add_arguments(parser)
+    parser = logger.add_logfile_opt(parser)
+    parser = benchmark.add_testdatadir_opt(parser)
 
     args = parser.parse_args()
 
