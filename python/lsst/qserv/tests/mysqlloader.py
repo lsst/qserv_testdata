@@ -26,12 +26,11 @@ Wrap Qserv user-friendly loader.
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
-import logging
-import os
+import sys
 
 from lsst.qserv.admin import commons
 from lsst.qserv.tests.dbloader import DbLoader
-from lsst.qserv.tests.sql import const, cmd, connection
+from lsst.qserv.tests.sql import cmd, connection
 
 
 class MysqlLoader(DbLoader):
@@ -64,7 +63,9 @@ class MysqlLoader(DbLoader):
 
         loaderCmd += self.loaderCmdCommonArgs(table)
 
-        out = commons.run_command(loaderCmd)
+        out = commons.run_command(loaderCmd,
+                                  stdout=sys.stdout,
+                                  stderr=sys.stderr)
         self.logger.info("%s data loaded (stdout : %s)", table, out)
 
     def prepareDatabase(self):

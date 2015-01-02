@@ -72,7 +72,7 @@ class Cmd():
         commandLine = self._mysql_cmd[:]
         if not column_names: commandLine.append('--skip-column-names')
         commandLine += ['-e', query]
-        commons.run_command(commandLine, stdout_file=stdout)
+        commons.run_command(commandLine, stdout=stdout)
       
     def executeFromFile(self, filename, stdout=None, column_names=True):
         """ Some queries cannot run correctly through MySQLdb, so we must use MySQL client instead """
@@ -80,7 +80,7 @@ class Cmd():
         commandLine = self._mysql_cmd[:]
         if not column_names: commandLine.append('--skip-column-names')
         commandLine += ['-e', "SOURCE " + filename]
-        commons.run_command(commandLine, stdout_file=stdout)
+        commons.run_command(commandLine, stdout=stdout)
         
     def createAndLoadTable(self, tableName, schemaFile, dataFile, delimiter):
         self.logger.debug("CMD.createAndLoadTable(%s, %s, %s, %s)" % (tableName, schemaFile, dataFile, delimiter))

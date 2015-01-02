@@ -46,7 +46,8 @@ def parseArgs():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
 
-    parser = benchmark.add_arguments(parser)
+    parser = logger.add_logfile_opt(parser)
+    parser = benchmark.add_testdatadir_opt(parser)
 
     parser.add_argument("-i", "--case-no", dest="case_no",
               default="01",

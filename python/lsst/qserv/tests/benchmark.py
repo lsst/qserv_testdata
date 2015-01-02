@@ -272,14 +272,11 @@ class Benchmark(object):
         return failing_queries
 
 
-def add_arguments(parser):
-
-    default_log_conf = "{0}/.lsst/logging.yaml".format(os.path.expanduser('~'))
-    parser.add_argument("-V", "--log-cfg", dest="log_conf",
-                    default=default_log_conf,
-                    help="Absolute path to yaml file containing python" +
-                    " standard logger configuration file"
-                        )
+def add_testdatadir_opt(parser):
+    """
+    Add option to command line interface in order to set testdata directory
+    for integration tests
+    """
 
     default_testdata_dir = None
     if os.environ.get('QSERV_TESTDATA_DIR') is not None:
