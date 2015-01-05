@@ -35,11 +35,16 @@ Usage: `basename $0` [options]
 
   Available options:
     -h          this message
-    -q          quick: only rebuild/install new Qserv code,
-                and perform test case #01
+    -q          quick: only rebuilds and install new Qserv code
+                       instead of rebuilding from scratch,
+                       and performs test case #01 instead of all
+                       integration tests.
 
-  Rebuild from scratch, configure and run integration tests against
-  a Qserv git repository.
+    This command will build, install and configure a Qserv mono-node
+    instance using a given Qserv source repository. It will then launch
+    integration tests against it. The whole process is logged to standard
+    ouput and the command returns 0 if successful.
+
   Pre-requisite:
     source loadLSST.bash
     setup qserv_distrib -t qserv
@@ -49,7 +54,7 @@ Usage: `basename $0` [options]
     cd \${QSERV_SRC_DIR}
     git bisect start
     git bisect bad
-    git bisect good git-commit-id
+    git bisect good previous-git-commit-id-which-pass-tests
     git bisect run `basename $0`
 
 
