@@ -49,7 +49,7 @@ Usage: `basename $0` [options]
     cd \${QSERV_SRC_DIR}
     git bisect start
     git bisect bad
-    git bisect good git-commit-id
+    git bisect good previous-git-commit-id-which-pass-tests
     git bisect run `basename $0`
 
 
