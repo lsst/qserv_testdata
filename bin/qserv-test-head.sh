@@ -123,9 +123,3 @@ else
 fi
 "${QSERV_RUN_DIR}"/bin/qserv-stop.sh
 
-(
-ln -sf "${QSERV_RUN_DIR}"/bin/qserv-stop.sh &&
-ln -sf "${QSERV_RUN_DIR}"/bin/qserv-start.sh &&
-ln -sf "${QSERV_RUN_DIR}"/bin/qserv-status.sh
-) ||
-printf "WARN: Unable to symlink Qserv startup scripts/n"
