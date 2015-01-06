@@ -30,14 +30,13 @@ Launch integration tests for Qserv, using python unittest framework:
 """
 
 import argparse
-import logging
-import os
 import sys
 import unittest
 
-from lsst.qserv.admin import commons, logger
+from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests.testintegration import TestIntegration, suite
+from lsst.qserv.tests.testintegration import suite
+
 
 def parseArgs():
 

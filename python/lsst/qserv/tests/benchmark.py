@@ -28,7 +28,8 @@ Integration test tool :
 - launches queries against them
 - checks if results between both databases are identical
 
-@author = "Jacek Becla, Fabrice Jammes"
+@author  Jacek Becla SLAC
+@author  Fabrice Jammes IN2P3
 """
 
 import logging
@@ -59,7 +60,7 @@ class Benchmark(object):
 
         self.config = commons.getConfig()
 
-        self.noQservLine = re.compile('[\w\-\."%% ]*-- noQserv')
+        self.noQservLine = re.compile(r'[\w\-\."%% ]*-- noQserv')
 
         self._case_id = case_id
 
@@ -121,10 +122,12 @@ class Benchmark(object):
                     outFile = os.path.join(
                         myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
-                    self.logger.info("Launch: {1} against: {0}"
-                                     .format(self._mode, qFN))
-                    self.logger.debug("SQL: {0} pragmas: {1}\n"
-                                      .format(self._mode, qFN, qText, pragmas))
+                    self.logger.info("Launch: {1} against: {0}",
+                                     self._mode,
+                                     qFN)
+                    self.logger.debug("SQL: {0} pragmas: {1}\n",
+                                      qText,
+                                      pragmas)
                     column_names = 'noheader' not in pragmas
                     self._sqlInterface['query'].execute(qText,
                                                         outFile,

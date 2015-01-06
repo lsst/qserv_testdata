@@ -27,14 +27,13 @@ Wrap Qserv user-friendly loader.
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
-import logging
 import os
 import sys
 import tempfile
 
 from lsst.qserv.admin import commons
 from lsst.qserv.tests.dbloader import DbLoader
-from lsst.qserv.tests.sql import const, cmd, connection
+from lsst.qserv.tests.sql import cmd, connection
 
 
 class QservLoader(DbLoader):
@@ -91,11 +90,11 @@ class QservLoader(DbLoader):
 
         # Use same logging configuration for loader and integration test
         # command line, this allow to redirect loader to sys.stdout, sys.stderr
-        out = commons.run_command(loaderCmd,
+        commons.run_command(loaderCmd,
                                   stdout=sys.stdout,
                                   stderr=sys.stderr)
         self.logger.info(
-            "Partitioned %s data loaded (stdout : %s)", table, out)
+            "Partitioned %s data loaded (stdout : %s)", table)
 
     def prepareDatabase(self):
         """

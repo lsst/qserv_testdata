@@ -51,8 +51,8 @@ class DataConfig(dict):
         input data
         """
         _topLevelConfigFile=os.path.join(self.dataDir, "description.yaml")
-        with io.open(_topLevelConfigFile, 'r') as file:
-            self.update(yaml.load(file))
+        with io.open(_topLevelConfigFile, 'r') as f:
+            self.update(yaml.load(f))
 
         self.log.debug("Data configuration : %s" % self)
 

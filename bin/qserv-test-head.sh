@@ -39,6 +39,8 @@ Usage: `basename $0` [options]
                        instead of rebuilding from scratch,
                        and performs test case #01 instead of all
                        integration tests.
+    -R          Specify Qserv execution directory, default to
+                \$HOME/qserv-run/git
 
     This command will build, install and configure a Qserv mono-node
     instance using a given Qserv source repository. It will then launch
@@ -62,12 +64,14 @@ EOD
 }
 
 QUICK=''
+QSERV_RUN_DIR=$HOME/qserv-run/git
 
 # get the options
-while getopts hq c ; do
+while getopts "hqR:" c ; do
     case $c in
             h) usage ; exit 0 ;;
             q) QUICK="TRUE" ;;
+            R) QSERV_RUN_DIR="${OPTARG}";;
             \?) usage ; exit 2 ;;
     esac
 done
@@ -78,18 +82,16 @@ if [ $# -gt 0 ] ; then
     exit 2
 fi
 
-QSERV_RUN_DIR=$HOME/qserv-run/git
-
 # load eups "setup" function
-if [ -r "${EUPS_DIR}" -a -x "${EUPS_DIR}" ]; then
+if [ -f "${EUPS_DIR}/bin/setups.sh" ]; then
     . "${EUPS_DIR}/bin/setups.sh"
 else
-    printf "ERROR: ${EUPS_DIR} must be a readable directory"
+    printf "ERROR: ${EUPS_DIR}/bin/setups.sh must be a file"
     exit 1
 fi
 
-if [ ! -r "${QSERV_DIR}" -o ! -r "${QSERV_DIR}/SConstruct" ]; then
-    printf "ERROR: ${QSERV_DIR} must be a source directory"
+if [ ! -f "${QSERV_DIR}/SConstruct" ]; then
+    printf "ERROR: ${QSERV_DIR}/SConstruct must be a file"
     exit 1
 fi
 
@@ -100,11 +102,6 @@ if [ ! "${QUICK}" ]; then
     rm -rf build lib proxy bin cfg
 fi
 
-killall mysqld mysql-proxy xrootd java python ||
-{
-    printf "WARN: Unable to kill some Qserv services\n"
-}
-
 # "scons install" doesn't use all proc
 eupspkg -e PREFIX="${QSERV_DIR}" install
 qserv-configure.py --all --force -R "${QSERV_RUN_DIR}"
@@ -114,12 +111,15 @@ GIT_HASH=$(git log -n 1 --pretty=format:"%H")
 printf "%s\n" "${GIT_HASH}" > "${QSERV_RUN_DIR}"/GIT-HASH
 
 # integration tests
-"${QSERV_RUN_DIR}"/bin/qserv-start.sh
-
-if [ "${QUICK}" ]; then
-    qserv-check-integration.py --case=01 --load
-else
-    qserv-test-integration.py
-fi
+PASS=0
+{
+    "${QSERV_RUN_DIR}"/bin/qserv-start.sh
+    if [ "${QUICK}" ]; then
+        qserv-check-integration.py --case=01 --load || PASS=1
+    else
+        qserv-test-integration.py || PASS=1
+    fi
+}
 "${QSERV_RUN_DIR}"/bin/qserv-stop.sh
 
+exit $PASS
