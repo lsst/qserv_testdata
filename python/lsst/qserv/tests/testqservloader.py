@@ -22,28 +22,27 @@
 Module defining TestQservLoader class
 
 Unit tests for Qserv loader for integration tests.
+Coverage needs to be extended.
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
+import logging
+import os
+import sys
+import unittest
+
 
 from lsst.qserv.admin import commons, logger
 from lsst.qserv.tests.qservloader import QservLoader
 from lsst.qserv.tests.dataconfig import DataConfig
-import os
-import sys
-import unittest
 
 class TestQservLoader(unittest.TestCase):
 
     def setUp(self):
         self.config = commons.read_user_config()
-        self.logger = logger.init_default_logger(
-            "TestQservLoader",
-            log_path=self.config['qserv']['log_dir']
-            )
+        self.logger = logging.getLogger(__name__)
 
-
-    def test_alterTable(self):
+    def test_dataConfig(self):
         case_id_list = ["01","02","03"]
 
         for case_id in case_id_list:
@@ -63,21 +62,8 @@ class TestQservLoader(unittest.TestCase):
 
             dataReader = DataConfig(input_dirname, "case%s" % case_id)
             dataReader.analyzeInputData()
-
-            testDbName = "TestQservLoader%s" % case_id
-            out_dir = os.path.join(self.config['qserv']['tmp_dir'],testDbName)
-            qservDataLoader = QservLoader(
-                self.config,
-                dataReader,
-                testDbName,
-                out_dir,
-                "TestQservLoader"
-                )
-            qservDataLoader.connectAndInitDatabase()
-            for table_name in dataReader['partitioned-tables']:
-                schema_filename = dataReader.getSchemaFile(table_name)
-                qservDataLoader._sqlInterface['cmd'].executeFromFile(schema_filename)
-                qservDataLoader.alterTable(table_name)
+            self.assertEqual(dataReader.directors, ['Object'],
+                             "incorrect director table for case%s" % case_id)
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestQservLoader)

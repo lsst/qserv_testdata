@@ -1,10 +1,40 @@
 #!/usr/bin/env python
+# LSST Data Management System
+# Copyright 2014 AURA/LSST.
+#
+# This product includes software developed by the
+# LSST Project (http://www.lsst.org/).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
+# see <http://www.lsstcorp.org/LegalNotices/>.
 
-from  lsst.qserv.tests.testqservdataloader import TestQservDataLoader, suite
+"""
+Launch units tests related to integration test framework
+
+@author  Fabrice Jammes, IN2P3/SLAC
+"""
 import sys
 import unittest
 
+from lsst.qserv.tests.testqservloader import suite
+from lsst.qserv.admin import logger
+
 if __name__ == '__main__':
-    result  = unittest.TextTestRunner(verbosity=2).run(suite())
+
+
+    logger.setup_logging()
+
+    result = unittest.TextTestRunner(verbosity=2).run(suite())
     retcode = int(not result.wasSuccessful())
     sys.exit(retcode)
