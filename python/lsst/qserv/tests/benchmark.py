@@ -34,6 +34,7 @@ import logging
 import optparse
 import shutil
 import tarfile
+import time
 
 from lsst.qserv.tests import qservdataloader, mysqldataloader, datareader
 from lsst.qserv.admin import commons, download, logger
@@ -239,6 +240,9 @@ class Benchmark():
 
             # Qserv fails to start if CSS db is empty, so starting it again may be required
             commons.restart('qserv-czar')
+
+            # Hack: Qserv init.d script doesn't check Qserv startup is complete
+            time.sleep(2)
 
         # in order to close socket connections
         del(self.dataLoader[self._mode])
