@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/usr/bin/env python
 # LSST Data Management System
 # Copyright 2014 AURA/LSST.
 #
@@ -30,10 +29,9 @@ import argparse
 import logging
 import os
 import sys
-import tarfile
 
 from lsst.qserv.tests import benchmark
-from lsst.qserv.admin import commons, logger
+from lsst.qserv.admin import logger
 
 
 def parseArgs():
@@ -77,30 +75,32 @@ def main():
     args = parseArgs()
 
     logger.setup_logging(args.log_conf)
-    log = logging.getLogger(__name__)
+    log = logging.getLogger()
 
     benchmark.init(args)
     bench = benchmark.Benchmark(args.case_no, args.out_dirname)
     bench.run(args.mode_list, args.load_data, args.stop_at_query)
 
-    return_code=0
-    if (len(args.mode_list) > 1):
+    returnCode = 1
+    if len(args.mode_list) > 1:
         failed_queries = bench.analyzeQueryResults()
 
         if len(failed_queries) == 0:
             log.info("Test case #%s succeed", args.case_no)
-            return_code=0
+            returnCode = 0
         else:
+            log.fatal("Test case #%s failed", args.case_no)
             if args.load_data == False:
                 log.warn("Please check that case%s data are loaded, " +
                             "otherwise run %s with --load option.",
                             args.case_no,
                             os.path.basename(__file__))
-            log.fatal("Test case #%s failed", args.case_no)
+
     else:
         log.info("No result comparison")
+        returnCode = 0
 
-    sys.exit(return_code)
+    sys.exit(returnCode)
 
 if __name__ == '__main__':
     main()
