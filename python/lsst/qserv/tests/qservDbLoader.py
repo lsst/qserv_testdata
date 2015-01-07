@@ -26,13 +26,13 @@ Wrap Qserv user-friendly loader.
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
-
+import logging
 import os
 import sys
 import tempfile
 
 from lsst.qserv.admin import commons
-from lsst.qserv.tests.dbloader import DbLoader
+from lsst.qserv.tests.dbLoader import DbLoader
 from lsst.qserv.tests.sql import cmd, connection
 
 
@@ -47,6 +47,7 @@ class QservLoader(DbLoader):
                                              data_reader,
                                              db_name,
                                              out_dirname)
+        self.logger = logging.getLogger(__name__)
 
         run_dir = self.config['qserv']['run_base_dir']
         self._emptyChunksFile = os.path.join(run_dir, "var", "lib",
@@ -93,8 +94,7 @@ class QservLoader(DbLoader):
         commons.run_command(loaderCmd,
                                   stdout=sys.stdout,
                                   stderr=sys.stderr)
-        self.logger.info(
-            "Partitioned %s data loaded (stdout : %s)", table)
+        self.logger.info("Partitioned data loaded for table %s", table)
 
     def prepareDatabase(self):
         """

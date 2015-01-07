@@ -42,7 +42,9 @@ import sys
 from filecmp import dircmp
 
 from lsst.qserv.admin import commons
-from lsst.qserv.tests import dataconfig, qservloader, mysqlloader
+from lsst.qserv.tests import dataconfig
+from lsst.qserv.tests import mysqlDbLoader
+from lsst.qserv.tests import qservDbLoader
 from lsst.qserv.tests.sql import cmd, const
 
 
@@ -112,6 +114,9 @@ class Benchmark(object):
             if qFN.endswith(".sql"):
                 queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
+                    self.logger.info("Launch %s against %s",
+                                     qFN,
+                                     self._mode)
                     query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
@@ -120,19 +125,19 @@ class Benchmark(object):
                     outFile = os.path.join(
                         myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
-                    self.logger.info("Launch: {1} against: {0}",
-                                     self._mode,
-                                     qFN)
-                    self.logger.debug("SQL: {0} pragmas: {1}\n",
+
+                    self.logger.debug("SQL: %s pragmas: %s\n",
                                       qText,
-                                      pragmas)
+                                      str(pragmas))
                     column_names = 'noheader' not in pragmas
                     self._sqlInterface['query'].execute(qText,
                                                         outFile,
                                                         column_names)
 
-        self.logger.info("Test case #{1}: {0} queries launched on a total of {2}"
-                         .format(queryRunCount, self._case_id, queryCount))
+        self.logger.info("Test case #%s: %s queries launched on a total of %s",
+                         self._case_id,
+                         queryRunCount,
+                         queryCount)
 
     def _parseFile(self, qF, withQserv):
         '''
@@ -196,14 +201,14 @@ class Benchmark(object):
     def connectAndInitDatabases(self):
         self.logger.debug("Creation of data loader for %s mode" % self._mode)
         if (self._mode == 'mysql'):
-            self.dataLoader[self._mode] = mysqlloader.MysqlLoader(
+            self.dataLoader[self._mode] = mysqlDbLoader.MysqlLoader(
                 self.config,
                 self.dataReader,
                 self._dbName,
                 self._out_dirname
             )
         elif (self._mode == 'qserv'):
-            self.dataLoader[self._mode] = qservloader.QservLoader(
+            self.dataLoader[self._mode] = qservDbLoader.QservLoader(
                 self.config,
                 self.dataReader,
                 self._dbName,
