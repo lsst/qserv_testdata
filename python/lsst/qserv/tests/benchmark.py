@@ -112,6 +112,9 @@ class Benchmark(object):
             if qFN.endswith(".sql"):
                 queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
+                    self.logger.info("Launch: %s against: %s",
+                                     self._mode,
+                                     qFN)
                     query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
@@ -120,12 +123,10 @@ class Benchmark(object):
                     outFile = os.path.join(
                         myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
-                    self.logger.info("Launch: {1} against: {0}",
-                                     self._mode,
-                                     qFN)
-                    self.logger.debug("SQL: {0} pragmas: {1}\n",
+
+                    self.logger.debug("SQL: %s pragmas: %s\n",
                                       qText,
-                                      pragmas)
+                                      str(pragmas))
                     column_names = 'noheader' not in pragmas
                     self._sqlInterface['query'].execute(qText,
                                                         outFile,

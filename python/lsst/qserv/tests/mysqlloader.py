@@ -66,7 +66,7 @@ class MysqlLoader(DbLoader):
         commons.run_command(loaderCmd,
                                   stdout=sys.stdout,
                                   stderr=sys.stderr)
-        self.logger.info("%s data loaded (stdout : %s)", table)
+        self.logger.info("%s data loaded", table)
 
     def prepareDatabase(self):
         """
