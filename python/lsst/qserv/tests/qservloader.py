@@ -93,8 +93,7 @@ class QservLoader(DbLoader):
         commons.run_command(loaderCmd,
                                   stdout=sys.stdout,
                                   stderr=sys.stderr)
-        self.logger.info(
-            "Partitioned %s data loaded (stdout : %s)", table)
+        self.logger.info("Partitioned data loaded for table %s", table)
 
     def prepareDatabase(self):
         """
