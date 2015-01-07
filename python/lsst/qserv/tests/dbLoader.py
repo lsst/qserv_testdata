@@ -64,7 +64,7 @@ class DbLoader(object):
             cmd += ['--verbose-all',
                     '-vvv']
         elif logLevel is logging.INFO:
-            cmd += ['-vv']
+            cmd += ['-v']
 
         cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                    "common.cfg")),
