@@ -7,7 +7,9 @@ import const
 
 # TODO: replace all SQL by SQLConnection    
 class Cmd():
-    """ SQLCmd is a class for managing SQL cmd via a shell client"""
+    """
+    Run mysql client
+    """
     def __init__(self,
                  config,
                  mode,                 
@@ -21,7 +23,7 @@ class Cmd():
       """
         self.config = config
       
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(__name__)
         self.logger.debug("SQL cmd creation")
         
         self.buildMysqlCmd(mode,database)
@@ -31,8 +33,6 @@ class Cmd():
         
         if mode==const.MYSQL_PROXY :
             self._addQservCmdParams()
-        elif mode==const.QSERV_LOAD :
-            self._addQservSockCmdParams()
         elif mode==const.MYSQL_SOCK :
             self._addMySQLSockCmdParams()
         elif mode==const.MYSQL_NET :
@@ -41,7 +41,7 @@ class Cmd():
         self._mysql_cmd.append("--batch")
 
         if (database is not None):
-             self._mysql_cmd.append( "%s" % database )
+            self._mysql_cmd.append( "%s" % database )
         
         self.logger.debug("SQLCmd._mysql_cmd %s" % self._mysql_cmd )
         
@@ -72,7 +72,7 @@ class Cmd():
         commandLine = self._mysql_cmd[:]
         if not column_names: commandLine.append('--skip-column-names')
         commandLine += ['-e', query]
-        commons.run_command(commandLine, stdout_file=stdout)
+        commons.run_command(commandLine, stdout=stdout)
       
     def executeFromFile(self, filename, stdout=None, column_names=True):
         """ Some queries cannot run correctly through MySQLdb, so we must use MySQL client instead """
@@ -80,7 +80,7 @@ class Cmd():
         commandLine = self._mysql_cmd[:]
         if not column_names: commandLine.append('--skip-column-names')
         commandLine += ['-e', "SOURCE " + filename]
-        commons.run_command(commandLine, stdout_file=stdout)
+        commons.run_command(commandLine, stdout=stdout)
         
     def createAndLoadTable(self, tableName, schemaFile, dataFile, delimiter):
         self.logger.debug("CMD.createAndLoadTable(%s, %s, %s, %s)" % (tableName, schemaFile, dataFile, delimiter))

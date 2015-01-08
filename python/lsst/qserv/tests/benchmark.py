@@ -22,54 +22,54 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-""" This test tool :
+"""
+Integration test tool :
 - loads multiple datasets in Qserv and MySQL,
 - launches queries against them
-- checks if results between both DB are the same
+- checks if results between both databases are identical
+
+@author  Jacek Becla SLAC
+@author  Fabrice Jammes IN2P3
 """
 
-__author__ = "Jacek Becla, Fabrice Jammes"
-
 import logging
-import optparse
 import shutil
-import tarfile
 import time
 
-from lsst.qserv.tests import qservdataloader, mysqldataloader, datareader
-from lsst.qserv.admin import commons, download, logger
-from lsst.qserv.tests.sql import cmd, connection, const
 import errno
 import os
 import re
 import stat
 import sys
-
 from filecmp import dircmp
 
+from lsst.qserv.admin import commons
+from lsst.qserv.tests import dataconfig
+from lsst.qserv.tests import mysqlDbLoader
+from lsst.qserv.tests import qservDbLoader
+from lsst.qserv.tests.sql import cmd, const
 
-class Benchmark():
 
-    def __init__(self, case_id, out_dirname_prefix,
-                 log_file_prefix='qserv-tests',
-                 logging_level=logging.INFO ):
+class Benchmark(object):
 
-        self.logger = logging.getLogger()
+    def __init__(self, case_id, out_dirname_prefix):
+
+        self.logger = logging.getLogger(__name__)
         self.dataLoader = dict()
         self._sqlInterface = dict()
-        self._mode=None
-        self._dbName=None
+        self._mode = None
+        self._dbName = None
 
         self.config = commons.getConfig()
 
-        self.noQservLine = re.compile('[\w\-\."%% ]*-- noQserv')
+        self.noQservLine = re.compile(r'[\w\-\."%% ]*-- noQserv')
 
         self._case_id = case_id
-        self._logFilePrefix = log_file_prefix
 
-        if out_dirname_prefix == None :
+        if not out_dirname_prefix:
             out_dirname_prefix = self.config['qserv']['tmp_dir']
-        self._out_dirname = os.path.join(out_dirname_prefix, "qservTest_case%s" % case_id)
+        self._out_dirname = os.path.join(out_dirname_prefix,
+                                         "qservTest_case%s" % case_id)
 
         self.testdata_dir = self.config['qserv']['testdata_dir']
 
@@ -78,51 +78,68 @@ class Benchmark():
             "case%s" % self._case_id
         )
 
-        self._in_dirname = os.path.join(qserv_tests_dirname,'data')
+        self._in_dirname = os.path.join(qserv_tests_dirname, 'data')
 
-        self.dataReader = datareader.DataReader(self._in_dirname, "case%s" % self._case_id)
+        self.dataReader = dataconfig.DataConfig(self._in_dirname,
+                                                "case%s" % self._case_id)
 
-        self._queries_dirname = os.path.join(qserv_tests_dirname,"queries")
+        self._queries_dirname = os.path.join(qserv_tests_dirname, "queries")
 
     def runQueries(self, stopAt):
         self.logger.debug("Running queries : (stop-at : %s)" % stopAt)
         if self._mode == 'qserv':
             withQserv = True
-            self._sqlInterface['query'] = cmd.Cmd(config = self.config,
-                                                  mode = const.MYSQL_PROXY,
-                                                  database = self._dbName
+            self._sqlInterface['query'] = cmd.Cmd(config=self.config,
+                                                  mode=const.MYSQL_PROXY,
+                                                  database=self._dbName
                                                   )
         else:
             withQserv = False
-            self._sqlInterface['query'] = cmd.Cmd(config = self.config,
-                                                mode = const.MYSQL_SOCK,
-                                                database = self._dbName
-                                                )
+            self._sqlInterface['query'] = cmd.Cmd(config=self.config,
+                                                  mode=const.MYSQL_SOCK,
+                                                  database=self._dbName
+                                                  )
 
-        myOutDir = os.path.join(self._out_dirname, "outputs",self._mode)
+        myOutDir = os.path.join(self._out_dirname, "outputs", self._mode)
         if not os.access(myOutDir, os.F_OK):
             os.makedirs(myOutDir)
             # because mysqld will write there
             os.chmod(myOutDir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         qDir = self._queries_dirname
-        self.logger.info("Testing queries from %s" % qDir)
+        self.logger.debug("Testing queries from %s" % qDir)
         queries = sorted(os.listdir(qDir))
+        queryCount = 0
+        queryRunCount = 0
         for qFN in queries:
+            queryCount += 1
             if qFN.endswith(".sql"):
+                queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
-                    query_filename = os.path.join(qDir,qFN)
+                    self.logger.info("Launch %s against %s",
+                                     qFN,
+                                     self._mode)
+                    query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
                     qText, pragmas = self._parseFile(qF, withQserv)
 
-                    outFile = os.path.join(myOutDir, qFN.replace('.sql', '.txt'))
+                    outFile = os.path.join(
+                        myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
-                    self.logger.info("LAUNCHING QUERY : {1} against {0}, SQL : {2} pragmas : {3}\n".format(self._mode, qFN, qText, pragmas))
 
+                    self.logger.debug("SQL: %s pragmas: %s\n",
+                                      qText,
+                                      str(pragmas))
                     column_names = 'noheader' not in pragmas
-                    self._sqlInterface['query'].execute(qText, outFile, column_names)
+                    self._sqlInterface['query'].execute(qText,
+                                                        outFile,
+                                                        column_names)
 
+        self.logger.info("Test case #%s: %s queries launched on a total of %s",
+                         self._case_id,
+                         queryRunCount,
+                         queryCount)
 
     def _parseFile(self, qF, withQserv):
         '''
@@ -166,91 +183,62 @@ class Benchmark():
 
         return ' '.join(qText), pragmas
 
-
-    def gunzip(self, table_name, zipped_data_filename):
-        # check if the corresponding data file exists
-        if not os.path.exists(zipped_data_filename):
-            raise Exception, "File: '%s' not found" %  zipped_data_filename
-
-        tmp_suffix = ("%s%s" % (table_name,self.dataReader.dataConfig['data-extension']))
-        tmp_data_file = os.path.join(self._out_dirname,tmp_suffix)
-
-        self.logger.info("Unzipping: %s into %s" %  (zipped_data_filename, tmp_data_file))
-        commons.run_command(["gunzip", "-c", zipped_data_filename], stdout_file=tmp_data_file)
-        return tmp_data_file
-
     def loadData(self):
         """
-        Creates tables and load data for input file located in caseXX/data/
+        Creates orderedTables and load data for input file located in caseXX/data/
         """
-        self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname, self._mode))
-
-        for table_name in  self.dataReader.tables:
-            self.logger.debug("Using data of %s" % table_name)
-            (schema_filename, data_filename, zipped_data_filename) =  self.dataReader.getSchemaAndDataFilenames(table_name)
-
-            if zipped_data_filename is not None :
-                tmp_data_file = self.gunzip(table_name, zipped_data_filename)
-                input_filename = tmp_data_file
-            else:
-                input_filename = data_filename
-
-            self.dataLoader[self._mode].createAndLoadTable(table_name, schema_filename, input_filename)
-
-            if zipped_data_filename is not None :
-                os.unlink(tmp_data_file)
+        self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname,
+                                                             self._mode))
+        for table in self.dataReader.orderedTables:
+            self.dataLoader[self._mode].createLoadTable(table)
 
     def cleanup(self):
-        # cleanup of previous tests
+        """
+        Cleanup of previous tests temporary ant output files
+        """
         if os.path.exists(self._out_dirname):
             shutil.rmtree(self._out_dirname)
         os.makedirs(self._out_dirname)
 
-
     def connectAndInitDatabases(self):
         self.logger.debug("Creation of data loader for %s mode" % self._mode)
-        if (self._mode=='mysql'):
-            self.dataLoader[self._mode] = mysqldataloader.MysqlDataLoader(
+        if (self._mode == 'mysql'):
+            self.dataLoader[self._mode] = mysqlDbLoader.MysqlLoader(
                 self.config,
-                self.dataReader.dataConfig,
+                self.dataReader,
                 self._dbName,
-                self._out_dirname,
-                self._logFilePrefix
-                )
-        elif (self._mode=='qserv'):
-            self.dataLoader[self._mode] = qservdataloader.QservDataLoader(
+                self._out_dirname
+            )
+        elif (self._mode == 'qserv'):
+            self.dataLoader[self._mode] = qservDbLoader.QservLoader(
                 self.config,
-                self.dataReader.dataConfig,
+                self.dataReader,
                 self._dbName,
-                self._in_dirname,
-                self._out_dirname,
-                self._logFilePrefix
+                self._out_dirname
             )
         self.logger.debug("Initializing database for %s mode" % self._mode)
-        self.dataLoader[self._mode].connectAndInitDatabase()
+        self.dataLoader[self._mode].prepareDatabase()
 
     def finalize(self):
-        if (self._mode=='qserv'):
-            self.dataLoader['qserv'].createCssDatabase()
-            self.dataLoader['qserv'].configureQservMetaEmptyChunk()
+        if (self._mode == 'qserv'):
             self.dataLoader['qserv'].workerInsertXrootdExportPath()
 
-            # restart xrootd in order to reload  export paths w.r.t loaded chunks, cf. #2478
+            # Reload xroot export paths w.r.t loaded chunks
             commons.restart('xrootd')
 
-            # Qserv fails to start if CSS db is empty, so starting it again may be required
+            # Reload Qserv meta-data
             commons.restart('qserv-czar')
 
             # Hack: Qserv init.d script doesn't check Qserv startup is complete
             time.sleep(2)
 
-        # in order to close socket connections
+        # Close socket connections
         del(self.dataLoader[self._mode])
 
     def run(self, mode_list, load_data, stop_at_query=7999):
 
         self.cleanup()
-        self.dataReader.readInputData()
+        self.dataReader.analyzeInputData()
 
         for mode in mode_list:
             self._mode = mode
@@ -268,61 +256,64 @@ class Benchmark():
 
         outputs_dir = os.path.join(self._out_dirname, "outputs")
 
-        failing_queries=[]
+        failing_queries = []
 
-        mysql_out_dir = os.path.join(outputs_dir,"mysql")
-        qserv_out_dir = os.path.join(outputs_dir,"qserv")
+        mysql_out_dir = os.path.join(outputs_dir, "mysql")
+        qserv_out_dir = os.path.join(outputs_dir, "qserv")
 
-        dcmp = dircmp( mysql_out_dir, qserv_out_dir)
+        dcmp = dircmp(mysql_out_dir, qserv_out_dir)
 
-        if len(dcmp.diff_files)!=0:
+        if self.dataReader.notLoadedTables:
+            self.logger.info("Tables/Views not loaded: %s",
+                             self.dataReader.notLoadedTables)
+
+        if not dcmp.diff_files:
+            self.logger.info("MySQL/Qserv results are identical")
+        else:
             for query_name in dcmp.diff_files:
-                message="{0} and {1} differ".format(os.path.join(mysql_out_dir,query_name), os.path.join(qserv_out_dir,query_name))
-                self.logger.error(message)
                 failing_queries.append(query_name)
+            self.logger.error("MySQL/Qserv differs for {0} queries:"
+                              .format(len(failing_queries)))
+            self.logger.error("Broken queries list in {0}: {1}"
+                              .format(qserv_out_dir, failing_queries))
 
         return failing_queries
 
-def add_generic_arguments(parser):
 
-    verbose_arg_values = logger.verbose_dict.keys()
-    parser.add_argument("-v", "--verbose-level", dest="verbose_str", choices=verbose_arg_values,
-        default='INFO',
-        help="verbosity level"
-        )
+def add_testdatadir_opt(parser):
+    """
+    Add option to command line interface in order to set testdata directory
+    for integration tests
+    """
 
-    # directory containing test dataset
-    default_testdata_dir=None
+    default_testdata_dir = None
     if os.environ.get('QSERV_TESTDATA_DIR') is not None:
         default_testdata_dir = os.path.join(
             os.environ.get('QSERV_TESTDATA_DIR'), "datasets"
-        ) 
+        )
 
     parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
-            default=default_testdata_dir,
-            help="""absolute path to directory containing test datasets. This value is set, by precedence,
-by this option, and then by QSERV_TESTDATA_DIR/datasets/ if
-QSERV_TESTDATA_DIR environment variable is not empty"""
-            )
-
+                        default=default_testdata_dir,
+                        help="Absolute path to directory containing test " +
+                        "datasets. This value is set, by precedence, by this" +
+                        " option, and then by QSERV_TESTDATA_DIR/datasets/ " +
+                        "if QSERV_TESTDATA_DIR environment variable is not "+
+                        "empty"
+                        )
     return parser
 
-def init(args, logfile):
+
+def init(args):
 
     config = commons.read_user_config()
-    logger.init_default_logger(
-            logfile,
-            args.verbose_level,
-            log_path=config['qserv']['log_dir']
-            )
-    log = logging.getLogger()
+
+    log = logging.getLogger(__name__)
 
     if args.testdata_dir is not None and os.path.isdir(args.testdata_dir):
-       log.debug(
-            "Setting testdata_dir value to %s",
-            args.testdata_dir
-        )
-       config['qserv']['testdata_dir'] = args.testdata_dir
+        log.debug("Setting testdata_dir value to %s",
+                  args.testdata_dir
+                  )
+        config['qserv']['testdata_dir'] = args.testdata_dir
     else:
         log.fatal(
             "Unable to find tests datasets. (testdata_dir value is %s)",
