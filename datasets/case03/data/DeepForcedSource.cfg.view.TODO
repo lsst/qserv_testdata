@@ -16,7 +16,6 @@ part = {
     subChunks = 0
 }
 
-dirTable = "TODO"
 dirColName = "TODO"
 
 in.csv = {
