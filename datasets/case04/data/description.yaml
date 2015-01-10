@@ -1,0 +1,7 @@
+tables:
+    directors:          ["RunDeepSource"]
+    partitioned-tables: ['RunDeepSource', 'RunDeepForcedSource']
+extensions:
+    data:   '.csv'
+    schema: '.schema'
+    zip:    '.gz'
