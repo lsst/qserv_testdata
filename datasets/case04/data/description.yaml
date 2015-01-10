@@ -1,6 +1,6 @@
 tables:
-    directors:          ["RunDeepSource"]
-    partitioned-tables: ['RunDeepSource', 'RunDeepForcedSource']
+    directors:          ["DeepSource"]
+    partitioned-tables: ['DeepSource', 'DeepForcedSource']
 extensions:
     data:   '.csv'
     schema: '.schema'
