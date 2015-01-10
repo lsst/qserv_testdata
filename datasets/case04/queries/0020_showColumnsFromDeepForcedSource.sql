@@ -1,3 +1,3 @@
 -- https://dev.lsstcorp.org/trac/wiki/dbPipeQAQueries
 
-SHOW COLUMNS FROM RunDeepForcedSource;
+SHOW COLUMNS FROM DeepForcedSource;
