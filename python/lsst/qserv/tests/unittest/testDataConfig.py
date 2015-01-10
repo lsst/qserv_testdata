@@ -32,18 +32,20 @@ import sys
 import unittest
 
 
-from lsst.qserv.admin import commons, logger
-from lsst.qserv.tests.qservDbLoader import QservLoader
-from lsst.qserv.tests.dataconfig import DataConfig
+from lsst.qserv.admin import commons
+from lsst.qserv.admin import logger
+from lsst.qserv.tests.dataConfig import DataConfig
 
-class TestQservLoader(unittest.TestCase):
 
-    def setUp(self):
-        self.config = commons.read_user_config()
-        self.logger = logging.getLogger(__name__)
+class TestDataConfig(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestDataConfig, cls).setUpClass()
+        TestDataConfig._logger = logging.getLogger(__name__)
 
     def test_dataConfig(self):
-        case_id_list = ["01","02","03"]
+        case_id_list = ["01", "02", "03"]
 
         for case_id in case_id_list:
 
@@ -58,16 +60,20 @@ class TestQservLoader(unittest.TestCase):
                 'datasets',
                 "case%s" % case_id
             )
-            input_dirname = os.path.join(qserv_tests_dirname,'data')
+            input_dirname = os.path.join(qserv_tests_dirname, 'data')
 
-            dataReader = DataConfig(input_dirname, "case%s" % case_id)
-            dataReader.analyzeInputData()
+            dataReader = DataConfig(input_dirname)
+            self._logger.info("Dataset case%s has director table: %s",
+                              case_id,
+                              dataReader.directors)
             self.assertEqual(dataReader.directors, ['Object'],
                              "incorrect director table for case%s" % case_id)
 
+
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestQservLoader)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestDataConfig)
     return suite
 
 if __name__ == '__main__':
+    logger.setup_logging(logger.get_default_log_conf())
     unittest.TextTestRunner(verbosity=2).run(suite())

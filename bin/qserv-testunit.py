@@ -27,14 +27,20 @@ Launch units tests related to integration test framework
 import sys
 import unittest
 
-from lsst.qserv.tests.testqservloader import suite
+from lsst.qserv.tests.unittest import testDataConfig
+from lsst.qserv.tests.unittest import testDataCustomizer
+
 from lsst.qserv.admin import logger
 
 if __name__ == '__main__':
 
+    logger.setup_logging(logger.get_default_log_conf())
 
-    logger.setup_logging()
-
-    result = unittest.TextTestRunner(verbosity=2).run(suite())
-    retcode = int(not result.wasSuccessful())
+    modules = [testDataConfig, testDataCustomizer]
+    
+    retcode = 0
+    for m in modules:
+        result = unittest.TextTestRunner(verbosity=2).run(m.suite())
+        if not result.wasSuccessful(): retcode = 1
+        
     sys.exit(retcode)

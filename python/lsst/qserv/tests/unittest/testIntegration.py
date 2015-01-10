@@ -26,6 +26,7 @@ Launch each integration tests, using unittest framework.
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 import logging
+import os
 import unittest
 
 from lsst.qserv.admin import commons
@@ -33,16 +34,32 @@ from lsst.qserv.tests.benchmark import Benchmark
 
 
 class TestIntegration(unittest.TestCase):
-
-    def setUp(self):
-        self.config = commons.getConfig()
-        self.logger = logging.getLogger(__name__)
-        self.modeList = ['mysql','qserv']
-        self.loadData = True
+    
+    @classmethod
+    def setUpClass(cls):
+        super(TestIntegration, cls).setUpClass()
+        TestIntegration.config = commons.getConfig()
+        TestIntegration.logger = logging.getLogger(__name__)
+        TestIntegration.modeList = ['mysql', 'qserv']
+        TestIntegration.loadData = True
+        
+        if os.environ.get('QSERV_TESTDATA_DIR') is not None:
+            TestIntegration.testdata_dir = os.path.join(os.environ.get('QSERV_TESTDATA_DIR'),
+                                             "datasets")
+        else:
+            current_file = os.path.dirname(os.path.realpath(__file__))
+            fragile_testdata_dir = os.path.join(current_file, os.pardir,
+                                                  os.pardir, os.pardir,
+                                                  os.pardir, os.pardir,
+                                                  "datasets"
+                                         )
+            TestIntegration.testdata_dir = os.path.abspath(fragile_testdata_dir)
+        
 
     def _runTestCase(self, case_id):
-        bench = Benchmark(case_id,
-                          out_dirname_prefix = self.config['qserv']['tmp_dir'])
+        self.assertTrue(os.path.exists(self.testdata_dir),
+                   msg="non existing testdata_dir {0}".format(self.testdata_dir))
+        bench = Benchmark(case_id, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()
         return not failed_queries
@@ -59,8 +76,11 @@ class TestIntegration(unittest.TestCase):
         case_id = "03"
         self._runTestCase(case_id)
 
+    def test_case04(self):
+        case_id = "04"
+        self._runTestCase(case_id)
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestIntegration)
     return suite
-
-
