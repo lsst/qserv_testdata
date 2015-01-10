@@ -59,7 +59,7 @@ class DataConfig(dict):
         fromFileTables = self._tableFromSchemaFile()
         # a specific load order on a restricted number of tables
         # ca be specified in yaml
-        if not self['tables']['load-order']:
+        if not self['tables'].get('load-order'):
             self['tables']['load-order'] = fromFileTables
             self.notLoadedTables = []
         else:
@@ -81,22 +81,22 @@ class DataConfig(dict):
 
     @property
     def _views(self):
-        v = self['tables']['views']
+        v = self['tables'].get('views')
         return v if v else []
 
     @property
     def directors(self):
-        v = self['tables']['directors']
+        v = self['tables'].get('directors')
         return v if v else []
 
     @property
     def partitionedTables(self):
-        v = self['tables']['partitioned-tables']
+        v = self['tables'].get('partitioned-tables')
         return v if v else []
 
     @property
     def orderedTables(self):
-        return self['tables']['load-order']
+        return self['tables'].get('load-order')
 
     def _tableFromSchemaFile(self):
         """
