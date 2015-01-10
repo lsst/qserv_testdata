@@ -5,3 +5,6 @@ extensions:
     data:   '.csv'
     schema: '.schema'
     zip:    '.gz'
+remote:
+    url-rsync: 'lsst-dev.ncsa.illinois.edu:/lsst/home/fjammes/public/qserv_testdata/datasets/case04/data/'
+    big-tables: ['DeepSource', 'DeepForcedSource']
