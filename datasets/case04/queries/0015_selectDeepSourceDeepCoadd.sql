@@ -5,7 +5,7 @@ SELECT sce.filterName, sce.tract, sce.patch, s.deepSourceId, s.ra, s.decl,
        s.modelFluxSigma, s.instFlux, s.instFluxSigma, s.shapeIxx, s.shapeIyy, 
        s.shapeIxy, s.flagPixInterpCen, s.flagNegative, s.flagPixEdge, 
        s.flagBadCentroid, s.flagPixSaturCen, s.extendedness
-FROM   RunDeepSource AS s, 
+FROM   DeepSource AS s, 
        DeepCoadd AS sce
 WHERE  (s.deepCoaddId = sce.deepCoaddId)
    AND (sce.filterName = 'r')
