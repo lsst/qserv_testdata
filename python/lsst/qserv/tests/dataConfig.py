@@ -30,27 +30,29 @@ and set all parameters related to test dataset.
 import io
 import logging
 import os
-import sys
+from urlparse import urljoin
+
 import yaml
 
+
 class DataConfig(dict):
+
     """
     Class which holds all test data meta-configuration.
     Implemented as a dictionary with some extra methods.
     """
 
-    def __init__(self, data_dir_name, data_name):
-        self.log = logging.getLogger(__name__)
-        self.dataDir = data_dir_name
-        self.dataName = data_name
-
-    def analyzeInputData(self):
-        """
+    def __init__(self, data_dir_name):
+        '''
         Read meta-data for test data
         and set table to load based on a given order or on schema files in
         input data
-        """
-        _topLevelConfigFile=os.path.join(self.dataDir, "description.yaml")
+        :param data_dir_name:
+        '''
+        self.log = logging.getLogger(__name__)
+        self.dataDir = data_dir_name
+
+        _topLevelConfigFile = os.path.join(self.dataDir, "description.yaml")
         with io.open(_topLevelConfigFile, 'r') as f:
             self.update(yaml.load(f))
 
@@ -59,7 +61,7 @@ class DataConfig(dict):
         fromFileTables = self._tableFromSchemaFile()
         # a specific load order on a restricted number of tables
         # ca be specified in yaml
-        if not self['tables']['load-order']:
+        if not self['tables'].get('load-order'):
             self['tables']['load-order'] = fromFileTables
             self.notLoadedTables = []
         else:
@@ -81,17 +83,53 @@ class DataConfig(dict):
 
     @property
     def _views(self):
-        v = self['tables']['views']
+        v = self['tables'].get('views')
         return v if v else []
 
     @property
     def directors(self):
-        v = self['tables']['directors']
+        v = self['tables'].get('directors')
+        return v if v else []
+
+    @property
+    def partitionedTables(self):
+        v = self['tables'].get('partitioned-tables')
         return v if v else []
 
     @property
     def orderedTables(self):
-        return self['tables']['load-order']
+        return self['tables'].get('load-order')
+
+    @property
+    def _remote(self):
+        r = self.get('remote')
+        return r if r else {}
+
+    @property
+    def _rsyncBaseUrl(self):
+        '''
+        :return the parent rsync url for remote big data files
+        '''
+        rsync_url = self._remote.get('url-rsync')
+        self.log.debug("rsync base url: %s", rsync_url)
+        return rsync_url
+
+    @property
+    def rsyncUrls(self):
+        '''
+        :return list of big data file rsync urls
+        '''
+        urls = []
+        bigtables = self._remote.get('big-tables')
+        rsync_base_url = self._rsyncBaseUrl
+
+        if rsync_base_url and bigtables:
+            for tbl in bigtables:
+                filename = self._getInputDataBasename(tbl)
+                fileurl = os.path.join(rsync_base_url, filename)
+                urls.append(fileurl)
+        self.log.debug("rsync urls: %s", urls)
+        return urls
 
     def _tableFromSchemaFile(self):
         """
@@ -119,9 +157,12 @@ class DataConfig(dict):
             raise
         data_filename = None
         if table_name not in self._views:
-            prefix = os.path.join(self.dataDir, table_name)
-            data_filename = prefix + self._dataExt
-            if self._zipExt:
-                data_filename += self._zipExt
+            data_filename = os.path.join(self.dataDir,
+                                         self._getInputDataBasename(table_name))
         return data_filename
 
+    def _getInputDataBasename(self, table_name):
+        data_filename = table_name + self._dataExt
+        if self._zipExt:
+            data_filename += self._zipExt
+        return data_filename
