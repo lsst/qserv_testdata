@@ -90,11 +90,6 @@ class DataConfig(dict):
         return v if v else []
 
     @property
-    def partitionedTables(self):
-        v = self['tables']['partitioned-tables']
-        return v if v else []
-
-    @property
     def orderedTables(self):
         return self['tables']['load-order']
 
