@@ -73,19 +73,15 @@ class QservLoader(DbLoader):
 
         loaderCmd += ['--css-remove']
 
-        if table in self.dataConfig.partitionedTables:
-            loaderCmd += ['--config={0}'
-                           .format(os.path.join(self.dataConfig.dataDir,
-                                                table + ".cfg"))]
-        else:
-            loaderCmd += ['--skip-partition', '--one-table']
+        # include table-specific config if it exists
+        tableCfg = os.path.join(self.dataConfig.dataDir, table + ".cfg")
+        if os.path.exists(tableCfg):
+            loaderCmd += ['--config={0}'.format(tableCfg)]
 
         # WARN emptyChunks.txt might also be intersection of
         # all empltyChunkk file: seel with D. Wang and A. Salnikov
         if table in self.dataConfig.directors:
             loaderCmd += ['--empty-chunks={0}'.format(self._emptyChunksFile)]
-        else:
-            loaderCmd += ["--index-db={0}".format("")]
 
         loaderCmd += self.loaderCmdCommonArgs(table)
 
