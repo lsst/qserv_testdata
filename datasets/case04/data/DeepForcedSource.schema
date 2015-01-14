@@ -78,6 +78,8 @@ CREATE TABLE `DeepForcedSource` (
   `flagBadInstFlux` tinyint(4) NOT NULL,
   `flagBadCentroid` tinyint(4) NOT NULL,
   `flagBadShape` tinyint(4) NOT NULL,
+  `raDeepSource` double DEFAULT NULL,
+  `declDeepSource` double DEFAULT NULL,
   PRIMARY KEY (`deepForcedSourceId`),
   KEY `deepSourceId` (`deepSourceId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
