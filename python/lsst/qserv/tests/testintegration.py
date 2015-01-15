@@ -26,6 +26,7 @@ Launch each integration tests, using unittest framework.
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 import logging
+import os
 import unittest
 
 from lsst.qserv.admin import commons
@@ -37,12 +38,15 @@ class TestIntegration(unittest.TestCase):
     def setUp(self):
         self.config = commons.getConfig()
         self.logger = logging.getLogger(__name__)
-        self.modeList = ['mysql','qserv']
+        self.modeList = ['mysql', 'qserv']
         self.loadData = True
+        self.testdata_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                         os.pardir, os.pardir, os.pardir, os.pardir,
+                                         "datasets"
+                                         )
 
     def _runTestCase(self, case_id):
-        bench = Benchmark(case_id,
-                          out_dirname_prefix = self.config['qserv']['tmp_dir'])
+        bench = Benchmark(case_id, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()
         return not failed_queries
@@ -59,8 +63,11 @@ class TestIntegration(unittest.TestCase):
         case_id = "03"
         self._runTestCase(case_id)
 
+    def test_case04(self):
+        case_id = "04"
+        self._runTestCase(case_id)
+
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestIntegration)
     return suite
-
-

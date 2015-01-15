@@ -33,6 +33,8 @@ import argparse
 import sys
 import unittest
 
+
+from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
 from lsst.qserv.tests.testintegration import suite
@@ -49,7 +51,6 @@ are read from ~/.lsst/qserv.conf.''',
     )
 
     parser = logger.add_logfile_opt(parser)
-    parser = benchmark.add_testdatadir_opt(parser)
 
     args = parser.parse_args()
 
@@ -59,8 +60,8 @@ if __name__ == '__main__':
     args = parseArgs()
 
     logger.setup_logging(args.log_conf)
+    commons.read_user_config()
 
-    benchmark.init(args)
     result = unittest.TextTestRunner(verbosity=2).run(suite())
     retcode = int(not result.wasSuccessful())
     sys.exit(retcode)

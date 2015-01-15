@@ -52,7 +52,7 @@ from lsst.qserv.tests.sql import cmd, const
 
 class Benchmark(object):
 
-    def __init__(self, case_id, out_dirname_prefix):
+    def __init__(self, case_id, testdata_dir, out_dirname_prefix=None):
 
         self.logger = logging.getLogger(__name__)
         self.dataLoader = dict()
@@ -70,8 +70,15 @@ class Benchmark(object):
             out_dirname_prefix = self.config['qserv']['tmp_dir']
         self._out_dirname = os.path.join(out_dirname_prefix,
                                          "qservTest_case%s" % case_id)
-
-        self.testdata_dir = self.config['qserv']['testdata_dir']
+        if testdata_dir is not None and os.path.isdir(testdata_dir):
+            self.logger.debug("Setting testdata_dir value to %s", testdata_dir)
+            self.testdata_dir = testdata_dir
+        else:
+            self.logger.fatal(
+                "Unable to find tests datasets. (testdata_dir value is %s)",
+                testdata_dir
+            )
+            sys.exit(errno.EIO)
 
         qserv_tests_dirname = os.path.join(
             self.testdata_dir,
@@ -279,44 +286,3 @@ class Benchmark(object):
 
         return failing_queries
 
-
-def add_testdatadir_opt(parser):
-    """
-    Add option to command line interface in order to set testdata directory
-    for integration tests
-    """
-
-    default_testdata_dir = None
-    if os.environ.get('QSERV_TESTDATA_DIR') is not None:
-        default_testdata_dir = os.path.join(
-            os.environ.get('QSERV_TESTDATA_DIR'), "datasets"
-        )
-
-    parser.add_argument("-t", "--testdata-dir", dest="testdata_dir",
-                        default=default_testdata_dir,
-                        help="Absolute path to directory containing test " +
-                        "datasets. This value is set, by precedence, by this" +
-                        " option, and then by QSERV_TESTDATA_DIR/datasets/ " +
-                        "if QSERV_TESTDATA_DIR environment variable is not "+
-                        "empty"
-                        )
-    return parser
-
-
-def init(args):
-
-    config = commons.read_user_config()
-
-    log = logging.getLogger(__name__)
-
-    if args.testdata_dir is not None and os.path.isdir(args.testdata_dir):
-        log.debug("Setting testdata_dir value to %s",
-                  args.testdata_dir
-                  )
-        config['qserv']['testdata_dir'] = args.testdata_dir
-    else:
-        log.fatal(
-            "Unable to find tests datasets. (testdata_dir value is %s)",
-            args.testdata_dir
-        )
-        sys.exit(errno.EIO)
