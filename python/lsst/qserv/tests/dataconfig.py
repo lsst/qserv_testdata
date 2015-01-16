@@ -103,8 +103,14 @@ class DataConfig(dict):
     @property
     def _remote(self):
         r = self.get('remote')
-        self.log.debug("remote: %s", r)
         return r if r else {}
+
+    @property
+    def baseurl(self):
+        '''
+        :return the parent url for remote big data files
+        '''
+        return self._remote.get('url')
 
     @property
     def urls(self):
@@ -112,13 +118,11 @@ class DataConfig(dict):
         :return list of big data file urls
         '''
         urls = []
-        baseurl = self._remote.get('url')
-        self.log.debug("Base url: %s", baseurl)
         bigtables = self._remote.get('big-tables')
-        if baseurl and bigtables:
+        if self.baseurl and bigtables:
             for t in bigtables:
                 f = self._getInputDataBasename(t)
-                fileurl = urljoin(baseurl, f)
+                fileurl = urljoin(self.baseurl, f)
                 urls.append(fileurl)
         return urls
 

@@ -29,11 +29,12 @@ import argparse
 import logging
 import os
 import sys
+import urllib2
 
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests import customDataset
+from lsst.qserv.tests import dataset
 
 
 LOG = logging.getLogger()
@@ -106,7 +107,7 @@ def parseArgs():
     group.add_argument("-S", "--source-case-no", dest="source_case_no",
                        default="04",
                        help="test case number")
-    group.add_argument("-T", "--target-testdata-dir", dest="target_testdata_dir",
+    group.add_argument("-T", "--targlease pet-testdata-dir", dest="target_testdata_dir",
                        default=config['qserv']['tmp_dir'],
                        help="Absolute path to parent directory where source test " +
                        "datasets will be copied, and big datasets will be " +
@@ -115,6 +116,12 @@ def parseArgs():
     group.add_argument("-D", "--download", action="store_true", dest="download",
                        default=False,
                        help="Download big datasets")
+    group.add_argument("-U", "--username", dest="username",
+                       default=None,
+                       help="HTTP Basic auth username")
+    group.add_argument("-P", "--pass", dest="password",
+                       default=None,
+                       help="HTTP Basic auth password")
 
     args = parser.parse_args()
 
@@ -167,10 +174,22 @@ def main():
 
     logger.setup_logging(args.log_conf)
 
-    if args.download:
-        returnCode = customDataset.customize_input_data(args.source_case_no,
-                                          args.testdata_dir,
-                                          args.target_testdata_dir,)
+    returnCode = 1
+    if args.source_case_no:
+        customizer = dataset.Customizer(args.source_case_no,
+                                        args.testdata_dir,
+                                        args.target_testdata_dir,
+                                        args.download,
+                                        args.username,
+                                        args.password)
+        try:
+            customizer.run()
+        except urllib2.HTTPError, e:
+            if e.code == 401:
+                LOG.error("HTTP error while downloading remote big data file, " +
+                          "provide credentials using command-line options")
+                raise
+
     else:
         returnCode = run_integration_test(args.case_no, args.testdata_dir,
                                           args.out_dir, args.mode_list,
