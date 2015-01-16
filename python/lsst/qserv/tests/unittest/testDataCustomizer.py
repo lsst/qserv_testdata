@@ -34,32 +34,35 @@ import unittest
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests.dataCustomizer import DataCustomizer
-from lsst.qserv.tests.dataConfig import DataConfig
 
 class TestDataCustomizer(unittest.TestCase):
 
-    def setUp(self):
-        self._config = commons.read_user_config()
-        self._logger = logging.getLogger(__name__)
+    @classmethod
+    def setUpClass(cls):
+        super(TestDataCustomizer, cls).setUpClass()
+        TestDataCustomizer._config = commons.read_user_config()
+        TestDataCustomizer._logger = logging.getLogger(__name__)
         
         
-        self._url = ("lsst-dev.ncsa.illinois.edu:"
-               "/lsst/home/fjammes/public/qserv_testdata"
-               "/datasets/case04/data/DeepSource.csv.gz")
-        self._dest_file = os.path.join("/", "tmp", os.path.basename(self._url))
+        TestDataCustomizer._url = ("lsst-dev.ncsa.illinois.edu:"
+               "/lsst/home/fjammes/public/qserv_testdata/unit_test_file.jpg")
+        TestDataCustomizer._dest_file = os.path.join("/", "tmp",
+                                                     os.path.basename(TestDataCustomizer._url))
         try:
-            os.remove(self._dest_file)
+            os.remove(TestDataCustomizer._dest_file)
         except:
             pass
         
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
+        super(TestDataCustomizer, cls).tearDownClass()
         try:
-            os.remove(self._dest_file)
+            os.remove(TestDataCustomizer._dest_file)
         except:
             pass
 
     def test_rsync(self):
-        self._logger.info("Test rsync call on %s", self._url)
+        self._logger.info("rsync call on %s", self._url)
         DataCustomizer._rsync(self._url, self._dest_file)
         assert(os.path.exists(self._dest_file))
 
