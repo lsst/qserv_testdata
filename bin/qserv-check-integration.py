@@ -35,7 +35,6 @@ from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
 from lsst.qserv.tests import dataCustomizer
 
-
 LOG = logging.getLogger()
 
 
@@ -57,7 +56,7 @@ def parseArgs():
     group = parser.add_argument_group('General options',
                                       'Options related to data loading and querying')
 
-    group.add_argument("-i", "--case-no", dest="case_no",
+    group.add_argument("-i", "--case-id", dest="case_id",
                        default="01",
                        help="Test case number")
     mode_option_values = ['mysql', 'qserv', 'all']
@@ -94,7 +93,7 @@ def parseArgs():
                        default=config['qserv']['tmp_dir'],
                        help=("Absolute path to directory for storing query results."
                              "The results will be stored in "
-                             "<OUT_DIR>/qservTest_case<CASE_NO>/"))
+                             "<OUT_DIR>/qservTest_case<CASE_ID>/"))
     group.add_argument("-s", "--stop-at-query", type=int, dest="stop_at_query",
                        default=9999,
                        help="Stop at query with given number")
@@ -110,7 +109,7 @@ def parseArgs():
                        )
     group.add_argument("-C", "--custom", action="store_true", dest="do_custom",
                        default=False,
-                       help="If <WORK_DIR>/case<CASE_NO> doesn't exists"
+                       help="If <WORK_DIR>/case<CASE_ID> doesn't exists"
                        ", copy it from <TESTDATA_DIR>"
                        ", disable load and query operations"
                        ", and had to be performed before them")
@@ -119,6 +118,9 @@ def parseArgs():
                        help=("Download big datasets using rsync over ssh"
                              ", implies --custom, enable batch mode with "
                              "~/.ssh/config and ssh-agent"))
+    group.add_argument("-I", "--custom-case-id", dest="custom_case_id",
+                       default=None,
+                       help="Rename custom test to case/CUSTOM_CASE_ID")
     group.add_argument("-U", "--username", dest="username",
                        default=None,
                        help="rsync username")
@@ -136,18 +138,18 @@ def parseArgs():
     return args
 
 
-def run_integration_test(case_no, testdata_dir, out_dir, mode_list,
+def run_integration_test(case_id, testdata_dir, out_dir, mode_list,
                          load_data, stop_at_query):
     ''' Run integration tests, eventually perform data-loading and query results
     comparison
-    :param case_no: test case number
+    :param case_id: test case number
     :param testdata_dir: directory containing test datasets
     :param out_dir: directory containing query results
     :param mode_list: run test for Qserv, MySQL or both
     :param load_data: load data before running queries
     :param stop_at_query: run queries between 0 and it
     '''
-    bench = benchmark.Benchmark(case_no, testdata_dir, out_dir)
+    bench = benchmark.Benchmark(case_id, testdata_dir, out_dir)
     bench.run(mode_list, load_data, stop_at_query)
 
     returnCode = 1
@@ -155,14 +157,14 @@ def run_integration_test(case_no, testdata_dir, out_dir, mode_list,
         failed_queries = bench.analyzeQueryResults()
 
         if len(failed_queries) == 0:
-            LOG.info("Test case #%s succeed", case_no)
+            LOG.info("Test case #%s succeed", case_id)
             returnCode = 0
         else:
-            LOG.fatal("Test case #%s failed", case_no)
+            LOG.fatal("Test case #%s failed", case_id)
             if load_data == False:
                 log.warn("Please check that case%s data are loaded, " +
                          "otherwise run %s with --load option.",
-                         case_no,
+                         case_id,
                          os.path.basename(__file__))
 
     else:
@@ -179,16 +181,17 @@ def main():
 
     returnCode = 1
     if args.do_custom:
-        customizer = dataCustomizer.DataCustomizer(args.case_no,
+        customizer = dataCustomizer.DataCustomizer(args.case_id,
                                                    args.testdata_dir,
                                                    args.work_dir,
                                                    args.do_download,
+                                                   args.custom_case_id,
                                                    args.username)
 
         customizer.run()
 
     else:
-        returnCode = run_integration_test(args.case_no, args.testdata_dir,
+        returnCode = run_integration_test(args.case_id, args.testdata_dir,
                                           args.out_dir, args.mode_list,
                                           args.load_data, args.stop_at_query)
 

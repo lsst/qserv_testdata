@@ -33,7 +33,6 @@ import argparse
 import sys
 import unittest
 
-
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark

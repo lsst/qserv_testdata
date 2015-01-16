@@ -41,10 +41,10 @@ LOG = logging.getLogger(__name__)
 
 class DataCustomizer(object):
 
-    def __init__(self, source_case_no, testdata_dir, target_testdata_dir,
-                 do_download=True, username=None):
+    def __init__(self, source_case_id, testdata_dir, target_testdata_dir,
+                 do_download=True, custom_case_id=None, username=None):
         ''' Contain informations allowing to customize a dataset
-        :param source_case_no: dataset to duplicate
+        :param source_case_id: dataset to duplicate
         :param testdata_dir: directory containing test dataset to duplicate
         :param target_testdata_dir: destination directory
         :param download_action: use data configuration to eventually override data with
@@ -55,9 +55,10 @@ class DataCustomizer(object):
         self._username = username
         self._doDownload = do_download
         self._src_dataset_dir = benchmark.Benchmark.getDatasetDir(
-            testdata_dir, source_case_no)
+            testdata_dir, source_case_id)
+        self._custom_case_id  = custom_case_id if custom_case_id else source_case_id
         self._dest_dataset_dir = benchmark.Benchmark.getDatasetDir(target_testdata_dir,
-                                                                   source_case_no)
+                                                                   self._custom_case_id)
 
     def run(self):
         ''' Customize  one integration test dataset
