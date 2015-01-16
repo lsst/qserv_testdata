@@ -70,27 +70,28 @@ class Benchmark(object):
             out_dirname_prefix = self.config['qserv']['tmp_dir']
         self._out_dirname = os.path.join(out_dirname_prefix,
                                          "qservTest_case%s" % case_id)
+
+        dataset_dir = Benchmark.getDatasetDir(testdata_dir, case_id)
+        self._in_dirname = os.path.join(dataset_dir, 'data')
+
+        self.dataReader = dataconfig.DataConfig(self._in_dirname)
+
+        self._queries_dirname = os.path.join(dataset_dir, "queries")
+
+    @staticmethod
+    def getDatasetDir(testdata_dir, case_id):
+        log = logging.getLogger(__name__)
         if testdata_dir is not None and os.path.isdir(testdata_dir):
-            self.logger.debug("Setting testdata_dir value to %s", testdata_dir)
-            self.testdata_dir = testdata_dir
+            log.debug("Setting testdata_dir value to %s", testdata_dir)
         else:
-            self.logger.fatal(
+            log.fatal(
                 "Unable to find tests datasets. (testdata_dir value is %s)",
                 testdata_dir
             )
             sys.exit(errno.EIO)
 
-        qserv_tests_dirname = os.path.join(
-            self.testdata_dir,
-            "case%s" % self._case_id
-        )
-
-        self._in_dirname = os.path.join(qserv_tests_dirname, 'data')
-
-        self.dataReader = dataconfig.DataConfig(self._in_dirname,
-                                                "case%s" % self._case_id)
-
-        self._queries_dirname = os.path.join(qserv_tests_dirname, "queries")
+        dataset_dir = os.path.join(testdata_dir, "case{0}".format(case_id))
+        return dataset_dir
 
     def runQueries(self, stopAt):
         self.logger.debug("Running queries : (stop-at : %s)" % stopAt)
@@ -245,7 +246,6 @@ class Benchmark(object):
     def run(self, mode_list, load_data, stop_at_query=7999):
 
         self.cleanup()
-        self.dataReader.analyzeInputData()
 
         for mode in mode_list:
             self._mode = mode
@@ -285,4 +285,3 @@ class Benchmark(object):
                               .format(qserv_out_dir, failing_queries))
 
         return failing_queries
-

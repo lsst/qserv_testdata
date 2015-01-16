@@ -30,27 +30,29 @@ and set all parameters related to test dataset.
 import io
 import logging
 import os
-import sys
+from urlparse import urljoin
+
 import yaml
 
+
 class DataConfig(dict):
+
     """
     Class which holds all test data meta-configuration.
     Implemented as a dictionary with some extra methods.
     """
 
-    def __init__(self, data_dir_name, data_name):
-        self.log = logging.getLogger(__name__)
-        self.dataDir = data_dir_name
-        self.dataName = data_name
-
-    def analyzeInputData(self):
-        """
+    def __init__(self, data_dir_name):
+        '''
         Read meta-data for test data
         and set table to load based on a given order or on schema files in
         input data
-        """
-        _topLevelConfigFile=os.path.join(self.dataDir, "description.yaml")
+        :param data_dir_name:
+        '''
+        self.log = logging.getLogger(__name__)
+        self.dataDir = data_dir_name
+
+        _topLevelConfigFile = os.path.join(self.dataDir, "description.yaml")
         with io.open(_topLevelConfigFile, 'r') as f:
             self.update(yaml.load(f))
 
@@ -98,6 +100,28 @@ class DataConfig(dict):
     def orderedTables(self):
         return self['tables'].get('load-order')
 
+    @property
+    def _remote(self):
+        r = self.get('remote')
+        self.log.debug("remote: %s", r)
+        return r if r else {}
+
+    @property
+    def urls(self):
+        '''
+        :return list of big data file urls
+        '''
+        urls = []
+        baseurl = self._remote.get('url')
+        self.log.debug("Base url: %s", baseurl)
+        bigtables = self._remote.get('big-tables')
+        if baseurl and bigtables:
+            for t in bigtables:
+                f = self._getInputDataBasename(t)
+                fileurl = urljoin(baseurl, f)
+                urls.append(fileurl)
+        return urls
+
     def _tableFromSchemaFile(self):
         """
         Return a list of orderedTables names deduced from the input data
@@ -124,9 +148,12 @@ class DataConfig(dict):
             raise
         data_filename = None
         if table_name not in self._views:
-            prefix = os.path.join(self.dataDir, table_name)
-            data_filename = prefix + self._dataExt
-            if self._zipExt:
-                data_filename += self._zipExt
+            data_filename = os.path.join(self.dataDir,
+                                         self._getInputDataBasename(table_name))
         return data_filename
 
+    def _getInputDataBasename(self, table_name):
+        data_filename = table_name + self._dataExt
+        if self._zipExt:
+            data_filename += self._zipExt
+        return data_filename

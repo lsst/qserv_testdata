@@ -30,12 +30,19 @@ import logging
 import os
 import sys
 
-from lsst.qserv.tests import benchmark
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
+from lsst.qserv.tests import benchmark
+from lsst.qserv.tests import customDataset
+
+
+LOG = logging.getLogger()
 
 
 def parseArgs():
+
+    # used to get default values
+    config = commons.read_user_config()
 
     parser = argparse.ArgumentParser(
         description="Launch one Qserv integration test with fine-grained " +
@@ -82,15 +89,32 @@ def parseArgs():
 
     group = parser.add_argument_group('Query options',
                                       'Options related to query execution')
-    config = commons.read_user_config()
-    group.add_argument("-o", "--out-dir", dest="out_dirname",
+
+    group.add_argument("-o", "--out-dir", dest="out_dir",
                        default=config['qserv']['tmp_dir'],
-                       help=("Full path to directory for storing query results."
+                       help=("Absolute path to directory for storing query results."
                              "The results will be stored in "
                              "<OUT_DIRNAME>/qservTest_case<CASE_NO>/"))
     group.add_argument("-s", "--stop-at-query", type=int, dest="stop_at_query",
                        default=9999,
                        help="Stop at query with given number")
+
+    group = parser.add_argument_group('Prepare options',
+                                      ('Options related to input data set customization'
+                                       ', disable load and query operations'
+                                       ', and had to be performed before them'))
+    group.add_argument("-S", "--source-case-no", dest="source_case_no",
+                       default="04",
+                       help="test case number")
+    group.add_argument("-T", "--target-testdata-dir", dest="target_testdata_dir",
+                       default=config['qserv']['tmp_dir'],
+                       help="Absolute path to parent directory where source test " +
+                       "datasets will be copied, and big datasets will be " +
+                       "eventually downloaded"
+                       )
+    group.add_argument("-D", "--download", action="store_true", dest="download",
+                       default=False,
+                       help="Download big datasets")
 
     args = parser.parse_args()
 
@@ -102,37 +126,55 @@ def parseArgs():
     return args
 
 
+def run_integration_test(case_no, testdata_dir, out_dir, mode_list,
+                         load_data, stop_at_query):
+    ''' Run integration tests, eventually perform data-loading and query results
+    comparison
+    :param case_no: test case number
+    :param testdata_dir: directory containing test datasets
+    :param out_dir: directory containing query results
+    :param mode_list: run test for Qserv, MySQL or both
+    :param load_data: load data before running queries
+    :param stop_at_query: run queries between 0 and it
+    '''
+    bench = benchmark.Benchmark(case_no, testdata_dir, out_dir)
+    bench.run(mode_list, load_data, stop_at_query)
+
+    returnCode = 1
+    if len(mode_list) > 1:
+        failed_queries = bench.analyzeQueryResults()
+
+        if len(failed_queries) == 0:
+            LOG.info("Test case #%s succeed", case_no)
+            returnCode = 0
+        else:
+            LOG.fatal("Test case #%s failed", case_no)
+            if load_data == False:
+                log.warn("Please check that case%s data are loaded, " +
+                         "otherwise run %s with --load option.",
+                         case_no,
+                         os.path.basename(__file__))
+
+    else:
+        LOG.info("No result comparison")
+        returnCode = 0
+    return returnCode
+
+
 def main():
 
     args = parseArgs()
 
     logger.setup_logging(args.log_conf)
-    log = logging.getLogger()
 
-    commons.read_user_config()
-
-    bench = benchmark.Benchmark(args.case_no, args.testdata_dir,
-                                args.out_dirname)
-    bench.run(args.mode_list, args.load_data, args.stop_at_query)
-
-    returnCode = 1
-    if len(args.mode_list) > 1:
-        failed_queries = bench.analyzeQueryResults()
-
-        if len(failed_queries) == 0:
-            log.info("Test case #%s succeed", args.case_no)
-            returnCode = 0
-        else:
-            log.fatal("Test case #%s failed", args.case_no)
-            if args.load_data == False:
-                log.warn("Please check that case%s data are loaded, " +
-                         "otherwise run %s with --load option.",
-                         args.case_no,
-                         os.path.basename(__file__))
-
+    if args.download:
+        returnCode = customDataset.customize_input_data(args.source_case_no,
+                                          args.testdata_dir,
+                                          args.target_testdata_dir,)
     else:
-        log.info("No result comparison")
-        returnCode = 0
+        returnCode = run_integration_test(args.case_no, args.testdata_dir,
+                                          args.out_dir, args.mode_list,
+                                          args.load_data, args.stop_at_query)
 
     sys.exit(returnCode)
 

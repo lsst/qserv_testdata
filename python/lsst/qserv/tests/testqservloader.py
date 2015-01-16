@@ -60,8 +60,7 @@ class TestQservLoader(unittest.TestCase):
             )
             input_dirname = os.path.join(qserv_tests_dirname,'data')
 
-            dataReader = DataConfig(input_dirname, "case%s" % case_id)
-            dataReader.analyzeInputData()
+            dataReader = DataConfig(input_dirname)
             self.assertEqual(dataReader.directors, ['Object'],
                              "incorrect director table for case%s" % case_id)
 

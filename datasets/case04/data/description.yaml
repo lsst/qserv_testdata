@@ -5,3 +5,6 @@ extensions:
     data:   '.csv'
     schema: '.schema'
     zip:    '.gz'
+remote:
+    url: 'https://lsst-web.ncsa.illinois.edu/~fjammes/qserv_testdata/datasets/case04/data/'
+    big-tables: ['DeepSource', 'DeepForcedSource'] 
