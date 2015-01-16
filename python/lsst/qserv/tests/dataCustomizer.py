@@ -56,7 +56,7 @@ class DataCustomizer(object):
         self._doDownload = do_download
         self._src_dataset_dir = benchmark.Benchmark.getDatasetDir(
             testdata_dir, source_case_id)
-        self._custom_case_id  = custom_case_id if custom_case_id else source_case_id
+        self._custom_case_id = custom_case_id if custom_case_id else source_case_id
         self._dest_dataset_dir = benchmark.Benchmark.getDatasetDir(target_testdata_dir,
                                                                    self._custom_case_id)
 
@@ -83,6 +83,7 @@ class DataCustomizer(object):
                 dest_file = os.path.join(self._data_dir, os.path.basename(url))
                 DataCustomizer._rsync(url, dest_file, self._username)
 
+        LOG.info("Customization successful")
         return True
 
     @staticmethod
