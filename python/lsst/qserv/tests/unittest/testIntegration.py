@@ -34,18 +34,31 @@ from lsst.qserv.tests.benchmark import Benchmark
 
 
 class TestIntegration(unittest.TestCase):
-
-    def setUp(self):
-        self.config = commons.getConfig()
-        self.logger = logging.getLogger(__name__)
-        self.modeList = ['mysql', 'qserv']
-        self.loadData = True
-        self.testdata_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                         os.pardir, os.pardir, os.pardir, os.pardir,
-                                         "datasets"
+    
+    @classmethod
+    def setUpClass(cls):
+        super(TestIntegration, cls).setUpClass()
+        TestIntegration.config = commons.getConfig()
+        TestIntegration.logger = logging.getLogger(__name__)
+        TestIntegration.modeList = ['mysql', 'qserv']
+        TestIntegration.loadData = True
+        
+        if os.environ.get('QSERV_TESTDATA_DIR') is not None:
+            TestIntegration.testdata_dir = os.path.join(os.environ.get('QSERV_TESTDATA_DIR'),
+                                             "datasets")
+        else:
+            current_file = os.path.dirname(os.path.realpath(__file__))
+            fragile_testdata_dir = os.path.join(current_file, os.pardir,
+                                                  os.pardir, os.pardir,
+                                                  os.pardir, os.pardir,
+                                                  "datasets"
                                          )
+            TestIntegration.testdata_dir = os.path.abspath(fragile_testdata_dir)
+        
 
     def _runTestCase(self, case_id):
+        self.assertTrue(os.path.exists(self.testdata_dir),
+                   msg="non existing testdata_dir {0}".format(self.testdata_dir))
         bench = Benchmark(case_id, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()

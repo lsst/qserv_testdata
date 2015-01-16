@@ -37,7 +37,7 @@ import unittest
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests.testintegration import suite
+from lsst.qserv.tests.unittest.testIntegration import suite
 
 
 def parseArgs():
