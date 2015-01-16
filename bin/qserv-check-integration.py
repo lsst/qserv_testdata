@@ -29,7 +29,6 @@ import argparse
 import logging
 import os
 import sys
-import urllib2
 
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
@@ -182,13 +181,9 @@ def main():
                                         args.download,
                                         args.username,
                                         args.password)
-        try:
-            customizer.run()
-        except urllib2.HTTPError, e:
-            if e.code == 401:
-                LOG.error("HTTP error while downloading remote big data file, " +
-                          "provide credentials using command-line options")
-                raise
+
+        customizer.run()
+
 
     else:
         returnCode = run_integration_test(args.case_no, args.testdata_dir,

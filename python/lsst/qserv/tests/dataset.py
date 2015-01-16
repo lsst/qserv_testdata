@@ -29,7 +29,8 @@ Customize integration test datasets
 import logging
 import os
 import shutil
-import urllib2
+import urllib
+import sys
 
 from lsst.qserv.tests import dataconfig
 from lsst.qserv.tests import benchmark
@@ -74,9 +75,12 @@ class Customizer(object):
         self._dataConfig = dataconfig.DataConfig(self._data_dir)
 
         if self._downloadAction :
-            if self._username:
-                self._addHTTPBasicAuthHandler()
             urls = self._dataConfig.urls
+            if self._username and self._password:
+                self._urlopener = BatchURLOpener()
+                self._urlopener.setpasswd(self._username, self._password)
+            else:
+                self._urlopener = urllib.FancyURLopener()
             LOG.debug("Big data files to download %s", urls)
             for url in urls:
                 self._download(url) 
@@ -96,37 +100,43 @@ class Customizer(object):
             LOG.exception("Unable to copy input data set from %s to %s",
                       src, dest)
             raise
-        
-    def _addHTTPBasicAuthHandler(self):
-        
-        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passman.add_password(None, self._dataConfig.baseurl,
-                             self._username,
-                             self._password)
-        
-        authhandler = urllib2.HTTPBasicAuthHandler(passman)
-        
-        opener = urllib2.build_opener(authhandler)
-        
-        urllib2.install_opener(opener)
-    
+
     def _download(self, url):
         try:
-            f = urllib2.urlopen(url)
-    
             # Open local file for writing
             dest_file = os.path.join(self._data_dir, os.path.basename(url)) 
             LOG.info("Downloading: %s to %s", url, dest_file)
-            with open(dest_file, "wb") as local_file:
-                local_file.write(f.read())
+            self._urlopener.retrieve(url, dest_file, _reporthook)
     
         #handle errors
-        except urllib2.HTTPError, e:
-            LOG.error("HTTP error %s on url %s", e.code, url)
-            raise
-        except urllib2.URLError, e:
-            LOG.exception("URL error on url %s", url)
+        except :
+            LOG.exception("HTTP error on url %s", url)
             raise
  
+def _reporthook(blocks_read, block_size, total_size):
+    amount_read = blocks_read * block_size
+    if not blocks_read:
+        print 'Connection opened'
+        return
+    elif not blocks_read % 100:
+        if total_size < 0:
+            # Unknown size
+            sys.stdout.write('Read %d blocks' % blocks_read)
+            sys.stdout.flush()
+        elif amount_read <= total_size:
+            status = r"%10d  [%3.2f%%]" % (amount_read, amount_read * 100. / total_size)
+            status = status + chr(8)*(len(status)+1)
+            sys.stdout.write(status)
+            sys.stdout.flush()
+            opener = urllib.FancyURLopener()
+    return
 
+class BatchURLOpener(urllib.FancyURLopener):
+    # read an URL, with automatic HTTP authentication
 
+    def setpasswd(self, user, passwd):
+        self.__user = user
+        self.__passwd = passwd
+
+    def prompt_user_passwd(self, host, realm):
+        return self.__user, self.__passwd
