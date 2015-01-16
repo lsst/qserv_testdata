@@ -106,24 +106,29 @@ class DataConfig(dict):
         return r if r else {}
 
     @property
-    def baseurl(self):
+    def _rsyncBaseUrl(self):
         '''
-        :return the parent url for remote big data files
+        :return the parent rsync url for remote big data files
         '''
-        return self._remote.get('url')
+        rsync_url = self._remote.get('url-rsync')
+        self.log.debug("rsync base url: %s", rsync_url)
+        return rsync_url
 
     @property
-    def urls(self):
+    def rsyncUrls(self):
         '''
-        :return list of big data file urls
+        :return list of big data file rsync urls
         '''
         urls = []
         bigtables = self._remote.get('big-tables')
-        if self.baseurl and bigtables:
-            for t in bigtables:
-                f = self._getInputDataBasename(t)
-                fileurl = urljoin(self.baseurl, f)
+        rsync_base_url = self._rsyncBaseUrl
+
+        if rsync_base_url and bigtables:
+            for tbl in bigtables:
+                filename = self._getInputDataBasename(tbl)
+                fileurl = os.path.join(rsync_base_url, filename)
                 urls.append(fileurl)
+        self.log.debug("rsync urls: %s", urls)
         return urls
 
     def _tableFromSchemaFile(self):

@@ -32,9 +32,9 @@ import sys
 import unittest
 
 
-from lsst.qserv.admin import commons, logger
+from lsst.qserv.admin import commons
 from lsst.qserv.tests.qservDbLoader import QservLoader
-from lsst.qserv.tests.dataconfig import DataConfig
+from lsst.qserv.tests.dataConfig import DataConfig
 
 class TestQservLoader(unittest.TestCase):
 

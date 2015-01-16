@@ -44,7 +44,7 @@ import sys
 from filecmp import dircmp
 
 from lsst.qserv.admin import commons
-from lsst.qserv.tests import dataconfig
+from lsst.qserv.tests import dataConfig
 from lsst.qserv.tests import mysqlDbLoader
 from lsst.qserv.tests import qservDbLoader
 from lsst.qserv.tests.sql import cmd, const
@@ -74,17 +74,17 @@ class Benchmark(object):
         dataset_dir = Benchmark.getDatasetDir(testdata_dir, case_id)
         self._in_dirname = os.path.join(dataset_dir, 'data')
 
-        self.dataReader = dataconfig.DataConfig(self._in_dirname)
+        self.dataReader = dataConfig.DataConfig(self._in_dirname)
 
         self._queries_dirname = os.path.join(dataset_dir, "queries")
 
     @staticmethod
     def getDatasetDir(testdata_dir, case_id):
-        log = logging.getLogger(__name__)
+        LOG = logging.getLogger(__name__)
         if testdata_dir is not None and os.path.isdir(testdata_dir):
-            log.debug("Setting testdata_dir value to %s", testdata_dir)
+            LOG.debug("Setting testdata_dir value to %s", testdata_dir)
         else:
-            log.fatal(
+            LOG.fatal(
                 "Unable to find tests datasets. (testdata_dir value is %s)",
                 testdata_dir
             )

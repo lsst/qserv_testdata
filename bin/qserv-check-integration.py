@@ -33,7 +33,7 @@ import sys
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests import dataset
+from lsst.qserv.tests import dataCustomizer
 
 
 LOG = logging.getLogger()
@@ -59,7 +59,7 @@ def parseArgs():
 
     group.add_argument("-i", "--case-no", dest="case_no",
                        default="01",
-                       help="test case number")
+                       help="Test case number")
     mode_option_values = ['mysql', 'qserv', 'all']
     group.add_argument(
         "-m", "--mode", dest="mode", choices=mode_option_values,
@@ -94,35 +94,39 @@ def parseArgs():
                        default=config['qserv']['tmp_dir'],
                        help=("Absolute path to directory for storing query results."
                              "The results will be stored in "
-                             "<OUT_DIRNAME>/qservTest_case<CASE_NO>/"))
+                             "<OUT_DIR>/qservTest_case<CASE_NO>/"))
     group.add_argument("-s", "--stop-at-query", type=int, dest="stop_at_query",
                        default=9999,
                        help="Stop at query with given number")
 
-    group = parser.add_argument_group('Prepare options',
+    group = parser.add_argument_group('Input dataset customization options',
                                       ('Options related to input data set customization'
-                                       ', disable load and query operations'
-                                       ', and had to be performed before them'))
-    group.add_argument("-S", "--source-case-no", dest="source_case_no",
-                       default="04",
-                       help="test case number")
-    group.add_argument("-T", "--targlease pet-testdata-dir", dest="target_testdata_dir",
+                                       ))
+    group.add_argument("-T", "--work-dir", dest="work_dir",
                        default=config['qserv']['tmp_dir'],
                        help="Absolute path to parent directory where source test " +
                        "datasets will be copied, and big datasets will be " +
                        "eventually downloaded"
                        )
-    group.add_argument("-D", "--download", action="store_true", dest="download",
+    group.add_argument("-C", "--custom", action="store_true", dest="do_custom",
                        default=False,
-                       help="Download big datasets")
+                       help="If <WORK_DIR>/case<CASE_NO> doesn't exists"
+                       ", copy it from <TESTDATA_DIR>"
+                       ", disable load and query operations"
+                       ", and had to be performed before them")
+    group.add_argument("-D", "--download", action="store_true", dest="do_download",
+                       default=False,
+                       help=("Download big datasets using rsync over ssh"
+                             ", implies --custom, enable batch mode with "
+                             "~/.ssh/config and ssh-agent"))
     group.add_argument("-U", "--username", dest="username",
                        default=None,
-                       help="HTTP Basic auth username")
-    group.add_argument("-P", "--pass", dest="password",
-                       default=None,
-                       help="HTTP Basic auth password")
+                       help="rsync username")
 
     args = parser.parse_args()
+
+    if args.do_download:
+        args.do_custom = True
 
     if args.mode == 'all':
         args.mode_list = ['mysql', 'qserv']
@@ -174,16 +178,14 @@ def main():
     logger.setup_logging(args.log_conf)
 
     returnCode = 1
-    if args.source_case_no:
-        customizer = dataset.Customizer(args.source_case_no,
-                                        args.testdata_dir,
-                                        args.target_testdata_dir,
-                                        args.download,
-                                        args.username,
-                                        args.password)
+    if args.do_custom:
+        customizer = dataCustomizer.DataCustomizer(args.case_no,
+                                                   args.testdata_dir,
+                                                   args.work_dir,
+                                                   args.do_download,
+                                                   args.username)
 
         customizer.run()
-
 
     else:
         returnCode = run_integration_test(args.case_no, args.testdata_dir,
