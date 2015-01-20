@@ -42,8 +42,8 @@ class TestDataCustomizer(unittest.TestCase):
         super(TestDataCustomizer, cls).setUpClass()
         TestDataCustomizer._config = commons.read_user_config()
         TestDataCustomizer._logger = logging.getLogger(__name__)
-        
-        
+
+
         TestDataCustomizer._url = ("lsst-dev.ncsa.illinois.edu:"
                "/lsst/home/fjammes/public/qserv_testdata/unit_test_file.jpg")
         TestDataCustomizer._dest_file = os.path.join("/", "tmp",
@@ -52,7 +52,7 @@ class TestDataCustomizer(unittest.TestCase):
             os.remove(TestDataCustomizer._dest_file)
         except:
             pass
-        
+
     @classmethod
     def tearDownClass(cls):
         super(TestDataCustomizer, cls).tearDownClass()
