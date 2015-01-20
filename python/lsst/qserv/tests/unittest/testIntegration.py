@@ -34,7 +34,7 @@ from lsst.qserv.tests.benchmark import Benchmark
 
 
 class TestIntegration(unittest.TestCase):
-    
+
     @classmethod
     def setUpClass(cls):
         super(TestIntegration, cls).setUpClass()
@@ -42,7 +42,7 @@ class TestIntegration(unittest.TestCase):
         TestIntegration.logger = logging.getLogger(__name__)
         TestIntegration.modeList = ['mysql', 'qserv']
         TestIntegration.loadData = True
-        
+
         if os.environ.get('QSERV_TESTDATA_DIR') is not None:
             TestIntegration.testdata_dir = os.path.join(os.environ.get('QSERV_TESTDATA_DIR'),
                                              "datasets")
@@ -54,7 +54,7 @@ class TestIntegration(unittest.TestCase):
                                                   "datasets"
                                          )
             TestIntegration.testdata_dir = os.path.abspath(fragile_testdata_dir)
-        
+
 
     def _runTestCase(self, case_id):
         self.assertTrue(os.path.exists(self.testdata_dir),

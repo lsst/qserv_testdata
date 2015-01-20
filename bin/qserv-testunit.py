@@ -37,10 +37,10 @@ if __name__ == '__main__':
     logger.setup_logging(logger.get_default_log_conf())
 
     modules = [testDataConfig, testDataCustomizer]
-    
+
     retcode = 0
     for m in modules:
         result = unittest.TextTestRunner(verbosity=2).run(m.suite())
         if not result.wasSuccessful(): retcode = 1
-        
+
     sys.exit(retcode)
