@@ -31,8 +31,6 @@ import os
 import sys
 import unittest
 
-
-from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests.dataConfig import DataConfig
 
@@ -52,7 +50,7 @@ class TestDataConfig(unittest.TestCase):
             base_dir = os.getenv("QSERV_TESTDATA_DIR")
 
             if base_dir is None:
-                self.logger.fatal("QSERV_TESTDATA_DIR environment missing.")
+                TestDataConfig._logger.fatal("QSERV_TESTDATA_DIR environment missing.")
                 sys.exit(1)
 
             qserv_tests_dirname = os.path.join(

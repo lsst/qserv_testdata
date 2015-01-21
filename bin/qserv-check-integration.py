@@ -142,12 +142,12 @@ def run_integration_test(case_id, testdata_dir, out_dir, mode_list,
                          load_data, stop_at_query):
     ''' Run integration tests, eventually perform data-loading and query results
     comparison
-    :param case_id: test case number
-    :param testdata_dir: directory containing test datasets
-    :param out_dir: directory containing query results
-    :param mode_list: run test for Qserv, MySQL or both
-    :param load_data: load data before running queries
-    :param stop_at_query: run queries between 0 and it
+    @param case_id: test case number
+    @param testdata_dir: directory containing test datasets
+    @param out_dir: directory containing query results
+    @param mode_list: run test for Qserv, MySQL or both
+    @param load_data: load data before running queries
+    @param stop_at_query: run queries between 0 and it
     '''
     bench = benchmark.Benchmark(case_id, testdata_dir, out_dir)
     bench.run(mode_list, load_data, stop_at_query)

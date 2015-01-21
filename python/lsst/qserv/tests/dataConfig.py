@@ -30,7 +30,6 @@ and set all parameters related to test dataset.
 import io
 import logging
 import os
-from urlparse import urljoin
 
 import yaml
 
@@ -47,7 +46,8 @@ class DataConfig(dict):
         Read meta-data for test data
         and set table to load based on a given order or on schema files in
         input data
-        :param data_dir_name:
+        @param data_dir_name: path to directory containing test data and
+                              configuration files
         '''
         self.log = logging.getLogger(__name__)
         self.dataDir = data_dir_name
@@ -108,7 +108,7 @@ class DataConfig(dict):
     @property
     def _rsyncBaseUrl(self):
         '''
-        :return the parent rsync url for remote big data files
+        @return the parent rsync url for remote big data files
         '''
         rsync_url = self._remote.get('url-rsync')
         self.log.debug("rsync base url: %s", rsync_url)
@@ -117,7 +117,7 @@ class DataConfig(dict):
     @property
     def rsyncUrls(self):
         '''
-        :return list of big data file rsync urls
+        @return list of big data file rsync urls
         '''
         urls = []
         bigtables = self._remote.get('big-tables')
