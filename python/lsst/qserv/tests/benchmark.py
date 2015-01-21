@@ -49,6 +49,7 @@ from lsst.qserv.tests import mysqlDbLoader
 from lsst.qserv.tests import qservDbLoader
 from lsst.qserv.tests.sql import cmd, const
 
+MAX_QUERY = 10000
 
 class Benchmark(object):
 
@@ -85,8 +86,8 @@ class Benchmark(object):
 
         self._queries_dirname = os.path.join(qserv_tests_dirname, "queries")
 
-    def runQueries(self, stopAt):
-        self.logger.debug("Running queries : (stop-at : %s)" % stopAt)
+    def runQueries(self, stopAt = MAX_QUERY):
+        self.logger.debug("Running queries : (stop-at: %s)" % stopAt)
         if self._mode == 'qserv':
             withQserv = True
             self._sqlInterface['query'] = cmd.Cmd(config=self.config,
@@ -235,7 +236,7 @@ class Benchmark(object):
         # Close socket connections
         del(self.dataLoader[self._mode])
 
-    def run(self, mode_list, load_data, stop_at_query=7999):
+    def run(self, mode_list, load_data, stop_at_query = MAX_QUERY):
 
         self.cleanup()
         self.dataReader.analyzeInputData()

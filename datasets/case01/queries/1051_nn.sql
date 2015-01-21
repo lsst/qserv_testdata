@@ -2,6 +2,8 @@
 
 
 -- See ticket #1840
+-- Test DM-1582: Qserv spatial restrictor names
+--               must be case-insensitive
 
 SELECT o1.objectId AS objId1,
        o2.objectId AS objId2,
