@@ -29,8 +29,6 @@ Customize integration test datasets
 import logging
 import os
 import shutil
-import urllib
-import sys
 
 from lsst.qserv.admin import commons
 from lsst.qserv.tests import dataConfig
@@ -44,12 +42,12 @@ class DataCustomizer(object):
     def __init__(self, source_case_id, testdata_dir, target_testdata_dir,
                  do_download=True, custom_case_id=None, username=None):
         ''' Contain informations allowing to customize a dataset
-        :param source_case_id: dataset to duplicate
-        :param testdata_dir: directory containing test dataset to duplicate
-        :param target_testdata_dir: destination directory
-        :param download_action: use data configuration to eventually override data with
+        @param source_case_id: dataset to duplicate
+        @param testdata_dir: directory containing test dataset to duplicate
+        @param target_testdata_dir: destination directory
+        @param download_action: use data configuration to eventually override data with
         remote big data files
-        :return True if success, else False
+        @return True if success, else False
         '''
 
         self._username = username
@@ -61,13 +59,8 @@ class DataCustomizer(object):
                                                                    self._custom_case_id)
 
     def run(self):
-        ''' Customize  one integration test dataset
-        :param source_case_no: dataset to duplicate
-        :param testdata_dir: directory containing test dataset to duplicate
-        :param target_testdata_dir: destination directory
-        :param download: use data configuration to eventually override data with
-        remote big data files
-        :return True if success, else False
+        ''' Customize one integration test dataset
+            using current DataCustomizer object information
         '''
 
         LOG.info("Customizing integration tests datasets")
