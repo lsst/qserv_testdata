@@ -133,12 +133,12 @@ class QservLoader(DbLoader):
                str(self.logger.getEffectiveLevel()),
                "-f",
                os.path.join(self.config['qserv']['log_dir'],
-                            "qadm-%s.log" % self.dataConfig.dataName)]
+                            "qadm-%s.log" % self._dbName)]
 
         with tempfile.NamedTemporaryFile('w+t') as f:
             f.write('DROP DATABASE {0};'.format(self._dbName))
             f.flush()
-            out = commons.run_command(cmd, f.name)
+            commons.run_command(cmd, f.name)
             self.logger.info("Drop CSS database: %s",
                              self._dbName)
 
