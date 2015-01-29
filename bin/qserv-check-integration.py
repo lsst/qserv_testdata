@@ -55,7 +55,7 @@ def parseArgs():
               default='all',
               help= "Qserv test modes (direct mysql connection, or via qserv)")
     parser.add_argument("-s", "--stop-at-query", type=int, dest="stop_at_query",
-              default = 7999,
+              default=benchmark.MAX_QUERY,
               help="Stop at query with given number")
     parser.add_argument("-l", "--load", action="store_true", dest="load_data", default=False,
               help="Load test dataset prior to query execution")
@@ -79,6 +79,8 @@ def main():
 
     benchmark.init(args)
     bench = benchmark.Benchmark(args.case_no, args.out_dirname)
+
+    print "XXXXXXXXXXXXXXXXXXXXXXXXxx %s" % args.stop_at_query
     bench.run(args.mode_list, args.load_data, args.stop_at_query)
 
     returnCode = 1
