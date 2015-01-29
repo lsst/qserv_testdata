@@ -95,7 +95,7 @@ def parseArgs():
                              "The results will be stored in "
                              "<OUT_DIR>/qservTest_case<CASE_ID>/"))
     group.add_argument("-s", "--stop-at-query", type=int, dest="stop_at_query",
-                       default=9999,
+                       default=benchmark.MAX_QUERY,
                        help="Stop at query with given number")
 
     group = parser.add_argument_group('Input dataset customization options',
