@@ -103,6 +103,7 @@ if [ ! "${QUICK}" ]; then
 fi
 
 # "scons install" doesn't use all proc
+eupspkg -e PREFIX="${QSERV_DIR}" build
 eupspkg -e PREFIX="${QSERV_DIR}" install
 qserv-configure.py --all --force -R "${QSERV_RUN_DIR}"
 
