@@ -103,8 +103,9 @@ if [ ! "${QUICK}" ]; then
 fi
 
 # "scons install" doesn't use all proc
-eupspkg -e PREFIX="${QSERV_DIR}" build
-eupspkg -e PREFIX="${QSERV_DIR}" install
+NCORE=${nproc}
+scons build -j $NCORE
+scons install -j $NCORE
 qserv-configure.py --all --force -R "${QSERV_RUN_DIR}"
 
 # record Qserv version
