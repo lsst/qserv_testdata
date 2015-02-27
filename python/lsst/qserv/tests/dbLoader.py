@@ -1,5 +1,5 @@
 # LSST Data Management System
-# Copyright 2014 AURA/LSST.
+# Copyright 2014-2015 AURA/LSST.
 #
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -27,9 +27,9 @@ Wrap Qserv user-friendly loader.
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+import glob
 import logging
 import os
-import glob
 
 from lsst.qserv.tests.sql import const
 
