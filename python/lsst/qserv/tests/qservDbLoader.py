@@ -1,5 +1,5 @@
 # LSST Data Management System
-# Copyright 2014 AURA/LSST.
+# Copyright 2014-2015 AURA/LSST.
 #
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -75,7 +75,7 @@ class QservLoader(DbLoader):
         loaderCmd = self.loaderCmdCommonOpts(table)
 
         loaderCmd += ['--css-remove']
-        
+
         if self.dataConfig.duplicatedTables:
             loaderCmd += ['--skip-partition']
             loaderCmd += ['--chunks-dir={0}'.format(os.path.join(self.tmpDir,

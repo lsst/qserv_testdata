@@ -1,5 +1,5 @@
 # LSST Data Management System
-# Copyright 2014 AURA/LSST.
+# Copyright 2014-2015 AURA/LSST.
 #
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -27,9 +27,9 @@ Wrap Qserv user-friendly loader.
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+import glob
 import logging
 import os
-import glob
 
 from lsst.qserv.tests.sql import const
 
@@ -66,14 +66,14 @@ class DbLoader(object):
                     '-vvv']
         elif logLevel is logging.INFO:
             cmd += ['-v']
-        
+
         cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                    "common.cfg")),
                 '--user={0}'.format(self.config['mysqld']['user']),
                 '--password={0}'.format(self.config['mysqld']['pass']),
                 '--socket={0}'.format(self.config['mysqld']['sock']),
                 '--delete-tables']
-                
+
         if self.dataConfig.duplicatedTables:
             # Other parameters if using duplicated data
             cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
