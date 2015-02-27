@@ -29,6 +29,7 @@ Wrap Qserv user-friendly loader.
 
 import logging
 import os
+import glob
 
 from lsst.qserv.tests.sql import const
 
@@ -65,30 +66,44 @@ class DbLoader(object):
                     '-vvv']
         elif logLevel is logging.INFO:
             cmd += ['-v']
-
+        
         cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                    "common.cfg")),
                 '--user={0}'.format(self.config['mysqld']['user']),
                 '--password={0}'.format(self.config['mysqld']['pass']),
                 '--socket={0}'.format(self.config['mysqld']['sock']),
-                '--delete-tables',
-                # WARN: required to unzip input data file
-                '--chunks-dir={0}'.format(os.path.join(tmp_dir,
-                                                       "qserv_data_loader",
-                                                       table))]
+                '--delete-tables']
+                
+        if self.dataConfig.duplicatedTables:
+            # Other parameters if using duplicated data
+            cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
+                                                       table+".cfg"))]
+        else:
+            # WARN: required to unzip input data file
+            cmd += ['--chunks-dir={0}'.format(os.path.join(tmp_dir,
+                                                           "qserv_data_loader",
+                                                           table))]
 
         return cmd
 
     def loaderCmdCommonArgs(self, table):
         """
-        Return user-friendly loader command-line arguments wich are common
+        Return user-friendly loader command-line arguments which are common
         to both Qserv and MySQL
         """
+        tmp_dir = self.config['qserv']['tmp_dir']
         cmd = [self._dbName,
                table,
                self.dataConfig.getSchemaFile(table)]
 
-        dataFile = self.dataConfig.getInputDataFile(table)
+        if self.dataConfig.duplicatedTables:
+            for filename in glob.glob(os.path.join(tmp_dir,self._out_dirname,
+                                                   "chunks/",table,'chunk_[0-9][0-9][0-9][0-9].txt')):
+                os.system("cat "+filename+" >> "+os.path.join(tmp_dir,self._out_dirname,"chunks/",table,table+".txt"))
+            dataFile = os.path.join(tmp_dir,self._out_dirname,"chunks/",table,table+".txt")
+        else:
+            dataFile = self.dataConfig.getInputDataFile(table)
+
         if dataFile:
             cmd += [dataFile]
         return cmd
