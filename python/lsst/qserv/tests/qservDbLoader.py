@@ -75,7 +75,7 @@ class QservLoader(DbLoader):
         loaderCmd = self.loaderCmdCommonOpts(table)
 
         loaderCmd += ['--css-remove']
-        
+
         if self.dataConfig.duplicatedTables:
             loaderCmd += ['--skip-partition']
             loaderCmd += ['--chunks-dir={0}'.format(os.path.join(self.tmpDir,
