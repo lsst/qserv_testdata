@@ -54,6 +54,9 @@ class QservLoader(DbLoader):
                                              "qserv", "empty_" +
                                              self._dbName +
                                              ".txt")
+        self.dataConfig = data_reader
+        self.tmpDir = self.config['qserv']['tmp_dir']
+
 
     def createLoadTable(self, table):
         """
@@ -72,7 +75,12 @@ class QservLoader(DbLoader):
         loaderCmd = self.loaderCmdCommonOpts(table)
 
         loaderCmd += ['--css-remove']
-
+        
+        if self.dataConfig.duplicatedTables:
+            loaderCmd += ['--skip-partition']
+            loaderCmd += ['--chunks-dir={0}'.format(os.path.join(self.tmpDir,
+                                                                 self._out_dirname,
+                                                                 "chunks/",table))]
         # include table-specific config if it exists
         tableCfg = os.path.join(self.dataConfig.dataDir, table + ".cfg")
         if os.path.exists(tableCfg):
