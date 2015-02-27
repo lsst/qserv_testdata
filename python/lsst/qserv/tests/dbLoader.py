@@ -66,14 +66,14 @@ class DbLoader(object):
                     '-vvv']
         elif logLevel is logging.INFO:
             cmd += ['-v']
-        
+
         cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                    "common.cfg")),
                 '--user={0}'.format(self.config['mysqld']['user']),
                 '--password={0}'.format(self.config['mysqld']['pass']),
                 '--socket={0}'.format(self.config['mysqld']['sock']),
                 '--delete-tables']
-                
+
         if self.dataConfig.duplicatedTables:
             # Other parameters if using duplicated data
             cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
