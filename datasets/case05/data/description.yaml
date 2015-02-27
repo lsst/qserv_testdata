@@ -1,0 +1,10 @@
+tables:
+    load-order:
+    directors: ["Object"]
+    views:
+extensions:
+    data: '.txt'
+    schema: '.sql'
+# Indicating if duplicator is going to be used
+duplicate:
+    tables: ["Object","Source"]

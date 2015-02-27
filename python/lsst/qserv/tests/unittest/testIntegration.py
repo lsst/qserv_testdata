@@ -80,6 +80,10 @@ class TestIntegration(unittest.TestCase):
         case_id = "04"
         self._runTestCase(case_id)
 
+    def test_case05(self):
+        case_id = "05"
+        self._runTestCase(case_id)
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestIntegration)

@@ -79,7 +79,7 @@ class DataConfig(dict):
 
     @property
     def _zipExt(self):
-        return self['extensions']['zip']
+        return self['extensions'].get('zip', "")
 
     @property
     def _views(self):
@@ -99,6 +99,14 @@ class DataConfig(dict):
     @property
     def orderedTables(self):
         return self['tables'].get('load-order')
+
+    @property
+    def _duplicate(self):
+        return self.get('duplicate', {})
+
+    @property
+    def duplicatedTables(self):
+        return self._duplicate.get('tables',[])
 
     @property
     def _remote(self):
