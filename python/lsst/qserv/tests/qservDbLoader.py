@@ -31,7 +31,10 @@ import os
 import sys
 import tempfile
 
+from lsst.db.db import Db
 from lsst.qserv.admin import commons
+from lsst.qserv.admin import qservAdmin
+from lsst.qserv.admin import workerAdmin
 from lsst.qserv.tests.dbLoader import DbLoader
 from lsst.qserv.tests.sql import cmd, connection
 
@@ -57,6 +60,11 @@ class QservLoader(DbLoader):
         self.dataConfig = data_reader
         self.tmpDir = self.config['qserv']['tmp_dir']
 
+        # Adding Qserv Admin
+        self.qAdmin = qservAdmin.QservAdmin('localhost:12181')
+        self.wAdmin = workerAdmin.WorkerAdmin('worker-dbdev3b',self.qAdmin)
+        #self.db = self.wAdmin.mysqlConn(user='qsmaster',host='localhost')
+        self.db = Db(read_default_file='~/.my.cnf')
 
     def createLoadTable(self, table):
         """
@@ -74,7 +82,7 @@ class QservLoader(DbLoader):
 
         loaderCmd = self.loaderCmdCommonOpts(table)
 
-        loaderCmd += ['--css-remove']
+        loaderCmd += ['--css-remove','--worker', 'worker-dbdev3b']
 
         if self.dataConfig.duplicatedTables:
             loaderCmd += ['--skip-partition']
@@ -111,6 +119,7 @@ class QservLoader(DbLoader):
         """
 
         self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
+        #self._sqlInterface['sock'] = self.db
 
         self.logger.info("Drop and create MySQL database for Qserv: %s",
                          self._dbName)
@@ -153,12 +162,15 @@ class QservLoader(DbLoader):
     def workerInsertXrootdExportPath(self):
         sql = ("SELECT * FROM qservw_worker.Dbs WHERE db='{0}';"
                .format(self._dbName))
-        rows = self._sqlInterface['sock'].execute(sql)
+        #rows = self._sqlInterface['sock'].execCommandN(sql)
+        print sql
+        rows = self.db.execCommandN(sql)
 
         if len(rows) == 0:
             sql = ("INSERT INTO qservw_worker.Dbs VALUES('{0}');"
                    .format(self._dbName))
-            self._sqlInterface['sock'].execute(sql)
+            #self._sqlInterface['sock'].execute(sql)
+            self.db.execCommandN(sql)
         elif len(rows) > 1:
             self.logger.fatal("Duplicated value '%s' in qservw_worker.Dbs",
                               self._dbName)

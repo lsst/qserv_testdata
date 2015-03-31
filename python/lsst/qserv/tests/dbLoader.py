@@ -69,8 +69,9 @@ class DbLoader(object):
 
         cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
                                                    "common.cfg")),
-                '--user={0}'.format(self.config['mysqld']['user']),
-                '--password={0}'.format(self.config['mysqld']['pass']),
+                '--user=qsmaster',
+                #'{0}'.format(self.config['mysqld']['user']),
+                #'--password={0}'.format(self.config['mysqld']['pass']),
                 '--socket={0}'.format(self.config['mysqld']['sock']),
                 '--delete-tables']
 
