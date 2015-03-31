@@ -61,6 +61,7 @@ class Benchmark(object):
         self._sqlInterface = dict()
         self._mode = None
         self._dbName = None
+        self._workerList = None
 
         self.config = commons.getConfig()
 
@@ -235,7 +236,7 @@ class Benchmark(object):
         if (self._mode == 'qserv'):
             self.dataLoader['qserv'].workerInsertXrootdExportPath()
 
-            # Reload xroot export paths w.r.t loaded chunks
+            # Reload xroot export paths w.r.t loaded chunks, change to qAdmin for multi
             commons.restart('xrootd')
 
             # Reload Qserv meta-data
