@@ -63,8 +63,8 @@ class QservLoader(DbLoader):
         # Adding Qserv Admin
         self.qAdmin = qservAdmin.QservAdmin('localhost:12181')
         self.wAdmin = workerAdmin.WorkerAdmin('worker-dbdev3b',self.qAdmin)
-        #self.db = self.wAdmin.mysqlConn(user='qsmaster',host='localhost')
-        self.db = Db(read_default_file='~/.my.cnf')
+        self.db = self.wAdmin.mysqlConn(user='qsmaster')
+        #self.db = Db(read_default_file='~/.my.cnf')
 
     def createLoadTable(self, table):
         """
