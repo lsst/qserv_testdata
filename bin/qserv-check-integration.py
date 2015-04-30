@@ -60,10 +60,12 @@ def parseArgs():
                        default="01",
                        help="Test case number")
     mode_option_values = ['mysql', 'qserv', 'all']
-    group.add_argument(
-        "-m", "--mode", dest="mode", choices=mode_option_values,
-        default='all',
-        help="Qserv test modes (direct mysql connection, or via qserv)")
+    group.add_argument("-m", "--mode", dest="mode", choices=mode_option_values,
+                       default='all',
+                       help="Qserv test modes (direct mysql connection, or via qserv)")
+    group.add_argument("-mn", "--multi", action="store_true", dest="multi_node",
+                       default=False,
+                       help="Run test in multi-node (must specify --mode=qserv")
 
     group = parser.add_argument_group('Load options',
                                       'Options related to data loading')
@@ -135,21 +137,26 @@ def parseArgs():
     else:
         args.mode_list = [args.mode]
 
+    if args.multi_node == True and args.mode != 'qserv':
+        print "Select --mode=qserv for multi-node test"
+        sys.exit()
+
     return args
 
 
 def run_integration_test(case_id, testdata_dir, out_dir, mode_list,
-                         load_data, stop_at_query):
+                         multi_node,load_data, stop_at_query):
     ''' Run integration tests, eventually perform data-loading and query results
     comparison
     @param case_id: test case number
     @param testdata_dir: directory containing test datasets
     @param out_dir: directory containing query results
     @param mode_list: run test for Qserv, MySQL or both
+    @param multi_node: run test in multi-node setup
     @param load_data: load data before running queries
     @param stop_at_query: run queries between 0 and it
     '''
-    bench = benchmark.Benchmark(case_id, testdata_dir, out_dir)
+    bench = benchmark.Benchmark(case_id, multi_node, testdata_dir, out_dir)
     bench.run(mode_list, load_data, stop_at_query)
 
     returnCode = 1
@@ -193,6 +200,7 @@ def main():
     else:
         returnCode = run_integration_test(args.case_id, args.testdata_dir,
                                           args.out_dir, args.mode_list,
+                                          args.multi_node,
                                           args.load_data, args.stop_at_query)
 
     sys.exit(returnCode)

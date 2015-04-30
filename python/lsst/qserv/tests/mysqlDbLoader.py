@@ -39,12 +39,14 @@ class MysqlLoader(DbLoader):
     def __init__(self, config,
                  data_reader,
                  db_name,
-                 out_dirname):
+                 out_dirname,
+                 multi_node):
 
         super(self.__class__, self).__init__(config,
                                              data_reader,
                                              db_name,
-                                             out_dirname)
+                                             out_dirname,
+                                             multi_node)
         self.logger = logging.getLogger(__name__)
 
         self.dataConfig = data_reader
