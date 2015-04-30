@@ -36,13 +36,14 @@ from lsst.qserv.tests.sql import const
 
 class DbLoader(object):
 
-    def __init__(self, config, data_reader, db_name, out_dirname):
+    def __init__(self, config, data_reader, db_name, out_dirname, multi_node):
 
         self.config = config
         self.dataConfig = data_reader
         self._dbName = db_name
 
         self._out_dirname = out_dirname
+        self._multi_node = multi_node
 
         self.logger = logging.getLogger(__name__)
         self.sock_params = {
@@ -67,13 +68,19 @@ class DbLoader(object):
         elif logLevel is logging.INFO:
             cmd += ['-v']
 
-        cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
-                                                   "common.cfg")),
-                '--user=qsmaster',
-                #'{0}'.format(self.config['mysqld']['user']),
-                #'--password={0}'.format(self.config['mysqld']['pass']),
-                '--socket={0}'.format(self.config['mysqld']['sock']),
-                '--delete-tables']
+        if self._multi_node == True:
+            cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
+                                                       "common.cfg")),
+                    '--user=qsmaster',
+                    '--socket={0}'.format(self.config['mysqld']['sock']),
+                    '--delete-tables']
+        else:
+            cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
+                                                       "common.cfg")),
+                    '--user={0}'.format(self.config['mysqld']['user']),
+                    '--password={0}'.format(self.config['mysqld']['pass']),
+                    '--socket={0}'.format(self.config['mysqld']['sock']),
+                    '--delete-tables']
 
         if self.dataConfig.duplicatedTables:
             # Other parameters if using duplicated data
