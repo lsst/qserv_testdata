@@ -25,14 +25,27 @@ Launch each integration tests, using unittest framework.
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
+
+# -------------------------------
+#  Imports of standard modules --
+# -------------------------------
 import logging
 import os
 import unittest
 
+# ----------------------------
+# Imports for other modules --
+# ----------------------------
 from lsst.qserv.admin import commons
 from lsst.qserv.tests.benchmark import Benchmark
 
+# ---------------------------------
+# Local non-exported definitions --
+# ---------------------------------
 
+# -----------------------
+# Exported definitions --
+# -----------------------
 class TestIntegration(unittest.TestCase):
 
     @classmethod
@@ -62,7 +75,7 @@ class TestIntegration(unittest.TestCase):
         bench = Benchmark(case_id, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()
-        return not failed_queries
+        self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
 
     def test_case01(self):
         case_id = "01"
@@ -86,5 +99,4 @@ class TestIntegration(unittest.TestCase):
 
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestIntegration)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)
