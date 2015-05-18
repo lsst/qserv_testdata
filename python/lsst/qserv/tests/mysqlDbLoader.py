@@ -26,8 +26,9 @@ Wrap Qserv user-friendly loader.
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
-import sys
 import logging
+import os
+import sys
 
 from lsst.qserv.admin import commons
 from lsst.qserv.tests.dbLoader import DbLoader
@@ -64,6 +65,11 @@ class MysqlLoader(DbLoader):
         loaderCmd += ['--no-css',
                       '--skip-partition',
                       '--one-table']
+
+        # include table-specific config if it exists
+        tableCfg = os.path.join(self.dataConfig.dataDir, table + ".cfg")
+        if os.path.exists(tableCfg):
+            loaderCmd += ['--config={0}'.format(tableCfg)]
 
         loaderCmd += self.loaderCmdCommonArgs(table)
 
