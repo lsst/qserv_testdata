@@ -29,11 +29,10 @@ Wrap Qserv user-friendly loader.
 import logging
 import os
 import sys
-import tempfile
 
 from lsst.qserv.admin import commons
-from lsst.qserv.tests.dbLoader import DbLoader
-from lsst.qserv.tests.sql import cmd, connection
+from lsst.qserv.admin import qservAdmin
+from .dbLoader import DbLoader
 
 
 class QservLoader(DbLoader):
@@ -80,7 +79,7 @@ class QservLoader(DbLoader):
             loaderCmd += ['--skip-partition']
             loaderCmd += ['--chunks-dir={0}'.format(os.path.join(self.tmpDir,
                                                                  self._out_dirname,
-                                                                 "chunks/",table))]
+                                                                 "chunks/", table))]
         # include table-specific config if it exists
         tableCfg = os.path.join(self.dataConfig.dataDir, table + ".cfg")
         if os.path.exists(tableCfg):
@@ -96,8 +95,8 @@ class QservLoader(DbLoader):
         # Use same logging configuration for loader and integration test
         # command line, this allow to redirect loader to sys.stdout, sys.stderr
         commons.run_command(loaderCmd,
-                                  stdout=sys.stdout,
-                                  stderr=sys.stderr)
+                            stdout=sys.stdout,
+                            stderr=sys.stderr)
         self.logger.info("Partitioned data loaded for table %s", table)
 
     def prepareDatabase(self):
@@ -110,56 +109,21 @@ class QservLoader(DbLoader):
         Create MySQL command-line client
         """
 
-        self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
-
         self.logger.info("Drop and create MySQL database for Qserv: %s",
                          self._dbName)
-        sql_instructions = [
-            "DROP DATABASE IF EXISTS %s" % self._dbName,
-            "CREATE DATABASE %s" % self._dbName,
-            ("GRANT ALL ON {0}.* TO '{1}'@'localhost'"
-             .format(self._dbName, self.config['qserv']['user'])),
-            "USE {0}".format(self._dbName)
-        ]
 
-        for sql in sql_instructions:
-            self._sqlInterface['sock'].execute(sql)
-
-        cmd_connection_params = self.sock_params
-        cmd_connection_params['database'] = self._dbName
-        self._sqlInterface['cmd'] = cmd.Cmd(**cmd_connection_params)
+        self.wmgr.dropDb(self._dbName, mustExist=False)
+        self.wmgr.createDb(self._dbName)
 
         self.logger.info("Drop CSS database for Qserv")
         self.dropCssDatabase()
 
     def dropCssDatabase(self):
-        script = "qserv-admin.py"
-        cmd = [script,
-               "-c",
-               "localhost:%s" % self.config['zookeeper']['port'],
-               "-v",
-               str(self.logger.getEffectiveLevel()),
-               "-f",
-               os.path.join(self.config['qserv']['log_dir'],
-                            "qadm-%s.log" % self._dbName)]
-
-        with tempfile.NamedTemporaryFile('w+t') as f:
-            f.write('DROP DATABASE {0};'.format(self._dbName))
-            f.flush()
-            commons.run_command(cmd, f.name)
-            self.logger.info("Drop CSS database: %s",
-                             self._dbName)
+        css = qservAdmin.QservAdmin("localhost:" + str(self.config['zookeeper']['port']))
+        if css.dbExists(self._dbName):
+            css.dropDb(self._dbName)
+        self.logger.info("Drop CSS database: %s", self._dbName)
 
     def workerInsertXrootdExportPath(self):
-        sql = ("SELECT * FROM qservw_worker.Dbs WHERE db='{0}';"
-               .format(self._dbName))
-        rows = self._sqlInterface['sock'].execute(sql)
 
-        if len(rows) == 0:
-            sql = ("INSERT INTO qservw_worker.Dbs VALUES('{0}');"
-                   .format(self._dbName))
-            self._sqlInterface['sock'].execute(sql)
-        elif len(rows) > 1:
-            self.logger.fatal("Duplicated value '%s' in qservw_worker.Dbs",
-                              self._dbName)
-            sys.exit(1)
+        self.wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
