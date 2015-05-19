@@ -44,11 +44,11 @@ import sys
 from filecmp import dircmp
 
 from lsst.qserv.admin import commons
-from lsst.qserv.tests import dataConfig
 from lsst.qserv.admin import dataDuplicator
-from lsst.qserv.tests import mysqlDbLoader
-from lsst.qserv.tests import qservDbLoader
-from lsst.qserv.tests.sql import cmd, const
+from . import dataConfig
+from . import mysqlDbLoader
+from . import qservDbLoader
+from .sql import cmd, const
 
 MAX_QUERY = 10000
 
@@ -58,7 +58,6 @@ class Benchmark(object):
 
         self.logger = logging.getLogger(__name__)
         self.dataLoader = dict()
-        self._sqlInterface = dict()
         self._mode = None
         self._dbName = None
 
@@ -80,7 +79,9 @@ class Benchmark(object):
 
         self._queries_dirname = os.path.join(dataset_dir, "queries")
 
-        self.dataDuplicator = dataDuplicator.DataDuplicator(self.dataReader,self._in_dirname,self._out_dirname)
+        self.dataDuplicator = dataDuplicator.DataDuplicator(self.dataReader,
+                                                            self._in_dirname,
+                                                            self._out_dirname)
 
     @staticmethod
     def getDatasetDir(testdata_dir, case_id):
@@ -97,20 +98,18 @@ class Benchmark(object):
         dataset_dir = os.path.join(testdata_dir, "case{0}".format(case_id))
         return dataset_dir
 
-    def runQueries(self, stopAt = MAX_QUERY):
-        self.logger.debug("Running queries : (stop-at: %s)" % stopAt)
+    def runQueries(self, stopAt=MAX_QUERY):
+        self.logger.debug("Running queries : (stop-at: %s)", stopAt)
         if self._mode == 'qserv':
             withQserv = True
-            self._sqlInterface['query'] = cmd.Cmd(config=self.config,
-                                                  mode=const.MYSQL_PROXY,
-                                                  database=self._dbName
-                                                  )
+            sqlInterface = cmd.Cmd(config=self.config,
+                                   mode=const.MYSQL_PROXY,
+                                   database=self._dbName)
         else:
             withQserv = False
-            self._sqlInterface['query'] = cmd.Cmd(config=self.config,
-                                                  mode=const.MYSQL_SOCK,
-                                                  database=self._dbName
-                                                  )
+            sqlInterface = cmd.Cmd(config=self.config,
+                                   mode=const.MYSQL_SOCK,
+                                   database=self._dbName)
 
         myOutDir = os.path.join(self._out_dirname, "outputs", self._mode)
         if not os.access(myOutDir, os.F_OK):
@@ -119,7 +118,7 @@ class Benchmark(object):
             os.chmod(myOutDir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         qDir = self._queries_dirname
-        self.logger.debug("Testing queries from %s" % qDir)
+        self.logger.debug("Testing queries from %s", qDir)
         queries = sorted(os.listdir(qDir))
         queryCount = 0
         queryRunCount = 0
@@ -144,9 +143,7 @@ class Benchmark(object):
                                       qText,
                                       str(pragmas))
                     column_names = 'noheader' not in pragmas
-                    self._sqlInterface['query'].execute(qText,
-                                                        outFile,
-                                                        column_names)
+                    sqlInterface.execute(qText, outFile, column_names)
 
         self.logger.info("Test case #%s: %s queries launched on a total of %s",
                          self._case_id,
@@ -199,8 +196,8 @@ class Benchmark(object):
         """
         Creates orderedTables and load data for input file located in caseXX/data/
         """
-        self.logger.info("Loading data from %s (%s mode)" % (self._in_dirname,
-                                                             self._mode))
+        self.logger.info("Loading data from %s (%s mode)", self._in_dirname,
+                                                             self._mode)
         for table in self.dataReader.orderedTables:
             self.dataLoader[self._mode].createLoadTable(table)
 
@@ -213,7 +210,7 @@ class Benchmark(object):
         os.makedirs(self._out_dirname)
 
     def connectAndInitDatabases(self):
-        self.logger.debug("Creation of data loader for %s mode" % self._mode)
+        self.logger.debug("Creation of data loader for %s mode", self._mode)
         if (self._mode == 'mysql'):
             self.dataLoader[self._mode] = mysqlDbLoader.MysqlLoader(
                 self.config,
@@ -228,15 +225,14 @@ class Benchmark(object):
                 self._dbName,
                 self._out_dirname
             )
-        self.logger.debug("Initializing database for %s mode" % self._mode)
+        self.logger.debug("Initializing database for %s mode", self._mode)
         self.dataLoader[self._mode].prepareDatabase()
 
     def finalize(self):
         if (self._mode == 'qserv'):
             self.dataLoader['qserv'].workerInsertXrootdExportPath()
 
-            # Reload xroot export paths w.r.t loaded chunks
-            commons.restart('xrootd')
+            # xrootd is restarted by wmgr
 
             # Reload Qserv meta-data
             commons.restart('qserv-czar')
@@ -247,13 +243,13 @@ class Benchmark(object):
         # Close socket connections
         del(self.dataLoader[self._mode])
 
-    def run(self, mode_list, load_data, stop_at_query = MAX_QUERY):
+    def run(self, mode_list, load_data, stop_at_query=MAX_QUERY):
 
         self.cleanup()
 
         if load_data:
             if self.dataReader.duplicatedTables:
-                self.logger.info("Tables to Duplicate %s" % self.dataReader.duplicatedTables)
+                self.logger.info("Tables to Duplicate %s", self.dataReader.duplicatedTables)
                 self.dataDuplicator.run()
 
         for mode in mode_list:
@@ -288,9 +284,9 @@ class Benchmark(object):
         else:
             for query_name in dcmp.diff_files:
                 failing_queries.append(query_name)
-            self.logger.error("MySQL/Qserv differs for {0} queries:"
-                              .format(len(failing_queries)))
-            self.logger.error("Broken queries list in {0}: {1}"
-                              .format(qserv_out_dir, failing_queries))
+            self.logger.error("MySQL/Qserv differs for %s queries:",
+                              len(failing_queries))
+            self.logger.error("Broken queries list in %s: %s",
+                              qserv_out_dir, failing_queries)
 
         return failing_queries

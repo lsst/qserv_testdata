@@ -31,7 +31,7 @@ import glob
 import logging
 import os
 
-from lsst.qserv.tests.sql import const
+from lsst.qserv.wmgr.client import WmgrClient
 
 
 class DbLoader(object):
@@ -45,12 +45,12 @@ class DbLoader(object):
         self._out_dirname = out_dirname
 
         self.logger = logging.getLogger(__name__)
-        self.sock_params = {
-            'config': self.config,
-            'mode': const.MYSQL_SOCK
-        }
 
-        self._sqlInterface = dict()
+        # This code currently works only with mono-node setup, host
+        # name for wmgr is the same as master qserv host
+        self.wmgr = WmgrClient(host=self.config['qserv']['master'],
+                               port=self.config['wmgr']['port'],
+                               secretFile=self.config['wmgr']['secret'])
 
     def loaderCmdCommonOpts(self, table):
         """
@@ -67,11 +67,10 @@ class DbLoader(object):
         elif logLevel is logging.INFO:
             cmd += ['-v']
 
-        cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
-                                                   "common.cfg")),
-                '--user={0}'.format(self.config['mysqld']['user']),
-                '--password={0}'.format(self.config['mysqld']['pass']),
-                '--socket={0}'.format(self.config['mysqld']['sock']),
+        cmd += ['--config=' + os.path.join(self.dataConfig.dataDir, "common.cfg"),
+                '--host=' + self.config['qserv']['master'],
+                '--port=' + self.config['wmgr']['port'],
+                '--secret=' + self.config['wmgr']['secret'],
                 '--delete-tables']
 
         if self.dataConfig.duplicatedTables:
@@ -97,10 +96,10 @@ class DbLoader(object):
                self.dataConfig.getSchemaFile(table)]
 
         if self.dataConfig.duplicatedTables:
-            for filename in glob.glob(os.path.join(tmp_dir,self._out_dirname,
-                                                   "chunks/",table,'chunk_[0-9][0-9][0-9][0-9].txt')):
-                os.system("cat "+filename+" >> "+os.path.join(tmp_dir,self._out_dirname,"chunks/",table,table+".txt"))
-            dataFile = os.path.join(tmp_dir,self._out_dirname,"chunks/",table,table+".txt")
+            dataFile = os.path.join(tmp_dir, self._out_dirname, "chunks/", table, table + ".txt")
+            for filename in glob.glob(os.path.join(tmp_dir, self._out_dirname,
+                                                   "chunks/", table, 'chunk_[0-9][0-9][0-9][0-9].txt')):
+                os.system("cat " + filename + " >> " + dataFile)
         else:
             dataFile = self.dataConfig.getInputDataFile(table)
 
