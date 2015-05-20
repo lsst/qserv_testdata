@@ -25,20 +25,28 @@ Launch one integration tests for Qserv
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+# -------------------------------
+#  Imports of standard modules --
+# -------------------------------
 import argparse
 import logging
 import os
 import sys
 
+# ----------------------------
+# Imports for other modules --
+# ----------------------------
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
 from lsst.qserv.tests import dataCustomizer
 
-LOG = logging.getLogger()
+_LOG = logging.getLogger()
 
-
-def parseArgs():
+# ---------------------------------
+# Local non-exported definitions --
+# ---------------------------------
+def _parse_args():
 
     # used to get default values
     config = commons.read_user_config()
@@ -138,9 +146,9 @@ def parseArgs():
     return args
 
 
-def run_integration_test(case_id, testdata_dir, out_dir, mode_list,
+def _run_integration_test(case_id, testdata_dir, out_dir, mode_list,
                          load_data, stop_at_query):
-    ''' Run integration tests, eventually perform data-loading and query results
+    """ Run integration tests, eventually perform data-loading and query results
     comparison
     @param case_id: test case number
     @param testdata_dir: directory containing test datasets
@@ -148,38 +156,40 @@ def run_integration_test(case_id, testdata_dir, out_dir, mode_list,
     @param mode_list: run test for Qserv, MySQL or both
     @param load_data: load data before running queries
     @param stop_at_query: run queries between 0 and it
-    '''
+    """
     bench = benchmark.Benchmark(case_id, testdata_dir, out_dir)
     bench.run(mode_list, load_data, stop_at_query)
 
-    returnCode = 1
+    return_code = 1
     if len(mode_list) > 1:
         failed_queries = bench.analyzeQueryResults()
 
         if len(failed_queries) == 0:
-            LOG.info("Test case #%s succeed", case_id)
-            returnCode = 0
+            _LOG.info("Test case #%s succeed", case_id)
+            return_code = 0
         else:
-            LOG.fatal("Test case #%s failed", case_id)
-            if load_data == False:
-                log.warn("Please check that case%s data are loaded, " +
-                         "otherwise run %s with --load option.",
-                         case_id,
-                         os.path.basename(__file__))
+            _LOG.fatal("Test case #%s failed", case_id)
+            if not load_data:
+                _LOG.warn("Please check that case%s data are loaded, " +
+                          "otherwise run %s with --load option.",
+                          case_id,
+                          os.path.basename(__file__))
 
     else:
-        LOG.info("No result comparison")
-        returnCode = 0
-    return returnCode
+        _LOG.info("No result comparison")
+        return_code = 0
+    return return_code
 
-
+# -----------------------
+# Exported definitions --
+# -----------------------
 def main():
 
-    args = parseArgs()
+    args = _parse_args()
 
     logger.setup_logging(args.log_conf)
 
-    returnCode = 1
+    ret_code = 1
     if args.do_custom:
         customizer = dataCustomizer.DataCustomizer(args.case_id,
                                                    args.testdata_dir,
@@ -191,11 +201,11 @@ def main():
         customizer.run()
 
     else:
-        returnCode = run_integration_test(args.case_id, args.testdata_dir,
-                                          args.out_dir, args.mode_list,
-                                          args.load_data, args.stop_at_query)
+        ret_code = _run_integration_test(args.case_id, args.testdata_dir,
+                                        args.out_dir, args.mode_list,
+                                        args.load_data, args.stop_at_query)
 
-    sys.exit(returnCode)
+    sys.exit(ret_code)
 
 if __name__ == '__main__':
     main()

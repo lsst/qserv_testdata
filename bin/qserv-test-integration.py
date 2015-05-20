@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+#
 # LSST Data Management System
 # Copyright 2014 AURA/LSST.
 #
@@ -29,17 +31,27 @@ Launch integration tests for Qserv, using python unittest framework:
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+# -------------------------------
+#  Imports of standard modules --
+# -------------------------------
 import argparse
+import logging
 import sys
 import unittest
 
+# ----------------------------
+# Imports for other modules --
+# ----------------------------
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
-from lsst.qserv.tests import benchmark
 from lsst.qserv.tests.unittest.testIntegration import suite
 
+# ---------------------------------
+# Local non-exported definitions --
+# ---------------------------------
+_LOG = logging.getLogger()
 
-def parseArgs():
+def _parse_args():
 
     parser = argparse.ArgumentParser(
         description='''Qserv integration tests suite. Relies on python unit
@@ -50,17 +62,26 @@ are read from ~/.lsst/qserv.conf.''',
     )
 
     parser = logger.add_logfile_opt(parser)
+    _args = parser.parse_args()
 
-    args = parser.parse_args()
+    return _args
 
-    return args
-
+# -----------------------
+# Exported definitions --
+# -----------------------
 if __name__ == '__main__':
-    args = parseArgs()
+    args = _parse_args()
 
     logger.setup_logging(args.log_conf)
     commons.read_user_config()
 
     result = unittest.TextTestRunner(verbosity=2).run(suite())
-    retcode = int(not result.wasSuccessful())
-    sys.exit(retcode)
+
+    if result.wasSuccessful():
+        _LOG.info("Integration test succeeded")
+        ret_code = 0
+    else:
+        _LOG.fatal("Integration test failed")
+        ret_code = 1
+
+    sys.exit(ret_code)
