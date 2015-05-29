@@ -31,8 +31,7 @@ import os
 import sys
 
 from lsst.qserv.admin import commons
-from lsst.qserv.tests.dbLoader import DbLoader
-from lsst.qserv.tests.sql import cmd, connection
+from .dbLoader import DbLoader
 
 
 class MysqlLoader(DbLoader):
@@ -74,8 +73,8 @@ class MysqlLoader(DbLoader):
         loaderCmd += self.loaderCmdCommonArgs(table)
 
         commons.run_command(loaderCmd,
-                                  stdout=sys.stdout,
-                                  stderr=sys.stderr)
+                            stdout=sys.stdout,
+                            stderr=sys.stderr)
         self.logger.info("Partitioned data loaded for table %s", table)
 
     def prepareDatabase(self):
@@ -85,11 +84,5 @@ class MysqlLoader(DbLoader):
         Create MySQL command-line client
         """
 
-        self._sqlInterface['sock'] = connection.Connection(**self.sock_params)
-
-        self._sqlInterface['sock'].dropAndCreateDb(self._dbName)
-        self._sqlInterface['sock'].setDb(self._dbName)
-
-        cmd_connection_params = self.sock_params
-        cmd_connection_params['database'] = self._dbName
-        self._sqlInterface['cmd'] = cmd.Cmd(**cmd_connection_params)
+        self.wmgr.dropDb(self._dbName, mustExist=False)
+        self.wmgr.createDb(self._dbName)
