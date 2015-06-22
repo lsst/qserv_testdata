@@ -31,30 +31,40 @@ import glob
 import logging
 import os
 
+from lsst.qserv.admin import nodeAdmin
+from lsst.qserv.admin import qservAdmin
 from lsst.qserv.wmgr.client import WmgrClient
 
 
 class DbLoader(object):
 
-    def __init__(self, config, data_reader, db_name, out_dirname):
+    def __init__(self, config, data_reader, db_name, multi_node, out_dirname):
 
         self.config = config
         self.dataConfig = data_reader
         self._dbName = db_name
 
+        self._multi_node = multi_node
         self._out_dirname = out_dirname
 
         self.logger = logging.getLogger(__name__)
 
+        if self._multi_node:
+            self.qAdmin = qservAdmin.QservAdmin('localhost:' + str(self.config['zookeeper']['port']))
+            self.nAdmin = nodeAdmin.NodeAdmin('worker1',
+                                              self.qAdmin,
+                                              wmgrSecretFile=self.config['wmgr']['secret'])
+            self.wmgr = self.nAdmin.wmgrClient()
+
         # This code currently works only with mono-node setup, host
         # name for wmgr is the same as master qserv host
-        self.wmgr = WmgrClient(host=self.config['qserv']['master'],
-                               port=self.config['wmgr']['port'],
-                               secretFile=self.config['wmgr']['secret'])
+        self.czar_wmgr = WmgrClient(host=self.config['qserv']['master'],
+                                    port=self.config['wmgr']['port'],
+                                    secretFile=self.config['wmgr']['secret'])
 
     def loaderCmdCommonOpts(self, table):
         """
-        Return user-friendly loader command-line options wich are common
+        Return user-friendly loader command-line options which are common
         to both Qserv and MySQL
         """
         tmp_dir = self.config['qserv']['tmp_dir']
