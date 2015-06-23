@@ -39,11 +39,13 @@ class MysqlLoader(DbLoader):
     def __init__(self, config,
                  data_reader,
                  db_name,
+                 multi_node,
                  out_dirname):
 
         super(self.__class__, self).__init__(config,
                                              data_reader,
                                              db_name,
+                                             multi_node,
                                              out_dirname)
         self.logger = logging.getLogger(__name__)
 
@@ -84,5 +86,5 @@ class MysqlLoader(DbLoader):
         Create MySQL command-line client
         """
 
-        self.wmgr.dropDb(self._dbName, mustExist=False)
-        self.wmgr.createDb(self._dbName)
+        self.czar_wmgr.dropDb(self._dbName, mustExist=False)
+        self.czar_wmgr.createDb(self._dbName)

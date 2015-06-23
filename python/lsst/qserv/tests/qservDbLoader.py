@@ -40,11 +40,13 @@ class QservLoader(DbLoader):
     def __init__(self, config,
                  data_reader,
                  db_name,
+                 multi_node,
                  out_dirname):
 
         super(self.__class__, self).__init__(config,
                                              data_reader,
                                              db_name,
+                                             multi_node,
                                              out_dirname)
         self.logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ class QservLoader(DbLoader):
                                              ".txt")
         self.dataConfig = data_reader
         self.tmpDir = self.config['qserv']['tmp_dir']
-
+        self.multi_node = multi_node
 
     def createLoadTable(self, table):
         """
@@ -74,6 +76,10 @@ class QservLoader(DbLoader):
         loaderCmd = self.loaderCmdCommonOpts(table)
 
         loaderCmd += ['--css-remove']
+
+        if self.multi_node:
+            # Hard coded worker list
+            loaderCmd += ['--worker', 'worker1']
 
         if self.dataConfig.duplicatedTables:
             loaderCmd += ['--skip-partition']
@@ -101,19 +107,21 @@ class QservLoader(DbLoader):
 
     def prepareDatabase(self):
         """
-        Connect to MySQL via sock
         Drop and create MySQL database
         Drop CSS database
         Assume that other meta-data will be removed by the user-friendly
         loader (qservMeta, emptyChunks file)
-        Create MySQL command-line client
         """
 
         self.logger.info("Drop and create MySQL database for Qserv: %s",
                          self._dbName)
 
-        self.wmgr.dropDb(self._dbName, mustExist=False)
-        self.wmgr.createDb(self._dbName)
+        self.czar_wmgr.dropDb(self._dbName, mustExist=False)
+        self.czar_wmgr.createDb(self._dbName)
+
+        if self.multi_node:
+            self.wmgr.dropDb(self._dbName, mustExist=False)
+            self.wmgr.createDb(self._dbName)
 
         self.logger.info("Drop CSS database for Qserv")
         self.dropCssDatabase()
@@ -125,5 +133,7 @@ class QservLoader(DbLoader):
         self.logger.info("Drop CSS database: %s", self._dbName)
 
     def workerInsertXrootdExportPath(self):
-
-        self.wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
+        if self.multi_node:
+            self.wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
+        else:
+            self.czar_wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)

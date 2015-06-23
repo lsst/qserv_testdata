@@ -68,10 +68,12 @@ def _parse_args():
                        default="01",
                        help="Test case number")
     mode_option_values = ['mysql', 'qserv', 'all']
-    group.add_argument(
-        "-m", "--mode", dest="mode", choices=mode_option_values,
-        default='all',
-        help="Qserv test modes (direct mysql connection, or via qserv)")
+    group.add_argument("-m", "--mode", dest="mode", choices=mode_option_values,
+                       default='all',
+                       help="Qserv test modes (direct mysql connection, or via qserv)")
+    group.add_argument("-M", "--multi", action="store_true", dest="multi_node",
+                       default=False,
+                       help="Run test in multi-node (must specify --mode=qserv")
 
     group = parser.add_argument_group('Load options',
                                       'Options related to data loading')
@@ -135,6 +137,9 @@ def _parse_args():
 
     args = parser.parse_args()
 
+    # Configure logger
+    logger.setup_logging(args.log_conf)
+
     if args.do_download:
         args.do_custom = True
 
@@ -143,21 +148,26 @@ def _parse_args():
     else:
         args.mode_list = [args.mode]
 
+    if args.multi_node and args.mode != 'qserv':
+        _LOG.error("Select --mode=qserv for multi-node test")
+        sys.exit(2)
+
     return args
 
 
 def _run_integration_test(case_id, testdata_dir, out_dir, mode_list,
-                         load_data, stop_at_query):
+                          multi_node, load_data, stop_at_query):
     """ Run integration tests, eventually perform data-loading and query results
     comparison
     @param case_id: test case number
     @param testdata_dir: directory containing test datasets
     @param out_dir: directory containing query results
     @param mode_list: run test for Qserv, MySQL or both
+    @param multi_node: run test in multi-node setup
     @param load_data: load data before running queries
     @param stop_at_query: run queries between 0 and it
     """
-    bench = benchmark.Benchmark(case_id, testdata_dir, out_dir)
+    bench = benchmark.Benchmark(case_id, multi_node, testdata_dir, out_dir)
     bench.run(mode_list, load_data, stop_at_query)
 
     return_code = 1
@@ -187,8 +197,6 @@ def main():
 
     args = _parse_args()
 
-    logger.setup_logging(args.log_conf)
-
     ret_code = 1
     if args.do_custom:
         customizer = dataCustomizer.DataCustomizer(args.case_id,
@@ -202,8 +210,9 @@ def main():
 
     else:
         ret_code = _run_integration_test(args.case_id, args.testdata_dir,
-                                        args.out_dir, args.mode_list,
-                                        args.load_data, args.stop_at_query)
+                                         args.out_dir, args.mode_list,
+                                         args.multi_node,
+                                         args.load_data, args.stop_at_query)
 
     sys.exit(ret_code)
 
