@@ -32,6 +32,7 @@ import logging
 import os
 
 from lsst.qserv.admin import nodeAdmin
+from lsst.qserv.admin import nodeMgmt
 from lsst.qserv.admin import qservAdmin
 from lsst.qserv.wmgr.client import WmgrClient
 
@@ -51,10 +52,12 @@ class DbLoader(object):
 
         if self._multi_node:
             self.qAdmin = qservAdmin.QservAdmin('localhost:' + str(self.config['zookeeper']['port']))
-            self.nAdmin = nodeAdmin.NodeAdmin('worker1',
-                                              self.qAdmin,
-                                              wmgrSecretFile=self.config['wmgr']['secret'])
-            self.wmgr = self.nAdmin.wmgrClient()
+            self.nMgmt = nodeMgmt.NodeMgmt(self.qAdmin, wmgrSecretFile=self.config['wmgr']['secret'])
+
+            self.nWmgrs = {}
+            for node in self.nMgmt.select(nodeType='worker', state='ACTIVE'):
+                self.logger.info("Running on node: %s", node.name())
+                self.nWmgrs[node.name()] = node.wmgrClient()
 
         # This code currently works only with mono-node setup, host
         # name for wmgr is the same as master qserv host

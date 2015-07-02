@@ -78,8 +78,8 @@ class QservLoader(DbLoader):
         loaderCmd += ['--css-remove']
 
         if self.multi_node:
-            # Hard coded worker list
-            loaderCmd += ['--worker', 'worker1']
+            for node in self.nWmgrs:
+                loaderCmd += ['--worker', node]
 
         if self.dataConfig.duplicatedTables:
             loaderCmd += ['--skip-partition']
@@ -120,8 +120,9 @@ class QservLoader(DbLoader):
         self.czar_wmgr.createDb(self._dbName)
 
         if self.multi_node:
-            self.wmgr.dropDb(self._dbName, mustExist=False)
-            self.wmgr.createDb(self._dbName)
+            for wmgr in self.nWmgrs.values():
+                wmgr.dropDb(self._dbName, mustExist=False)
+                wmgr.createDb(self._dbName)
 
         self.logger.info("Drop CSS database for Qserv")
         self.dropCssDatabase()
@@ -134,6 +135,7 @@ class QservLoader(DbLoader):
 
     def workerInsertXrootdExportPath(self):
         if self.multi_node:
-            self.wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
+            for wmgr in self.nWmgrs.values():
+                wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
         else:
             self.czar_wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
