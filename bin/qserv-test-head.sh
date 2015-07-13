@@ -35,10 +35,10 @@ Usage: `basename $0` [options]
 
   Available options:
     -h          this message
-    -q          quick: only rebuilds and install new Qserv code
-                       instead of rebuilding from scratch,
-                       and performs test case #01 instead of all
-                       integration tests.
+    -r          rebuild: clean and rebuild whole Qserv code
+    -C          configure: configure Qserv mono-node instance
+    -c          Specify which test case number to run, all tests
+                are run by default
     -R          Specify Qserv execution directory, default to
                 \$HOME/qserv-run/git
 
@@ -63,14 +63,18 @@ Usage: `basename $0` [options]
 EOD
 }
 
-QUICK=''
-QSERV_RUN_DIR=$HOME/qserv-run/git
+CONFIGURE=false
+REBUILD_ALL=false
+TEST_CASE=''
+QSERV_RUN_DIR="$HOME"/qserv-run/git
 
 # get the options
-while getopts "hqR:" c ; do
+while getopts "hrCc:R:" c ; do
     case $c in
             h) usage ; exit 0 ;;
-            q) QUICK="TRUE" ;;
+            r) REBUILD_ALL=true ;;
+            C) CONFIGURE=true ;;
+            c) TEST_CASE="${OPTARG}" ;;
             R) QSERV_RUN_DIR="${OPTARG}";;
             \?) usage ; exit 2 ;;
     esac
@@ -86,26 +90,27 @@ fi
 if [ -f "${EUPS_DIR}/bin/setups.sh" ]; then
     . "${EUPS_DIR}/bin/setups.sh"
 else
-    printf "ERROR: ${EUPS_DIR}/bin/setups.sh must be a file"
+    printf "ERROR: ${EUPS_DIR}/bin/setups.sh must be a file\n"
     exit 1
 fi
 
 if [ ! -f "${QSERV_DIR}/SConstruct" ]; then
-    printf "ERROR: ${QSERV_DIR}/SConstruct must be a file"
+    printf "ERROR: ${QSERV_DIR}/SConstruct must be a file\n"
     exit 1
 fi
 
 # cleaning, if source directory
 cd ${QSERV_DIR}
 
-if [ ! "${QUICK}" ]; then
+if [ "${REBUILD_ALL}" = true ]; then
     rm -rf build lib proxy bin cfg
 fi
 
-# "scons install" doesn't use all proc
-eupspkg -e PREFIX="${QSERV_DIR}" build
-eupspkg -e PREFIX="${QSERV_DIR}" install
-qserv-configure.py --all --force -R "${QSERV_RUN_DIR}"
+scons install -j $(nproc)
+
+if [ "${CONFIGURE}" = true ]; then
+    qserv-configure.py --all --force -R "${QSERV_RUN_DIR}"
+fi
 
 # record Qserv version
 GIT_HASH=$(git log -n 1 --pretty=format:"%H")
@@ -115,8 +120,8 @@ printf "%s\n" "${GIT_HASH}" > "${QSERV_RUN_DIR}"/GIT-HASH
 PASS=0
 {
     "${QSERV_RUN_DIR}"/bin/qserv-start.sh
-    if [ "${QUICK}" ]; then
-        qserv-check-integration.py --case=01 --load || PASS=1
+    if [ "${TEST_CASE}" ]; then
+        qserv-check-integration.py --case=${TEST_CASE} --load || PASS=1
     else
         qserv-test-integration.py || PASS=1
     fi
