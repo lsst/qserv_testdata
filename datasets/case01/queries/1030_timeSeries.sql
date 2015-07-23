@@ -3,8 +3,9 @@
 -- in a given photometric band 
 -- Similar query: http://dev.lsstcorp.org/trac/wiki/dbQuery007
 
--- See ticket #2052
+-- See ticket #2052: https://dev.lsstcorp.org/trac/ticket/2052
 
+-- pragma noheader
 SELECT objectId, taiMidPoint, scisql_fluxToAbMag(psfFlux)
 FROM   Source
 JOIN   Object USING(objectId)
