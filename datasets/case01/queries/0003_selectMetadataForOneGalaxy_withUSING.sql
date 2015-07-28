@@ -1,6 +1,7 @@
 -- select the full color image of a single given galaxy
 -- http://dev.lsstcorp.org/trac/wiki/dbQuery006
 
+-- pragma sortresult
 SELECT s.ra, s.decl, o.raRange, o.declRange
 FROM   Object o
 JOIN   Source s USING (objectId)

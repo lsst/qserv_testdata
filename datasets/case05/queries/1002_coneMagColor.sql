@@ -1,6 +1,7 @@
 -- Cone-magnitude-color search
 -- See http://dev.lsstcorp.org/trac/wiki/dbQuery003
 
+-- pragma sortresult
 SELECT COUNT(*) AS OBJ_COUNT
 FROM   Object
 WHERE  ra_PS BETWEEN 0.1 AND 4  -- noQserv

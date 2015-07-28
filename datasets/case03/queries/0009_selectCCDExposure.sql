@@ -1,5 +1,6 @@
 -- https://dev.lsstcorp.org/trac/wiki/dbPipeQAQueries
 
+-- pragma sortresult
 SELECT sce.filterId, sce.filterName 
 FROM   Science_Ccd_Exposure AS sce 
 WHERE  sce.filterName = 'g'

@@ -3,7 +3,7 @@
 
 -- See ticket #2051
 
-
+-- pragma sortresult
 SELECT COUNT(*) AS OBJ_COUNT
 FROM   Object
 WHERE  ra_PS BETWEEN 0 AND 4  -- noQserv

@@ -1,6 +1,7 @@
 -- Return empty set with W13 small dataset
 -- https://dev.lsstcorp.org/trac/wiki/dbPipeQAQueries 
 
+-- pragma sortresult
 SELECT sce.filterName, sce.field, sce.camcol, sce.run, s.deepForcedSourceId, s.ra, s.decl, 
        s.x, s.y, s.psfFlux, s.psfFluxSigma, s.apFlux, s.apFluxSigma, s.modelFlux, 
        s.modelFluxSigma, s.instFlux, s.instFluxSigma, s.shapeIxx, s.shapeIyy, 

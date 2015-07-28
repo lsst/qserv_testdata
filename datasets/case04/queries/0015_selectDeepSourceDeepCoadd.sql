@@ -1,5 +1,6 @@
 -- https://dev.lsstcorp.org/trac/wiki/dbPipeQAQueries
 
+-- pragma sortresult
 SELECT sce.filterName, sce.tract, sce.patch, s.deepSourceId, s.ra, s.decl, 
        s.x, s.y, s.psfFlux, s.psfFluxSigma, s.apFlux, s.apFluxSigma, s.modelFlux, 
        s.modelFluxSigma, s.instFlux, s.instFluxSigma, s.shapeIxx, s.shapeIyy, 

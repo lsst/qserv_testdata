@@ -1,5 +1,6 @@
 -- https://dev.lsstcorp.org/trac/wiki/dbPipeQAQueries
 
+-- pragma sortresult
 SELECT sce.filterId, sce.filterName
 FROM   DeepCoadd AS sce
 WHERE  sce.filterName = 'r'
