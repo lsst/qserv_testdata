@@ -5,6 +5,7 @@
 -- Test DM-1582: Qserv spatial restrictor names
 --               must be case-insensitive
 
+-- pragma sortresult
 SELECT o1.objectId AS objId1,
        o2.objectId AS objId2,
        scisql_angSep(o1.ra_PS, o1.decl_PS, o2.ra_PS, o2.decl_PS) AS distance

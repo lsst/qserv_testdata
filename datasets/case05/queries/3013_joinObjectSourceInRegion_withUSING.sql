@@ -2,6 +2,7 @@
 -- https://dev.lsstcorp.org/trac/wiki/db/Qserv/IN2P3/BenchmarkMarch2013
 -- Based on https://dev.lsstcorp.org/trac/ticket/2052
 
+-- pragma sortresult
 SELECT objectId 
 FROM Source 
 JOIN Object USING(objectId) 

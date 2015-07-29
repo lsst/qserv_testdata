@@ -1,6 +1,7 @@
 -- Derived from https://dev.lsstcorp.org/trac/wiki/dbPipeQAQueries
 -- Used to test BIT field support
 
+-- pragma sortresult
 SELECT sce.filterName, sce.tract, sce.patch, sro.gMag, sro.ra, sro.decl, sro.isStar,
        sro.refObjectId, s.id,  rom.nSrcMatches, s.flags_pixel_interpolated_center, s.flags_negative,
        s.flags_pixel_edge, s.centroid_sdss_flags, s.flags_pixel_saturated_center

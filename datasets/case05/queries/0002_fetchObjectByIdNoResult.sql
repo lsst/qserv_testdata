@@ -3,6 +3,7 @@
 
 -- not working, see ticket #1847
 
+-- pragma sortresult
 SELECT *
 FROM   Object
 WHERE  objectId = 430213989000

@@ -145,6 +145,11 @@ class Benchmark(object):
                                       str(pragmas))
                     column_names = 'noheader' not in pragmas
                     sqlInterface.execute(qText, outFile, column_names)
+                    if 'sortresult' in pragmas:
+                        with open(outFile,"r+") as f:
+                            sortedLines = sorted(f.readlines())
+                            f.seek(0)
+                            f.writelines(sortedLines)
 
         self.logger.info("Test case #%s: %s queries launched on a total of %s",
                          self._case_id,

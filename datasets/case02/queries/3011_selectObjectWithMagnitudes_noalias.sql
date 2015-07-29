@@ -2,7 +2,7 @@
 -- https://dev.lsstcorp.org/trac/wiki/db/Qserv/IN2P3/BenchmarkMarch2013
 -- Based on https://dev.lsstcorp.org/trac/wiki/db/Qserv/OptimalPartitionSize
 
--- pragma noheader
+-- pragma noheader sortresult
 SELECT objectId, ra_PS, decl_PS, 
        scisql_fluxToAbMag(zFlux_PS)
  FROM Object 
