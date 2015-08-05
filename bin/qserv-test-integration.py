@@ -36,8 +36,10 @@ Launch integration tests for Qserv, using python unittest framework:
 # -------------------------------
 import argparse
 import logging
+import os
 import sys
 import unittest
+import ConfigParser
 
 # ----------------------------
 # Imports for other modules --
@@ -70,12 +72,22 @@ are read from ~/.lsst/qserv.conf.''',
 # Exported definitions --
 # -----------------------
 if __name__ == '__main__':
+    multi_node = False
+
     args = _parse_args()
-
     logger.setup_logging(args.log_conf)
-    commons.read_user_config()
 
-    result = unittest.TextTestRunner(verbosity=2).run(suite())
+    config = commons.read_user_config()
+    run_dir = config['qserv']['qserv_run_dir']
+    config_file = os.path.join(run_dir, "qserv-meta.conf")
+
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(config_file)
+    if parser.get('qserv', 'node_type') in ['master']:
+        _LOG.info("Running Integration test in multi-node setup")
+        multi_node = True
+
+    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node))
 
     if result.wasSuccessful():
         _LOG.info("Integration test succeeded")

@@ -48,6 +48,8 @@ from lsst.qserv.tests.benchmark import Benchmark
 # -----------------------
 class TestIntegration(unittest.TestCase):
 
+    runMulti = False
+
     @classmethod
     def setUpClass(cls):
         super(TestIntegration, cls).setUpClass()
@@ -72,7 +74,7 @@ class TestIntegration(unittest.TestCase):
     def _runTestCase(self, case_id):
         self.assertTrue(os.path.exists(self.testdata_dir),
                    msg="non existing testdata_dir {0}".format(self.testdata_dir))
-        bench = Benchmark(case_id, False, self.testdata_dir)
+        bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
@@ -98,5 +100,6 @@ class TestIntegration(unittest.TestCase):
         self._runTestCase(case_id)
 
 
-def suite():
+def suite(multi_node = False):
+    TestIntegration.runMulti = multi_node
     return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)

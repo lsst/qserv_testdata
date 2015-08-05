@@ -32,6 +32,7 @@ import argparse
 import logging
 import os
 import sys
+import ConfigParser
 
 # ----------------------------
 # Imports for other modules --
@@ -71,9 +72,6 @@ def _parse_args():
     group.add_argument("-m", "--mode", dest="mode", choices=mode_option_values,
                        default='all',
                        help="Qserv test modes (direct mysql connection, or via qserv)")
-    group.add_argument("-M", "--multi", action="store_true", dest="multi_node",
-                       default=False,
-                       help="Run test in multi-node (must specify --mode=qserv")
 
     group = parser.add_argument_group('Load options',
                                       'Options related to data loading')
@@ -148,10 +146,6 @@ def _parse_args():
     else:
         args.mode_list = [args.mode]
 
-    if args.multi_node and args.mode != 'qserv':
-        _LOG.error("Select --mode=qserv for multi-node test")
-        sys.exit(2)
-
     return args
 
 
@@ -194,8 +188,19 @@ def _run_integration_test(case_id, testdata_dir, out_dir, mode_list,
 # Exported definitions --
 # -----------------------
 def main():
+    multi_node = False
 
     args = _parse_args()
+
+    config = commons.read_user_config()
+    run_dir = config['qserv']['qserv_run_dir']
+    config_file = os.path.join(run_dir, "qserv-meta.conf")
+
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(config_file)
+    if parser.get('qserv', 'node_type') in ['master']:
+        _LOG.info("Running Integration test in multi-node setup")
+        multi_node = True
 
     ret_code = 1
     if args.do_custom:
@@ -211,7 +216,7 @@ def main():
     else:
         ret_code = _run_integration_test(args.case_id, args.testdata_dir,
                                          args.out_dir, args.mode_list,
-                                         args.multi_node,
+                                         multi_node,
                                          args.load_data, args.stop_at_query)
 
     sys.exit(ret_code)
