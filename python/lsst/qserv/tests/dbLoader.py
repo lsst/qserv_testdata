@@ -56,7 +56,6 @@ class DbLoader(object):
 
             self.nWmgrs = {}
             for node in self.nMgmt.select(nodeType='worker', state='ACTIVE'):
-                self.logger.info("Running on node: %s", node.name())
                 self.nWmgrs[node.name()] = node.wmgrClient()
 
         # This code currently works only with mono-node setup, host

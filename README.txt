@@ -1,3 +1,4 @@
+# all commands can be used in either mono or multi node
 
 # to run all tests
 qserv-test-integration.py
@@ -11,10 +12,7 @@ qserv-check-integration.py --case=01 --load --mode=qserv
 # to run integration tests for one case, only for mysql
 qserv-check-integration.py --case=01 --load --mode=mysql
 
-# to run multi-node, use -M
-qserv-check-integration.py --case=01 --load -M --mode=qserv
-
-# if you run a given test previous, you can skipp --load
+# if you ran a given test previously, you can skip --load
 
 # to test individual query, determine proxy port number,
 # e.g., by looking at $QSERV_DIR/var/log/mysql-proxy.log

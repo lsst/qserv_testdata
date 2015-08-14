@@ -113,6 +113,10 @@ class QservLoader(DbLoader):
         loader (qservMeta, emptyChunks file)
         """
 
+        if self.multi_node:
+            for node in self.nWmgrs:
+                self.logger.info("Running on node: %s", node)
+
         self.logger.info("Drop and create MySQL database for Qserv: %s",
                          self._dbName)
 
