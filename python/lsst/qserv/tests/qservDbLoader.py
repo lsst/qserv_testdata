@@ -132,7 +132,7 @@ class QservLoader(DbLoader):
         self.dropCssDatabase()
 
     def dropCssDatabase(self):
-        css = qservAdmin.QservAdmin("localhost:" + str(self.config['zookeeper']['port']))
+        css = qservAdmin.QservAdmin(config=self.config['css'])
         if css.dbExists(self._dbName):
             css.dropDb(self._dbName)
         self.logger.info("Drop CSS database: %s", self._dbName)

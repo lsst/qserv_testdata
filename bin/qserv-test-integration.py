@@ -44,6 +44,7 @@ import ConfigParser
 # ----------------------------
 # Imports for other modules --
 # ----------------------------
+import lsst.log
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests.unittest.testIntegration import suite
@@ -76,6 +77,13 @@ if __name__ == '__main__':
 
     args = _parse_args()
     logger.setup_logging(args.log_conf)
+
+    # configure log4cxx logging based on the logging level of Python logger
+    levels = {logging.ERROR: lsst.log.ERROR,
+              logging.WARNING: lsst.log.WARN,
+              logging.INFO: lsst.log.INFO,
+              logging.DEBUG: lsst.log.DEBUG}
+    lsst.log.setLevel('', levels.get(_LOG.level, lsst.log.DEBUG))
 
     config = commons.read_user_config()
     run_dir = config['qserv']['qserv_run_dir']

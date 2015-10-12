@@ -51,7 +51,7 @@ class DbLoader(object):
         self.logger = logging.getLogger(__name__)
 
         if self._multi_node:
-            self.qAdmin = qservAdmin.QservAdmin('localhost:' + str(self.config['zookeeper']['port']))
+            self.qAdmin = qservAdmin.QservAdmin(config=self.config['css'])
             self.nMgmt = nodeMgmt.NodeMgmt(self.qAdmin, wmgrSecretFile=self.config['wmgr']['secret'])
 
             self.nWmgrs = {}
