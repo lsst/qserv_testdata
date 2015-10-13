@@ -30,8 +30,8 @@ import logging
 import os
 import sys
 
+from lsst.qserv import css
 from lsst.qserv.admin import commons
-from lsst.qserv.admin import qservAdmin
 from .dbLoader import DbLoader
 
 
@@ -132,9 +132,9 @@ class QservLoader(DbLoader):
         self.dropCssDatabase()
 
     def dropCssDatabase(self):
-        css = qservAdmin.QservAdmin(config=self.config['css'])
-        if css.dbExists(self._dbName):
-            css.dropDb(self._dbName)
+        cssAccess = css.CssAccess.createFromConfig(self.config['css'], '')
+        if cssAccess.containsDb(self._dbName):
+            cssAccess.dropDb(self._dbName)
         self.logger.info("Drop CSS database: %s", self._dbName)
 
     def workerInsertXrootdExportPath(self):
