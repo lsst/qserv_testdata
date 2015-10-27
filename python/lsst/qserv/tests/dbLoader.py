@@ -31,9 +31,9 @@ import glob
 import logging
 import os
 
+from lsst.qserv import css
 from lsst.qserv.admin import nodeAdmin
 from lsst.qserv.admin import nodeMgmt
-from lsst.qserv.admin import qservAdmin
 from lsst.qserv.wmgr.client import WmgrClient
 
 
@@ -51,8 +51,8 @@ class DbLoader(object):
         self.logger = logging.getLogger(__name__)
 
         if self._multi_node:
-            self.qAdmin = qservAdmin.QservAdmin(config=self.config['css'])
-            self.nMgmt = nodeMgmt.NodeMgmt(self.qAdmin, wmgrSecretFile=self.config['wmgr']['secret'])
+            self.css = css.CssAccess.createFromConfig(self.config['css'], '')
+            self.nMgmt = nodeMgmt.NodeMgmt(self.css, wmgrSecretFile=self.config['wmgr']['secret'])
 
             self.nWmgrs = {}
             for node in self.nMgmt.select(nodeType='worker', state='ACTIVE'):
