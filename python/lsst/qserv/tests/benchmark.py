@@ -243,7 +243,7 @@ class Benchmark(object):
             # xrootd is restarted by wmgr
 
             # Reload Qserv meta-data
-            commons.restart('qserv-czar')
+            commons.restart('mysql-proxy')
 
             # Hack: Qserv init.d script doesn't check Qserv startup is complete
             time.sleep(2)
