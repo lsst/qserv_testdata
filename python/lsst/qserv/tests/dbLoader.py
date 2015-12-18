@@ -118,3 +118,9 @@ class DbLoader(object):
         if dataFile:
             cmd += [dataFile]
         return cmd
+
+    def resetChunksCache(self):
+        """
+        Clear czar chunk cache (a.k.a. empty chunk list cache)
+        """
+        self.czar_wmgr.resetChunksCache(self._dbName)
