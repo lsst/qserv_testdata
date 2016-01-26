@@ -1,4 +1,7 @@
+setupRequired(python)
+setupRequired(pyyaml)
 setupRequired(qserv)
+setupRequired(scons)
 setupRequired(sconsUtils)
 
 envPrepend(PATH, ${PRODUCT_DIR}/bin)
