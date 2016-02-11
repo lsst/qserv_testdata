@@ -1,5 +1,5 @@
 -- Cone-magnitude-color search
--- See http://dev.lsstcorp.org/trac/wiki/dbQuery003
+-- See http://dev.lsstcorp.org/trac/wiki/db/queries/003
 
 -- See ticket #2051
 
