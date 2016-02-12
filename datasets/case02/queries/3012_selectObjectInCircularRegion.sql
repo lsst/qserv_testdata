@@ -4,4 +4,4 @@
 
 SELECT count(*) AS OBJ_COUNT
  FROM Object
- WHERE scisql_angSep(ra_PS, decl_PS, 0., 0.) < 0.2
+ WHERE scisql_angSep(ra_PS, decl_PS, 1.2, 3.2) < 0.2
