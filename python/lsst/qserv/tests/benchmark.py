@@ -34,7 +34,6 @@ Integration test tool :
 
 import logging
 import shutil
-import time
 
 import errno
 import os
@@ -62,8 +61,6 @@ class Benchmark(object):
         self._dbName = None
 
         self.config = commons.getConfig()
-
-        self.noQservLine = re.compile(r'[\w\-\."%% ]*-- noQserv')
 
         self._case_id = case_id
         self._multi_node = multi_node
@@ -177,6 +174,13 @@ class Benchmark(object):
             elif withQserv and line.startswith("-- withQserv"):
                 # strip the "-- withQserv" text
                 qText.append(line[13:])
+            elif line.endswith("-- noQserv"):
+                if withQserv:
+                    # skip this line
+                    pass
+                else:
+                    # strip the "-- noQserv" text
+                    qText.append(line[:-10])
             elif line.startswith("--"):
                 # check for pragma, format is:
                 #    '-- pragma keyval [keyval...]'
@@ -187,14 +191,8 @@ class Benchmark(object):
                         kv = keyval.split('=', 1) + [None]
                         pragmas[kv[0]] = kv[1]
             else:
-                qData = self.noQservLine.search(line)
-                if not withQserv:
-                    if qData:
-                        qText.append(qData.group(0)[:-10])
-                    else:
-                        qText.append(line)
-                elif not qData:
-                    qText.append(line)
+                # append all non-annotated lines
+                qText.append(line)
 
         return ' '.join(qText), pragmas
 
