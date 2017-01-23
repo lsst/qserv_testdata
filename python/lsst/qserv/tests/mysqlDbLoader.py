@@ -81,7 +81,7 @@ class MysqlLoader(DbLoader):
 
     def prepareDatabase(self):
         """
-        Connect to MySQL via sock
+        Connect to MySQL via socket
         Create MySQL database
         Create MySQL command-line client
         """

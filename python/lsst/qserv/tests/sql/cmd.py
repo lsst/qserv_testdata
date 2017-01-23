@@ -52,11 +52,11 @@ class Cmd():
 
     def _addQservSockCmdParams(self):
         """ User root should not be used for data loading, only for database creation and to give rights. Use qsmaster user instead. """
-        self._mysql_cmd.append("--sock=%s" % self.config['mysqld']['sock'])
+        self._mysql_cmd.append("--socket=%s" % self.config['mysqld']['socket'])
         self._mysql_cmd.append("--user=%s" % self.config['qserv']['user'])
 
     def _addMySQLSockCmdParams(self):
-        self._mysql_cmd.append("--sock=%s" % self.config['mysqld']['sock'])
+        self._mysql_cmd.append("--socket=%s" % self.config['mysqld']['socket'])
         self._mysql_cmd.append("--user=%s" % self.config['mysqld']['user'])
         self._mysql_cmd.append("--password=%s" % self.config['mysqld']['pass'])
         
