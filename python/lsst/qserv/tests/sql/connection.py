@@ -7,7 +7,7 @@ import MySQLdb as sql
 import os.path
 
 
-class Connection():
+class Connection(object):
 
     """
     Manage SQL connection and execute queries

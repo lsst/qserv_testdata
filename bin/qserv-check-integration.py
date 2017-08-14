@@ -25,14 +25,19 @@ Launch one integration tests for Qserv
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+from __future__ import absolute_import, division, print_function
+
 # -------------------------------
 #  Imports of standard modules --
 # -------------------------------
 import argparse
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser  # python2
 import logging
 import os
 import sys
-import ConfigParser
 
 # ----------------------------
 # Imports for other modules --
@@ -208,7 +213,7 @@ def main():
     run_dir = config['qserv']['qserv_run_dir']
     config_file = os.path.join(run_dir, "qserv-meta.conf")
 
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     parser.read(config_file)
     if parser.get('qserv', 'node_type') in ['master']:
         _LOG.info("Running Integration test in multi-node setup")

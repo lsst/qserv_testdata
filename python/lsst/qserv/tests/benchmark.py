@@ -32,6 +32,8 @@ Integration test tool :
 @author  Fabrice Jammes IN2P3
 """
 
+from __future__ import absolute_import, division, print_function
+
 import logging
 import shutil
 
@@ -140,7 +142,7 @@ class Benchmark(object):
 
                     self.logger.debug("SQL: %s pragmas: %s\n",
                                       qText,
-                                      str(pragmas))
+                                      pragmas)
                     column_names = 'noheader' not in pragmas
                     sqlInterface.execute(qText, outFile, column_names)
                     if 'sortresult' in pragmas:
