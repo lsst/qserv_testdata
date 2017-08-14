@@ -54,6 +54,7 @@ from lsst.qserv.tests.unittest.testIntegration import suite
 # ---------------------------------
 _LOG = logging.getLogger()
 
+
 def _parse_args():
 
     parser = argparse.ArgumentParser(
@@ -68,6 +69,7 @@ are read from ~/.lsst/qserv.conf.''',
     _args = parser.parse_args()
 
     return _args
+
 
 # -----------------------
 # Exported definitions --

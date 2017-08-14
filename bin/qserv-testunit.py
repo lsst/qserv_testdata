@@ -41,6 +41,7 @@ if __name__ == '__main__':
     retcode = 0
     for m in modules:
         result = unittest.TextTestRunner(verbosity=2).run(m.suite())
-        if not result.wasSuccessful(): retcode = 1
+        if not result.wasSuccessful():
+            retcode = 1
 
     sys.exit(retcode)

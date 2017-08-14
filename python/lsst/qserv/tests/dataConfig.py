@@ -106,7 +106,7 @@ class DataConfig(dict):
 
     @property
     def duplicatedTables(self):
-        return self._duplicate.get('tables',[])
+        return self._duplicate.get('tables', [])
 
     @property
     def _remote(self):

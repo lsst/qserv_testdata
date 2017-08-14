@@ -46,6 +46,8 @@ from lsst.qserv.tests.benchmark import Benchmark
 # -----------------------
 # Exported definitions --
 # -----------------------
+
+
 class TestIntegration(unittest.TestCase):
 
     runMulti = False
@@ -60,20 +62,19 @@ class TestIntegration(unittest.TestCase):
 
         if os.environ.get('QSERV_TESTDATA_DIR') is not None:
             TestIntegration.testdata_dir = os.path.join(os.environ.get('QSERV_TESTDATA_DIR'),
-                                             "datasets")
+                                                        "datasets")
         else:
             current_file = os.path.dirname(os.path.realpath(__file__))
             fragile_testdata_dir = os.path.join(current_file, os.pardir,
-                                                  os.pardir, os.pardir,
-                                                  os.pardir, os.pardir,
-                                                  "datasets"
-                                         )
+                                                os.pardir, os.pardir,
+                                                os.pardir, os.pardir,
+                                                "datasets"
+                                                )
             TestIntegration.testdata_dir = os.path.abspath(fragile_testdata_dir)
-
 
     def _runTestCase(self, case_id):
         self.assertTrue(os.path.exists(self.testdata_dir),
-                   msg="non existing testdata_dir {0}".format(self.testdata_dir))
+                        msg="non existing testdata_dir {0}".format(self.testdata_dir))
         bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
         failed_queries = bench.analyzeQueryResults()
@@ -100,6 +101,6 @@ class TestIntegration(unittest.TestCase):
         self._runTestCase(case_id)
 
 
-def suite(multi_node = False):
+def suite(multi_node=False):
     TestIntegration.runMulti = multi_node
     return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)

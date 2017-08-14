@@ -51,6 +51,7 @@ from .sql import cmd, const
 
 MAX_QUERY = 10000
 
+
 class Benchmark(object):
 
     def __init__(self, case_id, multi_node, testdata_dir, out_dirname_prefix=None):
@@ -143,7 +144,7 @@ class Benchmark(object):
                     column_names = 'noheader' not in pragmas
                     sqlInterface.execute(qText, outFile, column_names)
                     if 'sortresult' in pragmas:
-                        with open(outFile,"r+") as f:
+                        with open(outFile, "r+") as f:
                             sortedLines = sorted(f.readlines())
                             f.seek(0)
                             f.writelines(sortedLines)
@@ -201,7 +202,7 @@ class Benchmark(object):
         Creates orderedTables and load data for input file located in caseXX/data/
         """
         self.logger.info("Loading data from %s (%s mode)", self._in_dirname,
-                                                             self._mode)
+                         self._mode)
         for table in self.dataReader.orderedTables:
             self.dataLoader[self._mode].createLoadTable(table)
 
