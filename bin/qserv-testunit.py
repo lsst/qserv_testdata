@@ -24,6 +24,9 @@ Launch units tests related to integration test framework
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
+
+from __future__ import absolute_import, division, print_function
+
 import sys
 import unittest
 
