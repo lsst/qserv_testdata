@@ -1,12 +1,14 @@
+
+from __future__ import absolute_import, division, print_function
+
 import logging
 
 from  lsst.qserv.admin import commons
-
-import const
+from . import const
 
 
 # TODO: replace all SQL by SQLConnection    
-class Cmd():
+class Cmd(object):
     """
     Run mysql client
     """
@@ -43,7 +45,7 @@ class Cmd():
         if (database is not None):
             self._mysql_cmd.append( "%s" % database )
         
-        self.logger.debug("SQLCmd._mysql_cmd %s" % self._mysql_cmd )
+        self.logger.debug("SQLCmd._mysql_cmd %s", self._mysql_cmd)
         
     def _addQservCmdParams(self):
         self._mysql_cmd.append( "--host=%s" % self.config['qserv']['master'])
@@ -68,7 +70,7 @@ class Cmd():
 
     def execute(self, query, stdout=None, column_names=True):
         """ Some queries cannot run correctly through MySQLdb, so we must use MySQL client instead """
-        self.logger.debug("SQLCmd.execute:  %s" % query)
+        self.logger.debug("SQLCmd.execute:  %s", query)
         commandLine = self._mysql_cmd[:]
         if not column_names: commandLine.append('--skip-column-names')
         commandLine += ['-e', query]
@@ -76,20 +78,20 @@ class Cmd():
       
     def executeFromFile(self, filename, stdout=None, column_names=True):
         """ Some queries cannot run correctly through MySQLdb, so we must use MySQL client instead """
-        self.logger.debug("SQLCmd.executeFromFile:  %s" % filename)
+        self.logger.debug("SQLCmd.executeFromFile:  %s", filename)
         commandLine = self._mysql_cmd[:]
         if not column_names: commandLine.append('--skip-column-names')
         commandLine += ['-e', "SOURCE " + filename]
         commons.run_command(commandLine, stdout=stdout)
         
     def createAndLoadTable(self, tableName, schemaFile, dataFile, delimiter):
-        self.logger.debug("CMD.createAndLoadTable(%s, %s, %s, %s)" % (tableName, schemaFile, dataFile, delimiter))
+        self.logger.debug("CMD.createAndLoadTable(%s, %s, %s, %s)", tableName, schemaFile, dataFile, delimiter)
         self.executeFromFile(schemaFile)
         self.loadData(dataFile, tableName, delimiter)
 
     def loadData(self, dataFile, tableName, delimiter):
         query = "LOAD DATA LOCAL INFILE '%s' INTO TABLE %s FIELDS TERMINATED BY '%s';" % (dataFile, tableName,delimiter)
-        self.logger.debug("CMD.createAndLoadTable: Loading data  %s" % dataFile)
+        self.logger.debug("CMD.createAndLoadTable: Loading data  %s", dataFile)
         self.execute(query)
         
 
