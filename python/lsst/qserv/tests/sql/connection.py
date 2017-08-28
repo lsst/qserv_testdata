@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 import sys
 
@@ -5,7 +7,7 @@ import MySQLdb as sql
 import os.path
 
 
-class Connection():
+class Connection(object):
 
     """
     Manage SQL connection and execute queries
@@ -36,7 +38,7 @@ class Connection():
         try:
             self._connection = sql.connect(**socket_connection_params)
         except:
-            self.logger.fatal("SQL connection error %s" %
+            self.logger.fatal("SQL connection error %s",
                               socket_connection_params)
             sys.exit(1)
 
@@ -55,7 +57,7 @@ class Connection():
 
     def execute(self, query):
         cursor = self._connection.cursor()
-        self.logger.debug("SQLConnection.execute : %s" % query)
+        self.logger.debug("SQLConnection.execute : %s", query)
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()
@@ -64,11 +66,11 @@ class Connection():
     def executeFromFile(self, filename):
         if os.path.exists(filename):
             # What a pity: SOURCE doesn't work with MySQLdb !
-            self.logger.debug("SQLConnection.executeFromFile:  %s" % filename)
+            self.logger.debug("SQLConnection.executeFromFile:  %s", filename)
             sql = open(filename).read()
             return self.execute(sql)
         else:
-            raise Exception, "File: '%s' not found" % filename
+            raise Exception("File: '{}' not found".format(filename))
 
     def dropAndCreateDb(self, db_name):
         sql_instructions = [

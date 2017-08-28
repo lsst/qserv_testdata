@@ -24,6 +24,9 @@ Launch units tests related to integration test framework
 
 @author  Fabrice Jammes, IN2P3/SLAC
 """
+
+from __future__ import absolute_import, division, print_function
+
 import sys
 import unittest
 
@@ -41,6 +44,7 @@ if __name__ == '__main__':
     retcode = 0
     for m in modules:
         result = unittest.TextTestRunner(verbosity=2).run(m.suite())
-        if not result.wasSuccessful(): retcode = 1
+        if not result.wasSuccessful():
+            retcode = 1
 
     sys.exit(retcode)

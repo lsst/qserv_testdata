@@ -26,6 +26,8 @@ Customize integration test datasets
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+from __future__ import absolute_import, division, print_function
+
 import logging
 import os
 import shutil

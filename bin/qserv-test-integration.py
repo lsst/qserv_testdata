@@ -31,15 +31,20 @@ Launch integration tests for Qserv, using python unittest framework:
 @author  Fabrice Jammes, IN2P3/SLAC
 """
 
+from __future__ import absolute_import, division, print_function
+
 # -------------------------------
 #  Imports of standard modules --
 # -------------------------------
 import argparse
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser  # python2
 import logging
 import os
 import sys
 import unittest
-import ConfigParser
 
 # ----------------------------
 # Imports for other modules --
@@ -53,6 +58,7 @@ from lsst.qserv.tests.unittest.testIntegration import suite
 # Local non-exported definitions --
 # ---------------------------------
 _LOG = logging.getLogger()
+
 
 def _parse_args():
 
@@ -68,6 +74,7 @@ are read from ~/.lsst/qserv.conf.''',
     _args = parser.parse_args()
 
     return _args
+
 
 # -----------------------
 # Exported definitions --
@@ -89,7 +96,7 @@ if __name__ == '__main__':
     run_dir = config['qserv']['qserv_run_dir']
     config_file = os.path.join(run_dir, "qserv-meta.conf")
 
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     parser.read(config_file)
     if parser.get('qserv', 'node_type') in ['master']:
         _LOG.info("Running Integration test in multi-node setup")

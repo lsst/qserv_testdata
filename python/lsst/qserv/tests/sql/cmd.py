@@ -1,20 +1,22 @@
+
+from __future__ import absolute_import, division, print_function
+
 import logging
 
-from  lsst.qserv.admin import commons
+from lsst.qserv.admin import commons
+from . import const
 
-import const
 
-
-# TODO: replace all SQL by SQLConnection    
-class Cmd():
+# TODO: replace all SQL by SQLConnection
+class Cmd(object):
     """
     Run mysql client
     """
+
     def __init__(self,
                  config,
-                 mode,                 
+                 mode,
                  database):
-      
         """
 
       @param config:
@@ -22,32 +24,32 @@ class Cmd():
       @param database:
       """
         self.config = config
-      
+
         self.logger = logging.getLogger(__name__)
         self.logger.debug("SQL cmd creation")
-        
-        self.buildMysqlCmd(mode,database)
-        
-    def buildMysqlCmd(self,mode,database):
+
+        self.buildMysqlCmd(mode, database)
+
+    def buildMysqlCmd(self, mode, database):
         self._mysql_cmd = ["mysql"]
-        
-        if mode==const.MYSQL_PROXY :
+
+        if mode == const.MYSQL_PROXY:
             self._addQservCmdParams()
-        elif mode==const.MYSQL_SOCK :
+        elif mode == const.MYSQL_SOCK:
             self._addMySQLSockCmdParams()
-        elif mode==const.MYSQL_NET :
+        elif mode == const.MYSQL_NET:
             self._addMySQLNetCmdParams()
-        
+
         self._mysql_cmd.append("--batch")
 
         if (database is not None):
-            self._mysql_cmd.append( "%s" % database )
-        
-        self.logger.debug("SQLCmd._mysql_cmd %s" % self._mysql_cmd )
-        
+            self._mysql_cmd.append("%s" % database)
+
+        self.logger.debug("SQLCmd._mysql_cmd %s", self._mysql_cmd)
+
     def _addQservCmdParams(self):
-        self._mysql_cmd.append( "--host=%s" % self.config['qserv']['master'])
-        self._mysql_cmd.append( "--port=%s" % self.config['mysql_proxy']['port'])
+        self._mysql_cmd.append("--host=%s" % self.config['qserv']['master'])
+        self._mysql_cmd.append("--port=%s" % self.config['mysql_proxy']['port'])
         self._mysql_cmd.append("--user=%s" % self.config['qserv']['user'])
 
     def _addQservSockCmdParams(self):
@@ -59,7 +61,7 @@ class Cmd():
         self._mysql_cmd.append("--socket=%s" % self.config['mysqld']['socket'])
         self._mysql_cmd.append("--user=%s" % self.config['mysqld']['user'])
         self._mysql_cmd.append("--password=%s" % self.config['mysqld']['pass'])
-        
+
     def _addMySQLNetCmdParams(self):
         self._mysql_cmd.append("--host=%s" % self.config['qserv']['master'])
         self._mysql_cmd.append("--port=%s" % self.config['mysqld']['port'])
@@ -68,60 +70,61 @@ class Cmd():
 
     def execute(self, query, stdout=None, column_names=True):
         """ Some queries cannot run correctly through MySQLdb, so we must use MySQL client instead """
-        self.logger.debug("SQLCmd.execute:  %s" % query)
+        self.logger.debug("SQLCmd.execute:  %s", query)
         commandLine = self._mysql_cmd[:]
-        if not column_names: commandLine.append('--skip-column-names')
+        if not column_names:
+            commandLine.append('--skip-column-names')
         commandLine += ['-e', query]
         commons.run_command(commandLine, stdout=stdout)
-      
+
     def executeFromFile(self, filename, stdout=None, column_names=True):
         """ Some queries cannot run correctly through MySQLdb, so we must use MySQL client instead """
-        self.logger.debug("SQLCmd.executeFromFile:  %s" % filename)
+        self.logger.debug("SQLCmd.executeFromFile:  %s", filename)
         commandLine = self._mysql_cmd[:]
-        if not column_names: commandLine.append('--skip-column-names')
+        if not column_names:
+            commandLine.append('--skip-column-names')
         commandLine += ['-e', "SOURCE " + filename]
         commons.run_command(commandLine, stdout=stdout)
-        
+
     def createAndLoadTable(self, tableName, schemaFile, dataFile, delimiter):
-        self.logger.debug("CMD.createAndLoadTable(%s, %s, %s, %s)" % (tableName, schemaFile, dataFile, delimiter))
+        self.logger.debug("CMD.createAndLoadTable(%s, %s, %s, %s)",
+                          tableName, schemaFile, dataFile, delimiter)
         self.executeFromFile(schemaFile)
         self.loadData(dataFile, tableName, delimiter)
 
     def loadData(self, dataFile, tableName, delimiter):
-        query = "LOAD DATA LOCAL INFILE '%s' INTO TABLE %s FIELDS TERMINATED BY '%s';" % (dataFile, tableName,delimiter)
-        self.logger.debug("CMD.createAndLoadTable: Loading data  %s" % dataFile)
+        query = "LOAD DATA LOCAL INFILE '%s' INTO TABLE %s FIELDS TERMINATED BY '%s';" % (
+            dataFile, tableName, delimiter)
+        self.logger.debug("CMD.createAndLoadTable: Loading data  %s", dataFile)
         self.execute(query)
-        
+
 
 # ----------------------------------------
-#    
+#
 #  def createDatabase(sqlInterface, database):
 #    SQL_query = "CREATE DATABASE %s;" % database
 #    sqlInterface.execute(SQL_query)
-#  
+#
 #  def createDatabaseIfNotExists(sqlInterface, database):
 #    SQL_query = "CREATE DATABASE IF NOT EXISTS %s;" % database
 #    sqlInterface.execute(SQL_query)
-#  
+#
 #  def dropDatabaseIfExists(sqlInterface, database):
 #    SQL_query = "DROP DATABASE IF EXISTS %s;" % database
 #    sqlInterface.execute(SQL_query)
-#  
+#
 #  def grantAllRightsOnDatabaseTo(sqlInterface, database, user):
 #    SQL_query = "GRANT ALL ON %s TO %s" % (database, user)
 #    sqlInterface.execute(SQL_query)
-#  
+#
 #  def createTable(sqlInterface, tablename, description):
 #    SQL_query = "CREATE TABLE %s (%s);\n" % (tablename, description)
 #    # tablename = "LSST__%s" % tablename
 #    # description = "%sId BIGINT NOT NULL PRIMARY KEY, x_chunkId INT, x_subChunkId INT" % tablename.lower()
 #    sqlInterface.execute(SQL_query)
-#  
+#
 #  def insertIntoTableFrom(sqlInterface, tablename, query):
 #    SQL_query = "INSERT INTO %s %s;\n" % (tablename, query)
 #    # tablename = "LSST__%s_%s" % (tablename, chunkId)
 #    # query = "SELECT %sId, chunkId, subChunkId FROM %s.%s" % ( tablename.lower(), database, tablename )
 #    sqlInterface.execute(SQL_query)
-
-  
-      

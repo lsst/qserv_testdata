@@ -72,6 +72,7 @@ def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestDataConfig)
     return suite
 
+
 if __name__ == '__main__':
     logger.setup_logging(logger.get_default_log_conf())
     unittest.TextTestRunner(verbosity=2).run(suite())

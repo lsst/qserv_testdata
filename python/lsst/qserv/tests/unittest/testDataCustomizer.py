@@ -35,6 +35,7 @@ from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests.dataCustomizer import DataCustomizer
 
+
 class TestDataCustomizer(unittest.TestCase):
 
     @classmethod
@@ -43,9 +44,8 @@ class TestDataCustomizer(unittest.TestCase):
         TestDataCustomizer._config = commons.read_user_config()
         TestDataCustomizer._logger = logging.getLogger(__name__)
 
-
         TestDataCustomizer._url = ("lsst-dev.ncsa.illinois.edu:"
-               "/lsst/home/fjammes/public/qserv_testdata/unit_test_file.jpg")
+                                   "/lsst/home/fjammes/public/qserv_testdata/unit_test_file.jpg")
         TestDataCustomizer._dest_file = os.path.join("/", "tmp",
                                                      os.path.basename(TestDataCustomizer._url))
         try:
@@ -66,9 +66,11 @@ class TestDataCustomizer(unittest.TestCase):
         DataCustomizer._rsync(self._url, self._dest_file)
         assert(os.path.exists(self._dest_file))
 
+
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestDataCustomizer)
     return suite
+
 
 if __name__ == '__main__':
     logger.setup_logging(logger.get_default_log_conf())
