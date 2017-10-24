@@ -146,3 +146,12 @@ class QservLoader(DbLoader):
                 wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
         else:
             self.czar_wmgr.xrootdRegisterDb(self._dbName, allowDuplicate=True)
+
+    def finalize(self):
+        """Finalize data loading process
+        """
+        self.workerInsertXrootdExportPath()
+
+        # xrootd is restarted by wmgr
+        # Reload Qserv (empty) chunk cache
+        self.resetChunksCache()

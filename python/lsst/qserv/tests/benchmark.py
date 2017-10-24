@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-
 #
 # LSST Data Management System
-# Copyright 2008-2015 LSST Corporation.
+# Copyright 2008-2017 LSST Corporation.
 #
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -34,15 +32,14 @@ Integration test tool :
 
 from __future__ import absolute_import, division, print_function
 
-import logging
-import shutil
-
 import errno
+from filecmp import dircmp
+import logging
 import os
 import re
+import shutil
 import stat
 import sys
-from filecmp import dircmp
 
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import dataDuplicator
@@ -53,15 +50,25 @@ from .sql import cmd, const
 
 MAX_QUERY = 10000
 
+_LOG = logging.getLogger(__name__)
 
 class Benchmark(object):
+    """Class implementing query running and result comparison for single test.
+
+    Parameters
+    ----------
+    case_id : str
+        Test case identifier, e.g. "01", "02", corresponds to directory name
+        in datasets directory (after stripping initial "case")
+    multi_node : boolean
+        `True` for multi-node qserv setup.
+    testdata_dir : str
+        Location the directory containing test datasets
+    out_dirname_prefix : str, optional
+        Top-level directory for test outputs.
+    """
 
     def __init__(self, case_id, multi_node, testdata_dir, out_dirname_prefix=None):
-
-        self.logger = logging.getLogger(__name__)
-        self.dataLoader = dict()
-        self._mode = None
-        self._dbName = None
 
         self.config = commons.getConfig()
 
@@ -86,11 +93,20 @@ class Benchmark(object):
 
     @staticmethod
     def getDatasetDir(testdata_dir, case_id):
-        LOG = logging.getLogger(__name__)
+        """Returns directory name containg data for a test case.
+
+        Parameters
+        ----------
+        testdata_dir : str
+            Location the directory containing test datasets
+        case_id : str
+            Test case identifier, e.g. "01", "02", corresponds to directory name
+            in datasets directory (after stripping initial "case")
+        """
         if testdata_dir is not None and os.path.isdir(testdata_dir):
-            LOG.debug("Setting testdata_dir value to %s", testdata_dir)
+            _LOG.debug("Setting testdata_dir value to %s", testdata_dir)
         else:
-            LOG.fatal(
+            _LOG.fatal(
                 "Datasets directory (%s) doesn't exists or isn't a directory",
                 testdata_dir
             )
@@ -99,27 +115,38 @@ class Benchmark(object):
         dataset_dir = os.path.join(testdata_dir, "case{0}".format(case_id))
         return dataset_dir
 
-    def runQueries(self, stopAt=MAX_QUERY):
-        self.logger.debug("Running queries : (stop-at: %s)", stopAt)
-        if self._mode == 'qserv':
+    def runQueries(self, mode, dbName, stopAt=MAX_QUERY):
+        """Run all queries agains loaded data.
+
+        Parameters
+        ----------
+        mode : str
+            One of "mysql" or "qserv"
+        dbName : str
+            Database name
+        stopAt : int, optional
+            Max query number.
+        """
+        _LOG.debug("Running queries : (stop-at: %s)", stopAt)
+        if mode == 'qserv':
             withQserv = True
             sqlInterface = cmd.Cmd(config=self.config,
                                    mode=const.MYSQL_PROXY,
-                                   database=self._dbName)
+                                   database=dbName)
         else:
             withQserv = False
             sqlInterface = cmd.Cmd(config=self.config,
                                    mode=const.MYSQL_SOCK,
-                                   database=self._dbName)
+                                   database=dbName)
 
-        myOutDir = os.path.join(self._out_dirname, "outputs", self._mode)
+        myOutDir = os.path.join(self._out_dirname, "outputs", mode)
         if not os.access(myOutDir, os.F_OK):
             os.makedirs(myOutDir)
             # because mysqld will write there
             os.chmod(myOutDir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
         qDir = self._queries_dirname
-        self.logger.debug("Testing queries from %s", qDir)
+        _LOG.debug("Testing queries from %s", qDir)
         queries = sorted(os.listdir(qDir))
         queryCount = 0
         queryRunCount = 0
@@ -128,9 +155,7 @@ class Benchmark(object):
             if qFN.endswith(".sql"):
                 queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
-                    self.logger.info("Launch %s against %s",
-                                     qFN,
-                                     self._mode)
+                    _LOG.info("Launch %s against %s", qFN, mode)
                     query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
@@ -140,9 +165,7 @@ class Benchmark(object):
                         myOutDir, qFN.replace('.sql', '.txt'))
                     #qText += " INTO OUTFILE '%s'" % outFile
 
-                    self.logger.debug("SQL: %s pragmas: %s\n",
-                                      qText,
-                                      pragmas)
+                    _LOG.debug("SQL: %s pragmas: %s\n", qText, pragmas)
                     column_names = 'noheader' not in pragmas
                     sqlInterface.execute(qText, outFile, column_names)
                     if 'sortresult' in pragmas:
@@ -151,17 +174,24 @@ class Benchmark(object):
                             f.seek(0)
                             f.writelines(sortedLines)
 
-        self.logger.info("Test case #%s: %s queries launched on a total of %s",
-                         self._case_id,
-                         queryRunCount,
-                         queryCount)
+        _LOG.info("Test case #%s: %s queries launched on a total of %s",
+                  self._case_id, queryRunCount, queryCount)
 
     def _parseFile(self, qF, withQserv):
-        '''
-        Reads a file with SQL query, filters it based on qserv/mysql mode
-        and finds additional pragmas. Returns query text and set of pragmas
-        as a dictionary.
-        '''
+        """Reads a file with SQL query, filters it based on qserv/mysql mode
+        and finds additional pragmas.
+
+        Parameters
+        ----------
+        qF : file object
+            open file with query text and extra stuff.
+        withQserv : bool
+            if `True` then prepare query for QServ, otherwise for mysql.
+
+        Returns
+        -------
+        2-tuple of query text and set of pragmas as a dictionary.
+        """
 
         qText = []
         pragmas = {}
@@ -199,78 +229,94 @@ class Benchmark(object):
 
         return ' '.join(qText), pragmas
 
-    def loadData(self):
+    def loadData(self, mode, dbName):
+        """Loads data from input files located in caseXX/data/
+
+        Parameters
+        ----------
+        mode : str
+            One of "mysql" or "qserv"
+        dbName : str
+            Database name
         """
-        Creates orderedTables and load data for input file located in caseXX/data/
-        """
-        self.logger.info("Loading data from %s (%s mode)", self._in_dirname,
-                         self._mode)
+        dataLoader = self.connectAndInitDatabases(mode, dbName)
+        _LOG.info("Loading data from %s (%s mode)", self._in_dirname, mode)
         for table in self.dataReader.orderedTables:
-            self.dataLoader[self._mode].createLoadTable(table)
+            dataLoader.createLoadTable(table)
+        dataLoader.finalize()
 
     def cleanup(self):
-        """
-        Cleanup of previous tests temporary ant output files
+        """Cleanup of previous tests output files
         """
         if os.path.exists(self._out_dirname):
             shutil.rmtree(self._out_dirname)
         os.makedirs(self._out_dirname)
 
-    def connectAndInitDatabases(self):
-        self.logger.debug("Creation of data loader for %s mode", self._mode)
-        if (self._mode == 'mysql'):
-            self.dataLoader[self._mode] = mysqlDbLoader.MysqlLoader(
+    def connectAndInitDatabases(self, mode, dbName):
+        """Establish database server connection and create database.
+
+        Parameters
+        ----------
+        mode : str
+            One of "mysql" or "qserv"
+        dbName : str
+            Database name
+
+        Returns
+        -------
+        `DbLoader` instance to be used for data loading
+        """
+        _LOG.debug("Creation of data loader for %s mode", mode)
+        if mode == 'mysql':
+            dataLoader = mysqlDbLoader.MysqlLoader(
                 self.config,
                 self.dataReader,
-                self._dbName,
+                dbName,
                 self._multi_node,
                 self._out_dirname
             )
-        elif (self._mode == 'qserv'):
-            self.dataLoader[self._mode] = qservDbLoader.QservLoader(
+        elif mode == 'qserv':
+            dataLoader = qservDbLoader.QservLoader(
                 self.config,
                 self.dataReader,
-                self._dbName,
+                dbName,
                 self._multi_node,
                 self._out_dirname
             )
-        self.logger.debug("Initializing database for %s mode", self._mode)
-        self.dataLoader[self._mode].prepareDatabase()
-
-    def finalize(self):
-        if (self._mode == 'qserv'):
-            self.dataLoader['qserv'].workerInsertXrootdExportPath()
-
-            # xrootd is restarted by wmgr
-
-            # Reload Qserv (empty) chunk cache
-            self.dataLoader['qserv'].resetChunksCache()
-
-        # Close socket connections
-        del(self.dataLoader[self._mode])
+        _LOG.debug("Initializing database for %s mode", mode)
+        dataLoader.prepareDatabase()
+        return dataLoader
 
     def run(self, mode_list, load_data, stop_at_query=MAX_QUERY):
+        """Execute all tests in a test case.
+
+        Parameters
+        ----------
+        mode_list : list
+            List of strings like "mysql", "qserv".
+        load_data : boolean
+            If True the n load test data.
+        """
 
         self.cleanup()
 
         if load_data:
             if self.dataReader.duplicatedTables:
-                self.logger.info("Tables to Duplicate %s", self.dataReader.duplicatedTables)
+                _LOG.info("Tables to Duplicate %s", self.dataReader.duplicatedTables)
                 self.dataDuplicator.run()
 
         for mode in mode_list:
-            self._mode = mode
 
-            self._dbName = "qservTest_case%s_%s" % (self._case_id, self._mode)
+            dbName = "qservTest_case%s_%s" % (self._case_id, mode)
 
             if load_data:
-                self.connectAndInitDatabases()
-                self.loadData()
-                self.finalize()
+                self.loadData(mode, dbName)
 
-            self.runQueries(stop_at_query)
+            self.runQueries(mode, dbName, stop_at_query)
 
     def analyzeQueryResults(self):
+        """Compare results from runs with different modes.
+        """
 
         outputs_dir = os.path.join(self._out_dirname, "outputs")
 
@@ -282,17 +328,17 @@ class Benchmark(object):
         dcmp = dircmp(mysql_out_dir, qserv_out_dir)
 
         if self.dataReader.notLoadedTables:
-            self.logger.info("Tables/Views not loaded: %s",
-                             self.dataReader.notLoadedTables)
+            _LOG.info("Tables/Views not loaded: %s",
+                      self.dataReader.notLoadedTables)
 
         if not dcmp.diff_files:
-            self.logger.info("MySQL/Qserv results are identical")
+            _LOG.info("MySQL/Qserv results are identical")
         else:
             for query_name in dcmp.diff_files:
                 failing_queries.append(query_name)
-            self.logger.error("MySQL/Qserv differs for %s queries:",
-                              len(failing_queries))
-            self.logger.error("Broken queries list in %s: %s",
-                              qserv_out_dir, failing_queries)
+            _LOG.error("MySQL/Qserv differs for %s queries:",
+                       len(failing_queries))
+            _LOG.error("Broken queries list in %s: %s",
+                       qserv_out_dir, failing_queries)
 
         return failing_queries
