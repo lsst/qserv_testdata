@@ -48,6 +48,9 @@ from . import mysqlDbLoader
 from . import qservDbLoader
 from .sql import cmd, const
 
+# list of possible modes accepted by run() metho
+MODES = ['mysql', 'qserv', 'qserv_async']
+
 MAX_QUERY = 10000
 
 _LOG = logging.getLogger(__name__)
@@ -121,23 +124,25 @@ class Benchmark(object):
         Parameters
         ----------
         mode : str
-            One of "mysql" or "qserv"
+            One of MODES values
         dbName : str
             Database name
         stopAt : int, optional
             Max query number.
         """
         _LOG.debug("Running queries : (stop-at: %s)", stopAt)
-        if mode == 'qserv':
+        if mode in ('qserv', 'qserv_async'):
             withQserv = True
             sqlInterface = cmd.Cmd(config=self.config,
                                    mode=const.MYSQL_PROXY,
                                    database=dbName)
-        else:
+        elif mode == 'mysql':
             withQserv = False
             sqlInterface = cmd.Cmd(config=self.config,
                                    mode=const.MYSQL_SOCK,
                                    database=dbName)
+        else:
+            raise ValueError("unexpected mode: " + str(mode))
 
         myOutDir = os.path.join(self._out_dirname, "outputs", mode)
         if not os.access(myOutDir, os.F_OK):
@@ -167,12 +172,24 @@ class Benchmark(object):
 
                     _LOG.debug("SQL: %s pragmas: %s\n", qText, pragmas)
                     column_names = 'noheader' not in pragmas
-                    sqlInterface.execute(qText, outFile, column_names)
+
+                    async_timeout = 0
+                    if mode == 'qserv_async':
+                        # no_async pragma disables async behaviour
+                        if "no_async" not in pragmas:
+                            # default timeout for async queries is 10 minutes, allow to
+                            # override it via "pragma async_timeout=NNN"
+                            async_timeout = int(pragmas.get('async_timeout', 600))
+                    sqlInterface.execute(qText, outFile, column_names, async_timeout)
                     if 'sortresult' in pragmas:
-                        with open(outFile, "r+b") as f:
-                            sortedLines = sorted(f.readlines())
-                            f.seek(0)
-                            f.writelines(sortedLines)
+                        try:
+                            with open(outFile, "r+b") as f:
+                                sortedLines = sorted(f.readlines())
+                                f.seek(0)
+                                f.writelines(sortedLines)
+                        except OSError as exc:
+                            # file probably does not exist
+                            _LOG.error("Failed to sort output: %s", exc)
 
         _LOG.info("Test case #%s: %s queries launched on a total of %s",
                   self._case_id, queryRunCount, queryCount)
@@ -235,7 +252,7 @@ class Benchmark(object):
         Parameters
         ----------
         mode : str
-            One of "mysql" or "qserv"
+            One of MODES values.
         dbName : str
             Database name
         """
@@ -258,7 +275,7 @@ class Benchmark(object):
         Parameters
         ----------
         mode : str
-            One of "mysql" or "qserv"
+            One of MODES values.
         dbName : str
             Database name
 
@@ -283,6 +300,9 @@ class Benchmark(object):
                 self._multi_node,
                 self._out_dirname
             )
+        else:
+            raise ValueError("unexpected mode: " + str(mode))
+
         _LOG.debug("Initializing database for %s mode", mode)
         dataLoader.prepareDatabase()
         return dataLoader
@@ -305,40 +325,58 @@ class Benchmark(object):
                 _LOG.info("Tables to Duplicate %s", self.dataReader.duplicatedTables)
                 self.dataDuplicator.run()
 
-        for mode in mode_list:
-
-            dbName = "qservTest_case%s_%s" % (self._case_id, mode)
-
-            if load_data:
+        if load_data:
+            # when loading qserv_async is the same as qserv (do not load twice)
+            load_modes = set('qserv' if mode == 'qserv_async' else mode for mode in mode_list)
+            for mode in load_modes:
+                dbName = "qservTest_case%s_%s" % (self._case_id, mode)
                 self.loadData(mode, dbName)
 
+        for mode in mode_list:
+
+            dbName = "qservTest_case%s_%s" % (self._case_id,
+                                              'qserv' if mode == 'qserv_async' else mode)
             self.runQueries(mode, dbName, stop_at_query)
 
-    def analyzeQueryResults(self):
+    def analyzeQueryResults(self, mode_list):
         """Compare results from runs with different modes.
+
+        If "mysql" is in the mode_list compare all other modes against "mysql",
+        otherwise compare all others against first.
+
+        Parameters
+        ----------
+        mode_list : list
+            List of strings like "mysql", "qserv", length of list should be at least 2.
         """
 
         outputs_dir = os.path.join(self._out_dirname, "outputs")
 
         failing_queries = []
 
-        mysql_out_dir = os.path.join(outputs_dir, "mysql")
-        qserv_out_dir = os.path.join(outputs_dir, "qserv")
+        baseline = 'mysql' if 'mysql' in mode_list else mode_list[0]
+        other_modes = [mode for mode in mode_list if mode != baseline]
 
-        dcmp = dircmp(mysql_out_dir, qserv_out_dir)
+        baseline_out_dir = os.path.join(outputs_dir, baseline)
+        for mode in other_modes:
 
-        if self.dataReader.notLoadedTables:
-            _LOG.info("Tables/Views not loaded: %s",
-                      self.dataReader.notLoadedTables)
+            other_out_dir = os.path.join(outputs_dir, mode)
 
-        if not dcmp.diff_files:
-            _LOG.info("MySQL/Qserv results are identical")
-        else:
-            for query_name in dcmp.diff_files:
-                failing_queries.append(query_name)
-            _LOG.error("MySQL/Qserv differs for %s queries:",
-                       len(failing_queries))
-            _LOG.error("Broken queries list in %s: %s",
-                       qserv_out_dir, failing_queries)
+            dcmp = dircmp(baseline_out_dir, other_out_dir)
+
+            if self.dataReader.notLoadedTables:
+                _LOG.info("%s/%s: Tables/Views not loaded: %s",
+                          baseline, mode, self.dataReader.notLoadedTables)
+
+            diffs = dcmp.left_only + dcmp.right_only + dcmp.diff_files
+            if not diffs:
+                _LOG.info("%s/%s results are identical", baseline, mode)
+            else:
+                _LOG.error("%s/%s differs for %s queries:",
+                           baseline, mode, len(diffs))
+                _LOG.error("Broken queries list in %s: %s",
+                           other_out_dir, diffs)
+
+                failing_queries += diffs
 
         return failing_queries
