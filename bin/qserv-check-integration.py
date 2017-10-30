@@ -76,10 +76,12 @@ def _parse_args():
     group.add_argument("-i", "--case-id", dest="case_id",
                        default="01",
                        help="Test case number")
-    mode_option_values = ['mysql', 'qserv', 'all']
+    mode_option_values = benchmark.MODES + ['all']
     group.add_argument("-m", "--mode", dest="mode", choices=mode_option_values,
-                       default='all',
-                       help="Qserv test modes (direct mysql connection, or via qserv)")
+                       action='append',
+                       help="Qserv test modes (direct mysql, qserv, or qserv in async mode), "
+                       "one can give more then one -m option, default is equivalent to "
+                       " `-m all' which tests all modes.")
 
     group = parser.add_argument_group('Load options',
                                       'Options related to data loading')
@@ -156,10 +158,15 @@ def _parse_args():
     if args.do_download:
         args.do_custom = True
 
-    if args.mode == 'all':
-        args.mode_list = ['mysql', 'qserv']
+    if not args.mode or 'all' in args.mode:
+        args.mode = benchmark.MODES
     else:
-        args.mode_list = [args.mode]
+        # remove possible duplicates
+        modes = []
+        for mode in args.mode:
+            if mode not in modes:
+                modes.append(mode)
+        args.mode = modes
 
     return args
 
@@ -181,7 +188,7 @@ def _run_integration_test(case_id, testdata_dir, out_dir, mode_list,
 
     return_code = 1
     if len(mode_list) > 1:
-        failed_queries = bench.analyzeQueryResults()
+        failed_queries = bench.analyzeQueryResults(mode_list)
 
         if len(failed_queries) == 0:
             _LOG.info("Test case #%s succeed", case_id)
@@ -232,7 +239,7 @@ def main():
 
     else:
         ret_code = _run_integration_test(args.case_id, args.testdata_dir,
-                                         args.out_dir, args.mode_list,
+                                         args.out_dir, args.mode,
                                          multi_node,
                                          args.load_data, args.stop_at_query)
 

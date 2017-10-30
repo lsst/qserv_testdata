@@ -37,7 +37,7 @@ import unittest
 # Imports for other modules --
 # ----------------------------
 from lsst.qserv.admin import commons
-from lsst.qserv.tests.benchmark import Benchmark
+from lsst.qserv.tests.benchmark import Benchmark, MODES
 
 # ---------------------------------
 # Local non-exported definitions --
@@ -57,7 +57,7 @@ class TestIntegration(unittest.TestCase):
         super(TestIntegration, cls).setUpClass()
         TestIntegration.config = commons.getConfig()
         TestIntegration.logger = logging.getLogger(__name__)
-        TestIntegration.modeList = ['mysql', 'qserv']
+        TestIntegration.modeList = MODES
         TestIntegration.loadData = True
 
         if os.environ.get('QSERV_TESTDATA_DIR') is not None:
@@ -77,7 +77,7 @@ class TestIntegration(unittest.TestCase):
                         msg="non existing testdata_dir {0}".format(self.testdata_dir))
         bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
         bench.run(self.modeList, self.loadData)
-        failed_queries = bench.analyzeQueryResults()
+        failed_queries = bench.analyzeQueryResults(self.modeList)
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
 
     def test_case01(self):

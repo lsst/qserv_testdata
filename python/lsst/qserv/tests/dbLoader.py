@@ -126,3 +126,8 @@ class DbLoader(object):
         Clear czar chunk cache (a.k.a. empty chunk list cache)
         """
         self.czar_wmgr.resetChunksCache(self._dbName)
+
+    def finalize(self):
+        """Finalize data loading process
+        """
+        pass
