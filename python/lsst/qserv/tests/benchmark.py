@@ -73,7 +73,7 @@ class Benchmark(object):
 
     def __init__(self, case_id, multi_node, testdata_dir, out_dirname_prefix=None):
 
-        self.config = commons.getConfig()
+        self.config = commons.read_user_config()
 
         self._case_id = case_id
         self._multi_node = multi_node
