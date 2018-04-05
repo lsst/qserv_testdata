@@ -53,10 +53,9 @@ class QservLoader(DbLoader):
                                              out_dirname)
         self.logger = logging.getLogger(__name__)
 
-        run_dir = self.config['qserv']['qserv_run_dir']
-        self._emptyChunksFile = os.path.join(run_dir, "var", "lib",
-                                             "qserv", "empty_" +
-                                             self._dbName +
+        data_dir = self.config['qserv']['qserv_data_dir']
+        self._emptyChunksFile = os.path.join(data_dir, "qserv",
+                                             "empty_" + self._dbName +
                                              ".txt")
         self.dataConfig = data_reader
         self.tmpDir = self.config['qserv']['tmp_dir']

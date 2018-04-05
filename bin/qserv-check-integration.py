@@ -31,10 +31,6 @@ from __future__ import absolute_import, division, print_function
 #  Imports of standard modules --
 # -------------------------------
 import argparse
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser  # python2
 import logging
 import os
 import sys
@@ -212,19 +208,10 @@ def _run_integration_test(case_id, testdata_dir, out_dir, mode_list,
 
 
 def main():
-    multi_node = False
 
     args = _parse_args()
 
-    config = commons.read_user_config()
-    run_dir = config['qserv']['qserv_run_dir']
-    config_file = os.path.join(run_dir, "qserv-meta.conf")
-
-    parser = configparser.SafeConfigParser()
-    parser.read(config_file)
-    if parser.get('qserv', 'node_type') in ['master']:
-        _LOG.info("Running Integration test in multi-node setup")
-        multi_node = True
+    multi_node = benchmark.is_multi_node()
 
     ret_code = 1
     if args.do_custom:
