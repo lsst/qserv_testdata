@@ -80,7 +80,7 @@ def is_multi_node():
         parser = configparser.SafeConfigParser()
         parser.read(config_file)
         if parser.get('qserv', 'node_type') in ['mono']:
-            _LOG.info("Running Integration test in multi-node setup")
+            _LOG.info("Running Integration test in mono-node setup")
             multi_node = False
     return multi_node
 
