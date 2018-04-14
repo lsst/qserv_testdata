@@ -37,10 +37,6 @@ from __future__ import absolute_import, division, print_function
 #  Imports of standard modules --
 # -------------------------------
 import argparse
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser  # python2
 import logging
 import os
 import sys
@@ -52,6 +48,7 @@ import unittest
 import lsst.log
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
+from lsst.qserv.tests import benchmark
 from lsst.qserv.tests.unittest.testIntegration import suite
 
 # ---------------------------------
@@ -80,7 +77,6 @@ are read from ~/.lsst/qserv.conf.''',
 # Exported definitions --
 # -----------------------
 if __name__ == '__main__':
-    multi_node = False
 
     args = _parse_args()
     logger.setup_logging(args.log_conf)
@@ -96,11 +92,7 @@ if __name__ == '__main__':
     run_dir = config['qserv']['qserv_run_dir']
     config_file = os.path.join(run_dir, "qserv-meta.conf")
 
-    parser = configparser.SafeConfigParser()
-    parser.read(config_file)
-    if parser.get('qserv', 'node_type') in ['master']:
-        _LOG.info("Running Integration test in multi-node setup")
-        multi_node = True
+    multi_node = benchmark.is_multi_node()
 
     result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node))
 

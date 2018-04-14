@@ -60,8 +60,7 @@ class DbLoader(object):
             for node in self.nMgmt.select(nodeType='worker', state='ACTIVE'):
                 self.nWmgrs[node.name()] = node.wmgrClient()
 
-        # This code currently works only with mono-node setup, host
-        # name for wmgr is the same as master qserv host
+        # Host name for wmgr is the same as master qserv host
         self.czar_wmgr = WmgrClient(host=self.config['qserv']['master'],
                                     port=self.config['wmgr']['port'],
                                     secretFile=self.config['wmgr']['secret'])

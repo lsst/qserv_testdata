@@ -32,6 +32,10 @@ Integration test tool :
 
 from __future__ import absolute_import, division, print_function
 
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser  # python2
 import errno
 from filecmp import dircmp
 import logging
@@ -55,6 +59,31 @@ MAX_QUERY = 10000
 
 _LOG = logging.getLogger(__name__)
 
+def is_multi_node():
+    """ Check is Qserv install is multi node
+
+        it assumes integration tests are launched
+        on master for mono-node instance
+
+        Returns
+        -------
+
+        true if Qserv install is multi-node
+    """
+    multi_node = True
+    # FIXME code below is specific to mono-node setup
+    # and might be removed
+    config = commons.read_user_config()
+    run_dir = config['qserv']['qserv_run_dir']
+    config_file = os.path.join(run_dir, "qserv-meta.conf")
+    if os.path.isfile(config_file):
+        parser = configparser.SafeConfigParser()
+        parser.read(config_file)
+        if parser.get('qserv', 'node_type') in ['mono']:
+            _LOG.info("Running Integration test in mono-node setup")
+            multi_node = False
+    return multi_node
+
 class Benchmark(object):
     """Class implementing query running and result comparison for single test.
 
@@ -73,7 +102,7 @@ class Benchmark(object):
 
     def __init__(self, case_id, multi_node, testdata_dir, out_dirname_prefix=None):
 
-        self.config = commons.getConfig()
+        self.config = commons.read_user_config()
 
         self._case_id = case_id
         self._multi_node = multi_node
