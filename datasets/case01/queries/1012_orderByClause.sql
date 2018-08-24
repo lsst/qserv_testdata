@@ -1,6 +1,7 @@
 -- Just testing ORDER BY <clause>
 -- (This query does not have real scientific meaning..)
 
+-- pragma noheader
 
 SELECT objectId, iE1_SG, ABS(iE1_SG)
 FROM Object
