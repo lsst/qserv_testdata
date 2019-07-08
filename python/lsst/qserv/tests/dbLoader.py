@@ -53,7 +53,7 @@ class DbLoader(object):
         self.logger = logging.getLogger(__name__)
 
         if self._multi_node:
-            self.css = css.CssAccess.createFromConfig(self.config['css'], '')
+            self.css = css.CssAccess.createFromConfig(self.config['css'])
             self.nMgmt = nodeMgmt.NodeMgmt(self.css, wmgrSecretFile=self.config['wmgr']['secret'])
 
             self.nWmgrs = {}

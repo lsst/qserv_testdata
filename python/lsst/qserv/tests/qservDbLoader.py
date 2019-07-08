@@ -134,7 +134,7 @@ class QservLoader(DbLoader):
         self.dropCssDatabase()
 
     def dropCssDatabase(self):
-        cssAccess = css.CssAccess.createFromConfig(self.config['css'], '')
+        cssAccess = css.CssAccess.createFromConfig(self.config['css'])
         if cssAccess.containsDb(self._dbName):
             cssAccess.dropDb(self._dbName)
         self.logger.info("Drop CSS database: %s", self._dbName)
