@@ -122,11 +122,17 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
+#<<<<<<< HEAD
 #<<<<<<< HEAD &&&
 #    testRunner = unittest.TextTestRunner(verbosity=2)
 #=======
 #    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
 #>>>>>>> Made changes to add czar server as command line argument.
+    
+#=======
+#    _LOG.error("&&& qservServer=%s", qservServer)
+#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qserv_server=qservServer))
+#>>>>>>> qserv on czar1.localdomain is now getting the query, but it doesn't find the database schema.
     testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
 
     for run_test in args.run_tests:

@@ -160,6 +160,7 @@ class Benchmark(object):
             Max query number.
         """
         _LOG.debug("Running queries : (stop-at: %s)", stopAt)
+        _LOG.error("&&& runQ mode=%s dbName=%s stopAt=%s qservServer=%s", mode, dbName, stopAt, qservServer)
         if mode in ('qserv', 'qserv_async'):
             withQserv = True
             if (not qservServer):
@@ -168,7 +169,9 @@ class Benchmark(object):
                                        database=dbName)
             else:
                 conf = self.config
-                conf[qserv][master] = qservServer
+                _LOG.error("&&& a conf=%s", conf)
+                conf['qserv']['master'] = qservServer
+                _LOG.error("&&& b conf=%s", conf)
                 sqlInterface = cmd.Cmd(conf,
                                        mode=const.MYSQL_PROXY,
                                        database=dbName)
@@ -356,6 +359,7 @@ class Benchmark(object):
         """
 
         self.cleanup()
+        _LOG.error("&&& run modeL=%s stop_at_query=%s qservServer=%s", mode_list, stop_at_query, qservServer)
 
         if load_data:
             if self.dataReader.duplicatedTables:

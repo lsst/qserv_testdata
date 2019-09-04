@@ -47,15 +47,17 @@ from lsst.qserv.tests.benchmark import Benchmark, MODES
 # Exported definitions --
 # -----------------------
 
+_LOG = logging.getLogger(__name__)
+
 
 class TestIntegration(unittest.TestCase):
 
     runMulti = False
+    qservServer = ''
 
     @classmethod
     def setUpClass(cls):
         super(TestIntegration, cls).setUpClass()
-        TestIntegration.qservServer = ''
         TestIntegration.config = commons.getConfig()
         TestIntegration.logger = logging.getLogger(__name__)
         TestIntegration.modeList = MODES
@@ -78,6 +80,7 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(os.path.exists(self.testdata_dir),
                         msg="non existing testdata_dir {0}".format(self.testdata_dir))
         bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
+        _LOG.error("&&& runTestCase self.qservServer=%s", self.qservServer)
         bench.run(self.modeList, self.loadData, qservServer=self.qservServer)
         failed_queries = bench.analyzeQueryResults(self.modeList)
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
@@ -103,7 +106,7 @@ class TestIntegration(unittest.TestCase):
         self._runTestCase(case_id)
 
 
-def suite(multi_node=False, qservServer=""):
+def suite(multi_node=False, qserv_server=""):
     TestIntegration.runMulti = multi_node
-    TestIntegration.qservServer = qservServer
+    TestIntegration.qservServer = qserv_server
     return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)
