@@ -55,6 +55,7 @@ class TestIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super(TestIntegration, cls).setUpClass()
+        TestIntegration.qservServer = ''
         TestIntegration.config = commons.getConfig()
         TestIntegration.logger = logging.getLogger(__name__)
         TestIntegration.modeList = MODES
@@ -71,12 +72,13 @@ class TestIntegration(unittest.TestCase):
                                                 "datasets"
                                                 )
             TestIntegration.testdata_dir = os.path.abspath(fragile_testdata_dir)
+            
 
     def _runTestCase(self, case_id):
         self.assertTrue(os.path.exists(self.testdata_dir),
                         msg="non existing testdata_dir {0}".format(self.testdata_dir))
         bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
-        bench.run(self.modeList, self.loadData)
+        bench.run(self.modeList, self.loadData, qservServer=self.qservServer)
         failed_queries = bench.analyzeQueryResults(self.modeList)
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
 
@@ -101,6 +103,7 @@ class TestIntegration(unittest.TestCase):
         self._runTestCase(case_id)
 
 
-def suite(multi_node=False):
+def suite(multi_node=False, qservServer=""):
     TestIntegration.runMulti = multi_node
+    TestIntegration.qservServer = qservServer
     return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)

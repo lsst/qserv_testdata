@@ -85,8 +85,8 @@ def _parse_args():
         nargs = '+',
         default = all_tests.keys(),
         dest='run_tests')
-
     parser = logger.add_logfile_opt(parser)
+    parser.add_argument('-q', action='store', dest='qserv_server', default='', help='qserv server')
     _args = parser.parse_args()
 
     return _args
@@ -107,6 +107,7 @@ if __name__ == '__main__':
 
     args = _parse_args()
     logger.setup_logging(args.log_conf)
+    qservServer = args.qserv_server
 
     # configure log4cxx logging based on the logging level of Python logger
     levels = {logging.ERROR: lsst.log.ERROR,
@@ -121,7 +122,12 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
-    testRunner = unittest.TextTestRunner(verbosity=2)
+#<<<<<<< HEAD &&&
+#    testRunner = unittest.TextTestRunner(verbosity=2)
+#=======
+#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
+#>>>>>>> Made changes to add czar server as command line argument.
+    testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
 
     for run_test in args.run_tests:
         verify(testRunner.run(all_tests[run_test]()))

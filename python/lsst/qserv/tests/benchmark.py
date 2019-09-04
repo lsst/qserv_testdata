@@ -147,7 +147,7 @@ class Benchmark(object):
         dataset_dir = os.path.join(testdata_dir, "case{0}".format(case_id))
         return dataset_dir
 
-    def runQueries(self, mode, dbName, stopAt=MAX_QUERY):
+    def runQueries(self, mode, dbName, stopAt=MAX_QUERY, qservServer=""):
         """Run all queries agains loaded data.
 
         Parameters
@@ -162,9 +162,16 @@ class Benchmark(object):
         _LOG.debug("Running queries : (stop-at: %s)", stopAt)
         if mode in ('qserv', 'qserv_async'):
             withQserv = True
-            sqlInterface = cmd.Cmd(config=self.config,
-                                   mode=const.MYSQL_PROXY,
-                                   database=dbName)
+            if (not qservServer):
+                sqlInterface = cmd.Cmd(config=self.config,
+                                       mode=const.MYSQL_PROXY,
+                                       database=dbName)
+            else:
+                conf = self.config
+                conf[qserv][master] = qservServer
+                sqlInterface = cmd.Cmd(conf,
+                                       mode=const.MYSQL_PROXY,
+                                       database=dbName)
         elif mode == 'mysql':
             withQserv = False
             sqlInterface = cmd.Cmd(config=self.config,
@@ -181,6 +188,7 @@ class Benchmark(object):
 
         qDir = self._queries_dirname
         _LOG.debug("Testing queries from %s", qDir)
+        _LOG.error("b stopAt=%s qservServer=%s MAX_QUERY=%s &&&", stopAt, qservServer, MAX_QUERY)
         queries = sorted(os.listdir(qDir))
         queryCount = 0
         queryRunCount = 0
@@ -336,7 +344,7 @@ class Benchmark(object):
         dataLoader.prepareDatabase()
         return dataLoader
 
-    def run(self, mode_list, load_data, stop_at_query=MAX_QUERY):
+    def run(self, mode_list, load_data, stop_at_query=MAX_QUERY, qservServer=""):
         """Execute all tests in a test case.
 
         Parameters
@@ -365,7 +373,8 @@ class Benchmark(object):
 
             dbName = "qservTest_case%s_%s" % (self._case_id,
                                               'qserv' if mode == 'qserv_async' else mode)
-            self.runQueries(mode, dbName, stop_at_query)
+            _LOG.error("a stopAt=%s qservServer=%s MAX_QUERY=%s &&&", stop_at_query, qservServer, MAX_QUERY)
+            self.runQueries(mode, dbName, stop_at_query, qservServer)
 
     def analyzeQueryResults(self, mode_list):
         """Compare results from runs with different modes.

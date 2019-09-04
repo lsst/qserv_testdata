@@ -153,4 +153,4 @@ class QservLoader(DbLoader):
 
         # xrootd is restarted by wmgr
         # Reload Qserv (empty) chunk cache
-        self.resetChunksCache()
+        # &&& Obsolete??? &&& self.resetChunksCache()
