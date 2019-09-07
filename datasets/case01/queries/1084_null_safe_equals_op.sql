@@ -4,5 +4,5 @@
 
 -- pragma sortresult
 
-select objectId from Object where raRange <=> NULL;
+select objectId from {DBTAG}.Object where raRange <=> NULL;
 

@@ -5,6 +5,6 @@
 --- This query returns some rows.
 
 SELECT sourceId, objectId
-FROM Source
+FROM {DBTAG}.Source
 WHERE objectId IN (386942193651348)
 ORDER BY sourceId;

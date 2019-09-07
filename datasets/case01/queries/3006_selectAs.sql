@@ -1,5 +1,5 @@
 SELECT ra_PS AS ra
-FROM Object
+FROM {DBTAG}.Object
 WHERE ra_PS BETWEEN 0. AND 1.
 AND decl_PS BETWEEN 0. AND 1.
 ORDER BY ra;

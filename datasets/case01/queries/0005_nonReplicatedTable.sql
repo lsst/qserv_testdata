@@ -2,4 +2,4 @@
 -- is needed to execute this query on one node only!)
 
 -- pragma sortresult
-SELECT offset, mjdRef, drift FROM LeapSeconds where offset = 10
+SELECT offset, mjdRef, drift FROM {DBTAG}.LeapSeconds where offset = 10

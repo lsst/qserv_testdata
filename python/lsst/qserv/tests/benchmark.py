@@ -169,17 +169,16 @@ class Benchmark(object):
                                        database=dbName)
             else:
                 conf = self.config
-                _LOG.error("&&& a conf=%s", conf)
                 conf['qserv']['master'] = qservServer
                 _LOG.error("&&& b conf=%s", conf)
                 sqlInterface = cmd.Cmd(conf,
                                        mode=const.MYSQL_PROXY,
-                                       database=dbName)
+                                       database=None)
         elif mode == 'mysql':
             withQserv = False
             sqlInterface = cmd.Cmd(config=self.config,
                                    mode=const.MYSQL_SOCK,
-                                   database=dbName)
+                                   database=None)
         else:
             raise ValueError("unexpected mode: " + str(mode))
 
@@ -205,6 +204,9 @@ class Benchmark(object):
 
                     qF = open(query_filename, 'r')
                     qText, pragmas = self._parseFile(qF, withQserv)
+                    # qText needs correct database name inserted.
+                    qText = qText.replace('{DBTAG}', dbName)
+                    _LOG.info("&&& qText=%s", qText)
 
                     outFile = os.path.join(
                         myOutDir, qFN.replace('.sql', '.txt'))

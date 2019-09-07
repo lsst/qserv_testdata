@@ -5,5 +5,5 @@
 
 -- pragma sortresult
 SELECT *
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  objectId = 430213989000

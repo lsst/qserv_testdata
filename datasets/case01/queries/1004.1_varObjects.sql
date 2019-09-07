@@ -7,7 +7,7 @@
 
 -- pragma noheader
 SELECT objectId, AVG(ra_PS) as ra
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  ra_PS BETWEEN 0 AND 3   -- noQserv
   AND  decl_PS BETWEEN 0 AND 10 -- noQserv
 -- withQserv WHERE qserv_areaspec_box(0, 0, 3, 10)

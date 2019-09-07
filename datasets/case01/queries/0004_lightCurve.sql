@@ -4,7 +4,7 @@
 -- pragma sortresult
 
 SELECT taiMidPoint, psfFlux, psfFluxSigma, ra, decl
-FROM   Source
-JOIN   Filter USING (filterId)
+FROM   {DBTAG}.Source
+JOIN   {DBTAG}.Filter USING (filterId)
 WHERE  objectId = 402412665835716
    AND filterName = 'r'

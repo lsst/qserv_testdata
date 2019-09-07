@@ -1,6 +1,6 @@
 SELECT o1.objectId, o2.objectId
-FROM   Object o1, 
-       Object o2
+FROM   {DBTAG}.Object o1, 
+       {DBTAG}.Object o2
 WHERE  scisql_angSep(o1.ra_PS, o1.decl_PS, o2.ra_PS, o2.decl_PS) < 1
   AND  o1.objectId <> o2.objectId
   AND  ABS( (scisql_fluxToAbMag(o1.gFlux_PS)-scisql_fluxToAbMag(o1.rFlux_PS)) - 

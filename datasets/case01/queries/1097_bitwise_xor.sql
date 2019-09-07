@@ -2,4 +2,4 @@
 
 -- pragma sortresult
 
-select * from Filter where filterId ^ 3 != 0;
+select * from {DBTAG}.Filter where filterId ^ 3 != 0;

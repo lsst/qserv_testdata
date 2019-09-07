@@ -8,10 +8,10 @@ SELECT sce.visit, sce.raftName, sce.ccdName,
        s.e1_SG,s.e1_SG_Sigma,s.e2_SG,s.e2_SG_Sigma,s.shear1_SG,s.shear1_SG_Sigma,
        s.shear2_SG,s.shear2_SG_Sigma,s.sourceWidth_SG,s.sourceWidth_SG_Sigma,
        s.flagForDetection
-FROM Source AS s, 
-     Science_Ccd_Exposure AS sce,
-     RefSrcMatch AS rom,
-     SimRefObject AS sro
+FROM {DBTAG}.Source AS s, 
+     {DBTAG}.Science_Ccd_Exposure AS sce,
+     {DBTAG}.RefSrcMatch AS rom,
+     {DBTAG}.SimRefObject AS sro
 WHERE (s.scienceCcdExposureId = sce.scienceCcdExposureId)
   AND (s.sourceId = rom.sourceId)
   AND (rom.refObjectId = sro.refObjectId)

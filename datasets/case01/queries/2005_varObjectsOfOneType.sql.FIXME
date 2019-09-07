@@ -5,7 +5,7 @@
 -- missing in current schema: variability, probability
 
 SELECT objectId
-FROM   Object
+FROM   {DBTAG}.Object
 JOIN   _ObjectToType USING(objectId)
 JOIN   ObjectType USING (typeId)
 WHERE  description = 'Supernova'

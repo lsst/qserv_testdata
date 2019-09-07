@@ -4,6 +4,6 @@
 -- is and use it when setting up its secondary index.
 
 SELECT sourceId, objectId
-FROM Source
+FROM {DBTAG}.Source
 WHERE objectId = 386942193651348
 ORDER BY sourceId;

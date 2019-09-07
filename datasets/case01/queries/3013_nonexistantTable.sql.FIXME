@@ -1,2 +1,2 @@
 
-select count(*) from Sources;
+select count(*) from {DBTAG}.Sources;
