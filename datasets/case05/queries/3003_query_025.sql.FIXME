@@ -3,7 +3,7 @@
 -- Based on https://dev.lsstcorp.org/trac/wiki/db/queries/025
 
 SELECT DISTINCT o1.objectId, o1.ra_PS, o1.decl_PS, o2.iauId
-FROM   Object o1, Object o2
+FROM   {DBTAG}.Object o1, {DBTAG}.Object o2
 WHERE  ABS(o2.ra_PS   - o1.ra_PS  ) < o2.raRange/(2*COS(RADIANS(o1.decl_PS)))
    AND ABS(o2.decl_PS - o1.decl_PS) < o2.declRange/2 
    AND (

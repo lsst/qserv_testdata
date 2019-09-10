@@ -3,5 +3,5 @@
 
 -- pragma sortresult
 SELECT count(*) AS OBJ_COUNT
- FROM Object
+ FROM {DBTAG}.Object
  WHERE scisql_angSep(ra_PS, decl_PS, 0., 0.) < 0.2

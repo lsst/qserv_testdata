@@ -3,9 +3,9 @@
 -- https://dev.lsstcorp.org/trac/wiki/db/queries/007
 
 SELECT objectId, taiMidPoint, fluxToAbMag(psfMag)
-FROM   Source
-JOIN   Object USING(objectId)
-JOIN   Filter USING(filterId)
+FROM   {DBTAG}.Source
+JOIN   {DBTAG}.Object USING(objectId)
+JOIN   {DBTAG}.Filter USING(filterId)
 WHERE   ra_PS BETWEEN 1 AND 2 -- noQserv
    AND decl_PS BETWEEN 3 AND 4 -- noQserv
 -- withQserv  qserv_areaspec_box(1,3,2,4)

@@ -4,7 +4,7 @@
 -- See ticket #2051
 
 SELECT COUNT(*) AS OBJ_COUNT
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  scisql_s2PtInCPoly(ra_PS, decl_PS, 1.0, 3.0, 1.5, 2.0, 2.0, 4.0) = 1 -- noQserv
 -- withQserv WHERE qserv_areaspec_poly(1.0, 3.0, 1.5, 2.0, 2.0, 4.0)
    AND scisql_fluxToAbMag(zFlux_PS) BETWEEN 20 AND 24

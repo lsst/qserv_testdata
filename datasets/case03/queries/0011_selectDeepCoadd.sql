@@ -2,5 +2,5 @@
 
 -- pragma sortresult
 SELECT DISTINCT tract,patch,filterName
-FROM DeepCoadd
+FROM {DBTAG}.DeepCoadd
 ;

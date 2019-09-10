@@ -4,5 +4,5 @@
 
 -- pragma sortresult
 SELECT COUNT(*) AS OBJ_COUNT
- FROM Object
+ FROM {DBTAG}.Object
  WHERE gFlux_PS>1e-25

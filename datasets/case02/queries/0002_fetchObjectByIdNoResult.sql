@@ -4,5 +4,5 @@
 -- not working, see ticket #1847
 
 SELECT *
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  objectId = 430213989000

@@ -5,10 +5,10 @@
 SELECT sce.filterName, sce.tract, sce.patch, sro.gMag, sro.ra, sro.decl, sro.isStar,
        sro.refObjectId, s.id as sourceId,  rom.nSrcMatches, s.flags_pixel_interpolated_center,
        s.flags_negative, s.flags_pixel_edge, s.centroid_sdss_flags, s.flags_pixel_saturated_center
-FROM   RunDeepSource AS s,
-       DeepCoadd AS sce,
-       RefDeepSrcMatch AS rom,
-       RefObject AS sro
+FROM   {DBTAG}.RunDeepSource AS s,
+       {DBTAG}.DeepCoadd AS sce,
+       {DBTAG}.RefDeepSrcMatch AS rom,
+       {DBTAG}.RefObject AS sro
 WHERE  (s.coadd_id = sce.deepCoaddId)
    AND (s.id = rom.deepSourceId)
    AND (rom.refObjectId = sro.refObjectId)

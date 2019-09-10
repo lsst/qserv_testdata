@@ -5,6 +5,6 @@
 -- pragma sortresult
 SELECT objectId, ra_PS, decl_PS, 
        scisql_fluxToAbMag(zFlux_PS) AS fluxToAbMag
- FROM Object 
+ FROM {DBTAG}.Object 
  WHERE scisql_fluxToAbMag(zFlux_PS)
        BETWEEN 20 AND 24

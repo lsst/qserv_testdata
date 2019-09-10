@@ -3,7 +3,7 @@
 
 -- pragma sortresult
 SELECT COUNT(*) AS OBJ_COUNT
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  ra_PS BETWEEN 70 AND 75  -- noQserv
 AND    decl_PS BETWEEN 3 AND 3.5 -- noQserv
 -- withQserv WHERE qserv_areaspec_box(70, 3, 75, 3.5)

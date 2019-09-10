@@ -3,7 +3,7 @@
 -- Based on https://dev.lsstcorp.org/trac/wiki/db/queries/012
 
 SELECT objectId, ra_PS, decl_PS
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  (                  
          scisql_fluxToAbMag(rFlux_PS)-scisql_fluxToAbMag(iFlux_PS) - 
          (scisql_fluxToAbMag(gFlux_PS)-scisql_fluxToAbMag(rFlux_PS))/4 - 0.18

@@ -5,7 +5,7 @@
 
 
 SELECT COUNT(*) AS OBJ_COUNT
-FROM   Object
+FROM   {DBTAG}.Object
 WHERE  scisql_s2PtInCircle(ra_PS, decl_PS, 1.2, 3.2, 0.5) = 1 -- noQserv
 -- withQserv WHERE qserv_areaspec_circle(1.2, 3.2, 0.5)
    AND scisql_fluxToAbMag(zFlux_PS) BETWEEN 20 AND 24

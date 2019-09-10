@@ -3,7 +3,7 @@
 -- Base on https://dev.lsstcorp.org/trac/ticket/2051
 
 SELECT * 
- FROM Object
+ FROM {DBTAG}.Object
  WHERE ra_PS BETWEEN 1.28 AND 3.18   -- noQserv
    AND decl_PS BETWEEN 1.38 AND 3.34 -- noQserv
 -- withQserv WHERE qserv_areaspec_box(1.28,1.38,3.18,3.34)

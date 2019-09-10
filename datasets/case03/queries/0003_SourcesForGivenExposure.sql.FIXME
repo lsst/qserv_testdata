@@ -6,8 +6,8 @@ SELECT sce.filterName, sce.field, sce.camcol, sce.run, s.deepForcedSourceId, s.r
        s.modelFluxSigma, s.instFlux, s.instFluxSigma, s.shapeIxx, s.shapeIyy, 
        s.shapeIxy, s.flagPixInterpCen, s.flagNegative, s.flagPixEdge, 
        s.flagBadCentroid, s.flagPixSaturCen, s.extendedness  
-FROM   DeepForcedSource AS s,
-       Science_Ccd_Exposure AS sce
+FROM   {DBTAG}.DeepForcedSource AS s,
+       {DBTAG}.Science_Ccd_Exposure AS sce
 WHERE  (s.scienceCcdExposureId = sce.scienceCcdExposureId)
    AND (sce.filterName = 'g')
    AND (sce.field = 535)

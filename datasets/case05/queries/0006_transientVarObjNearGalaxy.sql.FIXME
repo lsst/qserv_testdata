@@ -4,7 +4,7 @@
 -- we don't have variability and extendedParamer columns
 
 SELECT v.objectId, v.ra, v.decl
-FROM   Object v, Object o
+FROM   {DBTAG}.Object v, {DBTAG}.Object o
 WHERE  o.objectId = :objectId
    AND spDist(v.ra, v.decl, o.ra, o.decl, :dist)
    AND v.variability > 0.8
