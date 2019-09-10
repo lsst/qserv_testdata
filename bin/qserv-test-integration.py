@@ -60,10 +60,9 @@ _LOG = logging.getLogger()
 def _parse_args():
 
     parser = argparse.ArgumentParser(
-        description='''Qserv integration tests suite. Relies on python unit
-testing framework, provide test meta-data which can be used for example in a
-continuous integration framework or by a cluster management tool. Configuration values
-are read from ~/.lsst/qserv.conf.''',
+        description=("Qserv integration tests suite. Relies on python unit testing framework, provide test "
+                     "meta-data which can be used for example in a continuous integration framework or by a "
+                     "cluster management tool. Configuration values are read from ~/.lsst/qserv.conf."),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
