@@ -110,7 +110,4 @@ if __name__ == '__main__':
     for test in tests:
         verify(testRunner.run(test))
 
-    # result = testRunner.run(testIntegration.suite(multi_node))
-    # verify(result)
-
     sys.exit(0)
