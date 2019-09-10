@@ -57,6 +57,13 @@ from lsst.qserv.tests.unittest import testIntegration, testCall
 _LOG = logging.getLogger()
 
 
+# To add test suites: add a name (key) and a factory lambda function (value) to the all_tests dictionary.
+# Then it will be available in the arguments to the script, and will be run by default if test names aren't
+# explicitly passed in by the caller.
+all_tests = {'testCall': lambda : testCall.suite(),
+             'testIntegration': lambda: testIntegration.suite(multi_node)}
+
+
 def _parse_args():
 
     parser = argparse.ArgumentParser(
@@ -65,6 +72,14 @@ def _parse_args():
                      "cluster management tool. Configuration values are read from ~/.lsst/qserv.conf."),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+
+    parser.add_argument('-t', '--run-tests',
+        help="The name of one or more test suites to execute. May include one or more of {}".format(
+             list(all_tests.keys())),
+        choices = all_tests.keys(),
+        nargs = '+',
+        default = all_tests.keys(),
+        dest='run_tests')
 
     parser = logger.add_logfile_opt(parser)
     _args = parser.parse_args()
@@ -103,10 +118,7 @@ if __name__ == '__main__':
 
     testRunner = unittest.TextTestRunner(verbosity=2)
 
-    tests = [testCall.suite(),
-             testIntegration.suite(multi_node)]
-
-    for test in tests:
-        verify(testRunner.run(test))
+    for run_test in args.run_tests:
+        verify(testRunner.run(all_tests[run_test]()))
 
     sys.exit(0)
