@@ -49,7 +49,7 @@ import lsst.log
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests.unittest.testIntegration import suite
+from lsst.qserv.tests.unittest import testIntegration, testCall
 
 # ---------------------------------
 # Local non-exported definitions --
@@ -73,6 +73,14 @@ are read from ~/.lsst/qserv.conf.''',
     return _args
 
 
+def verify(result):
+    if result.wasSuccessful():
+        _LOG.info("Integration test succeeded")
+    else:
+        _LOG.fatal("Integration test failed")
+        sys.exit(1)
+
+
 # -----------------------
 # Exported definitions --
 # -----------------------
@@ -94,13 +102,15 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
-    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node))
+    testRunner = unittest.TextTestRunner(verbosity=2)
 
-    if result.wasSuccessful():
-        _LOG.info("Integration test succeeded")
-        ret_code = 0
-    else:
-        _LOG.fatal("Integration test failed")
-        ret_code = 1
+    tests = [testCall.suite(),
+             testIntegration.suite(multi_node)]
 
-    sys.exit(ret_code)
+    for test in tests:
+        verify(testRunner.run(test))
+
+    # result = testRunner.run(testIntegration.suite(multi_node))
+    # verify(result)
+
+    sys.exit(0)
