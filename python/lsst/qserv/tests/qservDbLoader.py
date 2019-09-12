@@ -151,6 +151,3 @@ class QservLoader(DbLoader):
         """
         self.workerInsertXrootdExportPath()
 
-        # xrootd is restarted by wmgr
-        # Reload Qserv (empty) chunk cache
-        # &&& Obsolete??? &&& self.resetChunksCache()

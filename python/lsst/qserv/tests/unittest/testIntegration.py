@@ -80,7 +80,6 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(os.path.exists(self.testdata_dir),
                         msg="non existing testdata_dir {0}".format(self.testdata_dir))
         bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
-        _LOG.error("&&& runTestCase self.qservServer=%s", self.qservServer)
         bench.run(self.modeList, self.loadData, qservServer=self.qservServer)
         failed_queries = bench.analyzeQueryResults(self.modeList)
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))

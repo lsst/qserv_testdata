@@ -160,7 +160,6 @@ class Benchmark(object):
             Max query number.
         """
         _LOG.debug("Running queries : (stop-at: %s)", stopAt)
-        _LOG.error("&&& runQ mode=%s dbName=%s stopAt=%s qservServer=%s", mode, dbName, stopAt, qservServer)
         if mode in ('qserv', 'qserv_async'):
             withQserv = True
             if (not qservServer):
@@ -170,7 +169,7 @@ class Benchmark(object):
             else:
                 conf = self.config
                 conf['qserv']['master'] = qservServer
-                _LOG.error("&&& b conf=%s", conf)
+                _LOG.debug(" conf=%s", conf)
                 sqlInterface = cmd.Cmd(conf,
                                        mode=const.MYSQL_PROXY,
                                        database=None)
@@ -190,7 +189,6 @@ class Benchmark(object):
 
         qDir = self._queries_dirname
         _LOG.debug("Testing queries from %s", qDir)
-        _LOG.error("b stopAt=%s qservServer=%s MAX_QUERY=%s &&&", stopAt, qservServer, MAX_QUERY)
         queries = sorted(os.listdir(qDir))
         queryCount = 0
         queryRunCount = 0
@@ -199,14 +197,14 @@ class Benchmark(object):
             if qFN.endswith(".sql"):
                 queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
-                    _LOG.info("Launch %s against %s", qFN, mode)
+                    _LOG.info("Launch %s mode=%s db=%s", qFN, mode, dbName)
                     query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
                     qText, pragmas = self._parseFile(qF, withQserv)
                     # qText needs correct database name inserted.
                     qText = qText.replace('{DBTAG}', dbName)
-                    _LOG.info("&&& qText=%s", qText)
+                    _LOG.debug("qText=%s", qText)
 
                     outFile = os.path.join(
                         myOutDir, qFN.replace('.sql', '.txt'))
@@ -361,7 +359,6 @@ class Benchmark(object):
         """
 
         self.cleanup()
-        _LOG.error("&&& run modeL=%s stop_at_query=%s qservServer=%s", mode_list, stop_at_query, qservServer)
 
         if load_data:
             if self.dataReader.duplicatedTables:
@@ -379,7 +376,6 @@ class Benchmark(object):
 
             dbName = "qservTest_case%s_%s" % (self._case_id,
                                               'qserv' if mode == 'qserv_async' else mode)
-            _LOG.error("a stopAt=%s qservServer=%s MAX_QUERY=%s &&&", stop_at_query, qservServer, MAX_QUERY)
             self.runQueries(mode, dbName, stop_at_query, qservServer)
 
     def analyzeQueryResults(self, mode_list):
