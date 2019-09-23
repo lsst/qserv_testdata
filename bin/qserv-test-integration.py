@@ -49,7 +49,7 @@ import lsst.log
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests.unittest.testIntegration import suite
+from lsst.qserv.tests.unittest import testIntegration, testCall
 
 # ---------------------------------
 # Local non-exported definitions --
@@ -57,20 +57,42 @@ from lsst.qserv.tests.unittest.testIntegration import suite
 _LOG = logging.getLogger()
 
 
+# To add test suites: add a name (key) and a factory lambda function (value) to the all_tests dictionary.
+# Then it will be available in the arguments to the script, and will be run by default if test names aren't
+# explicitly passed in by the caller.
+all_tests = {'testCall': lambda : testCall.suite(),
+             'testIntegration': lambda: testIntegration.suite(multi_node)}
+
+
 def _parse_args():
 
     parser = argparse.ArgumentParser(
-        description='''Qserv integration tests suite. Relies on python unit
-testing framework, provide test meta-data which can be used for example in a
-continuous integration framework or by a cluster management tool. Configuration values
-are read from ~/.lsst/qserv.conf.''',
+        description=("Qserv integration tests suite. Relies on python unit testing framework, provide test "
+                     "meta-data which can be used for example in a continuous integration framework or by a "
+                     "cluster management tool. Configuration values are read from ~/.lsst/qserv.conf."),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+
+    parser.add_argument('-t', '--run-tests',
+        help="The name of one or more test suites to execute. May include one or more of {}".format(
+             list(all_tests.keys())),
+        choices = all_tests.keys(),
+        nargs = '+',
+        default = all_tests.keys(),
+        dest='run_tests')
 
     parser = logger.add_logfile_opt(parser)
     _args = parser.parse_args()
 
     return _args
+
+
+def verify(result):
+    if result.wasSuccessful():
+        _LOG.info("Integration test succeeded")
+    else:
+        _LOG.fatal("Integration test failed")
+        sys.exit(1)
 
 
 # -----------------------
@@ -94,13 +116,9 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
-    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node))
+    testRunner = unittest.TextTestRunner(verbosity=2)
 
-    if result.wasSuccessful():
-        _LOG.info("Integration test succeeded")
-        ret_code = 0
-    else:
-        _LOG.fatal("Integration test failed")
-        ret_code = 1
+    for run_test in args.run_tests:
+        verify(testRunner.run(all_tests[run_test]()))
 
-    sys.exit(ret_code)
+    sys.exit(0)
