@@ -86,7 +86,10 @@ def _parse_args():
         default = all_tests.keys(),
         dest='run_tests')
     parser = logger.add_logfile_opt(parser)
-    parser.add_argument('-q', action='store', dest='qserv_server', default='', help='qserv server')
+    parser.add_argument('-q', action='store', dest='qserv_server', default='',
+                        help='qserv server')
+    parser.add_argument('-z', action='store_true', dest='multi_czar',
+                        help='test on multi_czar configuration')
     _args = parser.parse_args()
 
     return _args
@@ -108,6 +111,7 @@ if __name__ == '__main__':
     args = _parse_args()
     logger.setup_logging(args.log_conf)
     qservServer = args.qserv_server
+    multi_czar = args.multi_czar
 
     # configure log4cxx logging based on the logging level of Python logger
     levels = {logging.ERROR: lsst.log.ERROR,
@@ -122,7 +126,8 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
+#<<<<<<< HEAD
 #<<<<<<< HEAD
 #<<<<<<< HEAD &&&
 #    testRunner = unittest.TextTestRunner(verbosity=2)
@@ -134,11 +139,28 @@ if __name__ == '__main__':
 #    _LOG.error("&&& qservServer=%s", qservServer)
 #    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qserv_server=qservServer))
 #>>>>>>> qserv on czar1.localdomain is now getting the query, but it doesn't find the database schema.
-    testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
-=======
-    _LOG.info("qservServer=%s", qservServer)
-    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qserv_server=qservServer))
->>>>>>> Removed some log messages.
+#    testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
+#=======
+#    _LOG.info("qservServer=%s", qservServer)
+#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qserv_server=qservServer))
+#>>>>>>> Removed some log messages.
+#=======
+#    if not multi_node:
+#        multi_czar = False
+#
+#    _LOG.info("qservServer=%s", qservServer)
+#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, 
+#                                                            qserv_server=qservServer,
+#                                                            multi_czar=multi_czar))
+#>>>>>>> Changed to create databases on all czars.
+
+    if not multi_node:
+        multi_czar = False
+
+
+    testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, 
+                                                                qserv_server=qservServer,
+                                                                multi_czar=multi_czar))
 
     for run_test in args.run_tests:
         verify(testRunner.run(all_tests[run_test]()))

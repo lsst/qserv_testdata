@@ -54,6 +54,7 @@ class TestIntegration(unittest.TestCase):
 
     runMulti = False
     qservServer = ''
+    multi_czar = False
 
     @classmethod
     def setUpClass(cls):
@@ -79,7 +80,7 @@ class TestIntegration(unittest.TestCase):
     def _runTestCase(self, case_id):
         self.assertTrue(os.path.exists(self.testdata_dir),
                         msg="non existing testdata_dir {0}".format(self.testdata_dir))
-        bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
+        bench = Benchmark(case_id, self.runMulti, self.testdata_dir, multi_czar=self.multi_czar)
         bench.run(self.modeList, self.loadData, qservServer=self.qservServer)
         failed_queries = bench.analyzeQueryResults(self.modeList)
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
@@ -105,7 +106,8 @@ class TestIntegration(unittest.TestCase):
         self._runTestCase(case_id)
 
 
-def suite(multi_node=False, qserv_server=""):
+def suite(multi_node=False, qserv_server="", multi_czar=False):
     TestIntegration.runMulti = multi_node
     TestIntegration.qservServer = qserv_server
+    TestIntegration.multi_czar = multi_czar
     return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)

@@ -34,6 +34,7 @@ import logging
 import os
 
 from lsst.qserv import css
+from lsst.qserv import qmeta
 from lsst.qserv.admin import nodeAdmin
 from lsst.qserv.admin import nodeMgmt
 from lsst.qserv.wmgr.client import WmgrClient
@@ -41,7 +42,7 @@ from lsst.qserv.wmgr.client import WmgrClient
 
 class DbLoader(object):
 
-    def __init__(self, config, data_reader, db_name, multi_node, out_dirname):
+    def __init__(self, config, data_reader, db_name, multi_node, out_dirname, multi_czar):
 
         self.config = config
         self.dataConfig = data_reader
@@ -60,7 +61,26 @@ class DbLoader(object):
             for node in self.nMgmt.select(nodeType='worker', state='ACTIVE'):
                 self.nWmgrs[node.name()] = node.wmgrClient()
 
+        # czar names are formated as host:port
+        self.czarWmgrs = []
+        if self._multi_czar:
+            # &&& get list of czars from qmeta czars are not listed in css, qmeta configuration information is not in self.config
+            # &&& It looks like it is easiest to pull this information from qserv-run/etc/watch.cnf or czar.cnf. Configs are a mess.
+            # &&& It makes more sense to get [qmeta] section into .lsst/qserv.conf (and into self.config) than to try and load watch.cnf or czar.cnf
+            # from qserv/admin/bin/watcher.py
+            # qmetaConfig = dict(cfg.items('qmeta'))
+            # executor = watcherLib.QservExecutor(wcss, qmetaConfig)
+            qservMeta = qmeta.QMeta.createFromConfig(self.config['qmeta'])
+            czarNames = qservMeta.getCzarNames()
+            for cName in czarNames:
+                cHost, cPort = cName.split(':')
+                cClient = WmgrClient(host=cHost, 
+                                     port = cPort, 
+                                     secretFile=self.config['wmgr']['secret'])
+                self.czarWmgrs.append(cClient)
+
         # Host name for wmgr is the same as master qserv host
+        # TODO Rename: czar_wmgr is incorrect in multi_czar. This describes the master, which is not a czar
         self.czar_wmgr = WmgrClient(host=self.config['qserv']['master'],
                                     port=self.config['wmgr']['port'],
                                     secretFile=self.config['wmgr']['secret'])

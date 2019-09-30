@@ -100,12 +100,14 @@ class Benchmark(object):
         Top-level directory for test outputs.
     """
 
-    def __init__(self, case_id, multi_node, testdata_dir, out_dirname_prefix=None):
+    def __init__(self, case_id, multi_node, testdata_dir,
+                 out_dirname_prefix=None, multi_czar=False):
 
         self.config = commons.read_user_config()
 
         self._case_id = case_id
         self._multi_node = multi_node
+        self._multi_czar = multi_czar
 
         if not out_dirname_prefix:
             out_dirname_prefix = self.config['qserv']['tmp_dir']
@@ -338,7 +340,8 @@ class Benchmark(object):
                 self.dataReader,
                 dbName,
                 self._multi_node,
-                self._out_dirname
+                self._out_dirname,
+                self._multi_czar
             )
         else:
             raise ValueError("unexpected mode: " + str(mode))
