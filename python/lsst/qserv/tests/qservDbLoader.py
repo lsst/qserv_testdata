@@ -136,6 +136,7 @@ class QservLoader(DbLoader):
         # TODO This should be changed to notify the czars that master tables have been updated.
         if self.multi_czar:
             for cWmgr in self.czarWmgrs:
+                self.logger.info("&&& prepareDatabase cWmgr=%s", cWmgr)
                 cWmgr.dropDb(self._dbName, mustExist=False)
                 cWmgr.createDb(self._dbName)
 

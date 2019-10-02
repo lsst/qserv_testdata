@@ -154,8 +154,11 @@ if __name__ == '__main__':
 #                                                            multi_czar=multi_czar))
 #>>>>>>> Changed to create databases on all czars.
 
+    # multi_czar requires multi_node
     if not multi_node:
-        multi_czar = False
+        _LOG.error("multi-czar requires multi_node, failed")
+        ret_code = 1
+        sys.exit(ret_code)
 
 
     testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, 

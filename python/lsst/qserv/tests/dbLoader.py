@@ -50,6 +50,7 @@ class DbLoader(object):
 
         self._multi_node = multi_node
         self._out_dirname = out_dirname
+        self._multi_czar = multi_czar
 
         self.logger = logging.getLogger(__name__)
 
@@ -63,19 +64,25 @@ class DbLoader(object):
 
         # czar names are formated as host:port
         self.czarWmgrs = []
+        self.logger.info("&&& multi_czar=%s", str(self._multi_czar))
         if self._multi_czar:
+            self.logger.info("&&& b multi_czar=%s", str(self._multi_czar))
             # &&& get list of czars from qmeta czars are not listed in css, qmeta configuration information is not in self.config
             # &&& It looks like it is easiest to pull this information from qserv-run/etc/watch.cnf or czar.cnf. Configs are a mess.
             # &&& It makes more sense to get [qmeta] section into .lsst/qserv.conf (and into self.config) than to try and load watch.cnf or czar.cnf
             # from qserv/admin/bin/watcher.py
             # qmetaConfig = dict(cfg.items('qmeta'))
             # executor = watcherLib.QservExecutor(wcss, qmetaConfig)
+            self.logger.info("&&& qmeta conf=%s", self.config['qmeta'])
             qservMeta = qmeta.QMeta.createFromConfig(self.config['qmeta'])
             czarNames = qservMeta.getCzarNames()
+            self.logger.info("&&& czarNames=%s", czarNames)
             for cName in czarNames:
                 cHost, cPort = cName.split(':')
+                wPort = self.config['wmgr']['port']
+                self.logger.info("&&& dbLoader cHost=%s cPort=%s wPort=%s",cHost, cPort, wPort)
                 cClient = WmgrClient(host=cHost, 
-                                     port = cPort, 
+                                     port=wPort, 
                                      secretFile=self.config['wmgr']['secret'])
                 self.czarWmgrs.append(cClient)
 
