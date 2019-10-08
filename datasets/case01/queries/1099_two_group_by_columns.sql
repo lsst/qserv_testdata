@@ -3,4 +3,4 @@
 
 -- pragma sortresult
 
-select objectId, filterId from {DBTAG}.Source group by objectId, filterId;
+select objectId, filterId from Source group by objectId, filterId;

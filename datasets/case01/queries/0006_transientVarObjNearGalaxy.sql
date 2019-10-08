@@ -10,7 +10,7 @@
 -- to be a usable near neighbor.
 
 SELECT v.objectId, v.ra_PS, v.decl_PS
-FROM   {DBTAG}.Object v, {DBTAG}.Object o
+FROM   Object v, Object o
 WHERE  o.objectId = 90030275138483
    AND o.objectId != v.objectId
    AND scisql_angSep(v.ra_PS, v.decl_PS, o.ra_PS, o.decl_PS) < 0.016666

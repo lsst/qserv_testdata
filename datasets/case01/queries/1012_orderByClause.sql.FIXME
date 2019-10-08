@@ -4,6 +4,6 @@
 -- pragma noheader
 
 SELECT objectId, iE1_SG, ABS(iE1_SG)
-FROM {DBTAG}.Object
+FROM Object
 WHERE iE1_SG between -0.1 and 0.1
 ORDER BY ABS(iE1_SG);

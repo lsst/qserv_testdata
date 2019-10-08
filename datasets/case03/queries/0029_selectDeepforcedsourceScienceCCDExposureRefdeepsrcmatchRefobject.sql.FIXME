@@ -6,10 +6,10 @@ SELECT sce.filterName, sce.field, sce.camcol, sce.run, sro.gMag, sro.ra, sro.dec
        s.modelFluxSigma, s.instFlux, s.instFluxSigma, s.shapeIxx, s.shapeIyy, 
        s.shapeIxy, s.flagPixInterpCen, s.flagNegative, s.flagPixEdge, 
        s.flagBadCentroid, s.flagPixSaturCen, s.extendedness
-FROM   {DBTAG}.DeepForcedSource AS s,
-       {DBTAG}.Science_Ccd_Exposure AS sce use index(),
-       {DBTAG}.RefDeepSrcMatch AS rom,
-       {DBTAG}.RefObject AS sro
+FROM   DeepForcedSource AS s,
+       Science_Ccd_Exposure AS sce use index(),
+       RefDeepSrcMatch AS rom,
+       RefObject AS sro
 WHERE  (s.scienceCcdExposureId = sce.scienceCcdExposureId)
    AND (s.deepSourceId = rom.deepSourceId)
    AND (rom.refObjectId = sro.refObjectId)

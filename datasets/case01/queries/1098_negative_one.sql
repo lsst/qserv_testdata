@@ -8,4 +8,4 @@
 
 -- pragma sortresult
 
-select objectId from {DBTAG}.Object where ra_PS > -1;
+select objectId from Object where ra_PS > -1;

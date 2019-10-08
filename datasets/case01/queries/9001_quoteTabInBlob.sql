@@ -3,5 +3,5 @@
 -- test databases
 
 SELECT blobField 
-FROM {DBTAG}.Source 
+FROM Source 
 WHERE sourceId=29759322768015696; 

@@ -5,7 +5,7 @@
 -- Missing in current schema: extendedParameter
 
 SELECT  objectId
-FROM    {DBTAG}.Object
+FROM    Object
 WHERE   extendedParameter > 0.8 -- a star
   AND   uMag BETWEEN 1 AND 27  -- magnitudes are reasonable
   AND   gMag BETWEEN 1 AND 27

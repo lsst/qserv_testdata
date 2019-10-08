@@ -2,7 +2,7 @@
 
 -- pragma sortresult
 SELECT sce.filterId, sce.filterName 
-FROM   {DBTAG}.Science_Ccd_Exposure AS sce 
+FROM   Science_Ccd_Exposure AS sce 
 WHERE  sce.filterName = 'g'
    AND sce.field = 670
    AND sce.camcol = 2

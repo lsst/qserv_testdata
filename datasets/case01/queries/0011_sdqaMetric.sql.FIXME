@@ -6,5 +6,5 @@
 -- doesn't include MySQL-isms.
 
 SELECT sdqa_metricId
-FROM   {DBTAG}.sdqa_Metric
+FROM   sdqa_Metric
 WHERE  metricName = NAME_CONST('metricName_',_latin1'ip.isr.numSaturatedPixels' COLLATE 'latin1_swedish_ci')

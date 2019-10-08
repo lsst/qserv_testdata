@@ -8,7 +8,7 @@ SELECT  COUNT(*)                                               AS totalCount,
         SUM(CASE WHEN (typeId=3) THEN 1 ELSE 0 END)            AS galaxyCount,
         SUM(CASE WHEN (typeId=6) THEN 1 ELSE 0 END)            AS starCount,
         SUM(CASE WHEN (typeId NOT IN (3,6)) THEN 1 ELSE 0 END) AS otherCount
-FROM    {DBTAG}.Object
+FROM    Object
 JOIN    _Object2Type USING(objectId)
 WHERE  (uMag-gMag > 2.0 OR uMag > 22.3)
    AND iMag BETWEEN 0 AND 19 

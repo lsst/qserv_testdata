@@ -9,5 +9,5 @@ shapeIyyVar, shapeIxyVar, shapeIxxIyyCov, shapeIxxIxyCov, shapeIyyIxyCov, extend
 flagBadMeasCentroid, flagPixEdge, flagPixInterpAny, flagPixInterpCen, flagPixSaturAny, flagPixSaturCen, 
 flagBadPsfFlux, flagBadApFlux, flagBadModelFlux, flagBadInstFlux, flagBadCentroid, flagBadShape, 
 raDeepSource, declDeepSource  
-FROM {DBTAG}.DeepForcedSource 
+FROM DeepForcedSource 
 ORDER BY deepForcedSourceId;

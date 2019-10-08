@@ -5,7 +5,7 @@
 
 
 SELECT COUNT(*) AS OBJ_COUNT
-FROM   {DBTAG}.Object
+FROM   Object
 WHERE  scisql_s2PtInEllipse(ra_PS, decl_PS, 1.2, 3.2, 2500, 1500, 0.2) = 1 -- noQserv
 -- withQserv WHERE qserv_areaspec_ellipse(1.2, 3.2, 6000, 5000, 0.2)
    AND scisql_fluxToAbMag(zFlux_PS) BETWEEN 20 AND 24

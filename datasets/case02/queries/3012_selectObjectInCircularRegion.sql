@@ -3,5 +3,5 @@
 
 
 SELECT count(*) AS OBJ_COUNT
- FROM {DBTAG}.Object
+ FROM Object
  WHERE scisql_angSep(ra_PS, decl_PS, 1.2, 3.2) < 0.2

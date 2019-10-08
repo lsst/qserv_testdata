@@ -3,7 +3,7 @@
 
 -- pragma sortresult
 SELECT COUNT(*) AS OBJ_COUNT
-FROM   {DBTAG}.Object
+FROM   Object
 WHERE  scisql_s2PtInCircle(ra_PS, decl_PS, 72.5, 3.25, 0.6) = 1 -- noQserv
 -- withQserv WHERE qserv_areaspec_circle(72.5, 3.25, 0.6)
    AND scisql_fluxToAbMag(zFlux_PS) BETWEEN 20 AND 24

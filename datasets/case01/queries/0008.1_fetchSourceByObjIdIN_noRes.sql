@@ -5,6 +5,6 @@
 -- This query returns 0 rows
 
 SELECT sourceId, objectId
-FROM {DBTAG}.Source
+FROM Source
 WHERE objectId IN (1234)
 ORDER BY sourceId;

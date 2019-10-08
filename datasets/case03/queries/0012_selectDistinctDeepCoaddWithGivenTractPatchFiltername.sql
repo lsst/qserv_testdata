@@ -2,7 +2,7 @@
 
 -- pragma sortresult
 SELECT DISTINCT tract, patch, filterName 
-FROM   {DBTAG}.DeepCoadd
+FROM   DeepCoadd
 WHERE  tract = 0 
    AND patch = '159,2'
    AND filterName = 'r';

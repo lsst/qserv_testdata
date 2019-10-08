@@ -4,7 +4,7 @@
 -- Missing in current schema: variability
 
 SELECT *
-FROM   {DBTAG}.Object
+FROM   Object
 WHERE  variability > 0.8 -- variable object
    AND uTimescale < :timescaleMax
    AND gTimescale < :timescaleMax

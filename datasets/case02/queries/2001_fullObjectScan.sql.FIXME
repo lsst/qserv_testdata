@@ -23,7 +23,7 @@ SELECT objectId,
        scisql_fluxToAbMag(zFlux_PS),
        scisql_fluxToAbMag(yFlux_PS),
        ra_PS, decl_PS
-FROM   {DBTAG}.Object
+FROM   Object
 WHERE  ( scisql_fluxToAbMag(gFlux_PS)-scisql_fluxToAbMag(rFlux_PS) > 0.7 OR 
          scisql_fluxToAbMag(gFlux_PS) > 22.3 )
 AND    scisql_fluxToAbMag(gFlux_PS)-scisql_fluxToAbMag(rFlux_PS) > 0.1

@@ -8,8 +8,8 @@
 SELECT o1.objectId AS objId1,
        o2.objectId AS objId2,
        scisql_angSep(o1.ra_PS, o1.decl_PS, o2.ra_PS, o2.decl_PS) AS distance
-  FROM {DBTAG}.Object o1, 
-       {DBTAG}.Object o2
+  FROM Object o1, 
+       Object o2
  WHERE o1.ra_PS BETWEEN 1.2 AND 1.3 -- noQserv
    AND o1.decl_PS between 3.3 and 3.4 -- noQserv
    AND o2.ra_PS BETWEEN 1.2 AND 1.3 -- noQserv

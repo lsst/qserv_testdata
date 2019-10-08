@@ -9,5 +9,5 @@ SELECT count(*) AS n,
         AVG(decl_PS),
         objectId,
         chunkId
- FROM {DBTAG}.Object 
+ FROM Object 
  GROUP BY chunkId

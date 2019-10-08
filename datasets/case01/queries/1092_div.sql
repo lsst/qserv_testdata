@@ -2,5 +2,5 @@
 
 -- pragma sortresult
 
-SELECT objectId from {DBTAG}.Object where ra_PS DIV 2 > 1
+SELECT objectId from Object where ra_PS DIV 2 > 1
 

@@ -1,9 +1,9 @@
 
 SELECT src.sourceId
-FROM {DBTAG}.Source src
+FROM Source src
 WHERE src.objectId IN (
   SELECT objectId
-  FROM {DBTAG}.Object o
+  FROM Object o
   WHERE ra_PS  BETWEEN 0. AND 1.
    AND decl_PS BETWEEN 0. AND 1. 
 ) ;

@@ -101,13 +101,13 @@ class Benchmark(object):
     """
 
     def __init__(self, case_id, multi_node, testdata_dir,
-                 out_dirname_prefix=None, multi_czar=False):
+                 out_dirname_prefix=None, czar_list=[]):
 
         self.config = commons.read_user_config()
 
         self._case_id = case_id
         self._multi_node = multi_node
-        self._multi_czar = multi_czar
+        self._czar_list = czar_list
 
         if not out_dirname_prefix:
             out_dirname_prefix = self.config['qserv']['tmp_dir']
@@ -174,12 +174,12 @@ class Benchmark(object):
                 _LOG.debug(" conf=%s", conf)
                 sqlInterface = cmd.Cmd(conf,
                                        mode=const.MYSQL_PROXY,
-                                       database=None)
+                                       database=dbName)
         elif mode == 'mysql':
             withQserv = False
             sqlInterface = cmd.Cmd(config=self.config,
                                    mode=const.MYSQL_SOCK,
-                                   database=None)
+                                   database=dbName)
         else:
             raise ValueError("unexpected mode: " + str(mode))
 
@@ -194,18 +194,19 @@ class Benchmark(object):
         queries = sorted(os.listdir(qDir))
         queryCount = 0
         queryRunCount = 0
+        dbNameDot = dbName + '.'
         for qFN in queries:
             queryCount += 1
             if qFN.endswith(".sql"):
                 queryRunCount += 1
                 if int(qFN[:4]) <= stopAt:
-                    _LOG.info("Launch %s mode=%s db=%s", qFN, mode, dbName)
+                    _LOG.info("Launch %s mode=%s db=%s", qFN, mode, dbNameDot)
                     query_filename = os.path.join(qDir, qFN)
 
                     qF = open(query_filename, 'r')
                     qText, pragmas = self._parseFile(qF, withQserv)
                     # qText needs correct database name inserted.
-                    qText = qText.replace('{DBTAG}', dbName)
+                    qText = qText.replace('{DBTAG_A}', dbNameDot)
                     _LOG.debug("qText=%s", qText)
 
                     outFile = os.path.join(
@@ -341,7 +342,7 @@ class Benchmark(object):
                 dbName,
                 self._multi_node,
                 self._out_dirname,
-                self._multi_czar
+                self._czar_list
             )
         else:
             raise ValueError("unexpected mode: " + str(mode))

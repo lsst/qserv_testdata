@@ -4,8 +4,8 @@
 
 -- pragma sortresult
 SELECT objectId 
-FROM {DBTAG}.Source 
-JOIN {DBTAG}.Object USING(objectId) 
+FROM Source 
+JOIN Object USING(objectId) 
 WHERE ra_PS BETWEEN 1.28 AND 1.38
  AND  decl_PS BETWEEN 3.18 AND 3.34
 

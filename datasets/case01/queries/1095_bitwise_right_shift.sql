@@ -2,4 +2,4 @@
 
 -- pragma sortresult
 
-select * from {DBTAG}.Filter where filterId >> 1 = 1;
+select * from Filter where filterId >> 1 = 1;

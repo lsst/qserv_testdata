@@ -2,4 +2,4 @@
 
 -- pragma sortresult
 -- pragma no_async
-SHOW COLUMNS FROM {DBTAG}.DeepForcedSource;
+SHOW COLUMNS FROM DeepForcedSource;

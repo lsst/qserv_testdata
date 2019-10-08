@@ -3,5 +3,5 @@
 -- Based on https://dev.lsstcorp.org/trac/wiki/db/queries/026
 
 SELECT COUNT(*) AS OBJ_COUNT
- FROM {DBTAG}.Object
+ FROM Object
  WHERE gFlux_PS>1e-25

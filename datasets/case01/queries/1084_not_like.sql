@@ -3,5 +3,5 @@
 
 -- pragma sortresult
 
-SELECT * FROM {DBTAG}.Filter WHERE filterName NOT LIKE 'Z'
+SELECT * FROM Filter WHERE filterName NOT LIKE 'Z'
 

@@ -2,7 +2,7 @@
 
 -- pragma sortresult
 SELECT scienceCcdExposureId, hex(poly) as hexPoly 
-FROM {DBTAG}.Science_Ccd_Exposure;
+FROM Science_Ccd_Exposure;
 
 
 

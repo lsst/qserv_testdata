@@ -88,8 +88,8 @@ def _parse_args():
     parser = logger.add_logfile_opt(parser)
     parser.add_argument('-q', action='store', dest='qserv_server', default='',
                         help='qserv server')
-    parser.add_argument('-z', action='store_true', dest='multi_czar',
-                        help='test on multi_czar configuration')
+    parser.add_argument('-z', action='append', dest='czar_list',
+                        help='add czar to list of czars to update')
     _args = parser.parse_args()
 
     return _args
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     args = _parse_args()
     logger.setup_logging(args.log_conf)
     qservServer = args.qserv_server
-    multi_czar = args.multi_czar
+    czar_list = args.czar_list
 
     # configure log4cxx logging based on the logging level of Python logger
     levels = {logging.ERROR: lsst.log.ERROR,
@@ -126,6 +126,7 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
+#<<<<<<< HEAD
 #<<<<<<< HEAD
 #<<<<<<< HEAD
 #<<<<<<< HEAD
@@ -160,6 +161,12 @@ if __name__ == '__main__':
         ret_code = 1
         sys.exit(ret_code)
 
+    # czar_list requires multi_node
+    if czar_list:
+        if not multi_node:
+            _LOG.error("multi-czar requires multi_node, failed")
+            ret_code = 1
+            sys.exit(ret_code)
 
     testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, 
                                                                 qserv_server=qservServer,

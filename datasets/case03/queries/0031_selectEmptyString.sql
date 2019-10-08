@@ -2,5 +2,5 @@
 
 -- pragma sortresult
 SELECT *
-FROM {DBTAG}.Science_Ccd_Exposure_Metadata
+FROM Science_Ccd_Exposure_Metadata
 WHERE scienceCcdExposureId=7202320671 AND stringValue=''

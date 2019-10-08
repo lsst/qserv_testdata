@@ -1,5 +1,5 @@
 -- Selecting a non existing field
 
 SELECT o.foobar
-FROM {DBTAG}.Object o
+FROM Object o
 WHERE o.objectid = 402391191015221 ; 

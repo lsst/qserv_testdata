@@ -8,5 +8,5 @@ SELECT fluxToAbMag(uFlux_PS),
        fluxToAbMag(iFlux_PS), 
        fluxToAbMag(zFlux_PS), 
        fluxToAbMag(yFlux_PS)
-FROM   {DBTAG}.Object 
+FROM   Object 
 WHERE  (objectId % 100 ) = :percentage

@@ -168,7 +168,7 @@ def _parse_args():
 
 
 def _run_integration_test(case_id, testdata_dir, out_dir, mode_list,
-                          multi_node, load_data, stop_at_query, multi_czar):
+                          multi_node, load_data, stop_at_query):
     """ Run integration tests, eventually perform data-loading and query results
     comparison
     @param case_id: test case number
