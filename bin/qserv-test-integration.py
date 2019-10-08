@@ -60,8 +60,13 @@ _LOG = logging.getLogger()
 # To add test suites: add a name (key) and a factory lambda function (value) to the all_tests dictionary.
 # Then it will be available in the arguments to the script, and will be run by default if test names aren't
 # explicitly passed in by the caller.
-all_tests = {'testCall': lambda : testCall.suite(),
-             'testIntegration': lambda: testIntegration.suite(multi_node)}
+# WARNING the testIntegration suite will run the data loader, and if data has not yet been loaded, any tests
+# that need it will fail if testIntegration has not been run first. That is to say, tests should usually be
+# added below/after testIntegration.
+# At some point the data loader step should be pulled out of testIntegration and executed before running any
+# tests, probably in this file but maybe somewhere else? TBD by you, dear reader.
+all_tests = {'testIntegration': lambda: testIntegration.suite(multi_node),
+             'testCall': lambda : testCall.suite()}
 
 
 def _parse_args():
