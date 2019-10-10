@@ -107,7 +107,7 @@ class QservLoader(DbLoader):
 
         # Use same logging configuration for loader and integration test
         # command line, this allow to redirect loader to sys.stdout, sys.stderr
-        self.logger.info("&&& loaderCmd=%s", loaderCmd)
+        self.logger.debug("loaderCmd=%s", loaderCmd)
         commons.run_command(loaderCmd,
                             stdout=sys.stdout,
                             stderr=sys.stderr)
@@ -138,7 +138,6 @@ class QservLoader(DbLoader):
 
         # TODO This should be changed to notify the czars that master tables have been updated.
         for cWmgr in self.czarWmgrs:
-            self.logger.info("&&& prepareDatabase a _dbName=%s cWmgr=%s", self._dbName, cWmgr)
             cWmgr.dropDb(self._dbName, mustExist=False)
             cWmgr.createDb(self._dbName)
 

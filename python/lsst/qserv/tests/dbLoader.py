@@ -65,13 +65,13 @@ class DbLoader(object):
                 self.nWmgrs[node.name()] = node.wmgrClient()
 
         self.czarWmgrs = []
-        self.logger.info("&&& czar_list=%s", czar_list)
-        for cName in czar_list:
-            self.logger.info("&&& dbLoader cName=%s", cName)
-            cClient = WmgrClient(host=cName, 
-                                 port=self.config['wmgr']['port'], 
-                                 secretFile=self.config['wmgr']['secret'])
-            self.czarWmgrs.append(cClient)
+        self.logger.info("czar_list=%s", czar_list)
+        if czar_list is not None:
+            for cName in czar_list:
+                cClient = WmgrClient(host=cName, 
+                                     port=self.config['wmgr']['port'], 
+                                     secretFile=self.config['wmgr']['secret'])
+                self.czarWmgrs.append(cClient)
 
         # Host name for wmgr is the same as master qserv host
         # TODO Rename: czar_wmgr is incorrect in multi czar. This describes the master, which is not a czar.
