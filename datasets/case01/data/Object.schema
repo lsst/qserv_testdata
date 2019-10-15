@@ -249,8 +249,6 @@ CREATE TABLE `Object` (
   `yRadius_SG_Sigma` float DEFAULT NULL,
   `yFlags` int(11) DEFAULT NULL,
   `varBinaryField` varbinary(100) DEFAULT NULL,
-  `chunkId` int(11) DEFAULT NULL,
-  `subChunkId` int(11) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
