@@ -50,7 +50,7 @@ class MysqlLoader(DbLoader):
                                              db_name,
                                              multi_node,
                                              out_dirname,
-                                             [])
+                                             czar_list=[])
         self.logger = logging.getLogger(__name__)
 
         self.dataConfig = data_reader

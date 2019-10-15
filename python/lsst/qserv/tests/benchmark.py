@@ -98,15 +98,19 @@ class Benchmark(object):
         Location the directory containing test datasets
     out_dirname_prefix : str, optional
         Top-level directory for test outputs.
+    czar_list: list
+        list of czar addresses (czar1.localdomain) that should be updated.
     """
 
     def __init__(self, case_id, multi_node, testdata_dir,
-                 out_dirname_prefix=None, czar_list=[]):
+                 out_dirname_prefix=None, czar_list=None):
 
         self.config = commons.read_user_config()
 
         self._case_id = case_id
         self._multi_node = multi_node
+        if czar_list is None:
+            czar_list = []
         self._czar_list = czar_list
 
         if not out_dirname_prefix:
@@ -160,6 +164,8 @@ class Benchmark(object):
             Database name
         stopAt : int, optional
             Max query number.
+        qservServer: str 
+            address of the effective qserv master (master.localdomain)
         """
         _LOG.debug("Running queries : (stop-at: %s)", stopAt)
         if mode in ('qserv', 'qserv_async'):

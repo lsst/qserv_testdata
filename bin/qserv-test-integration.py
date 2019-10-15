@@ -87,9 +87,10 @@ def _parse_args():
         dest='run_tests')
     parser = logger.add_logfile_opt(parser)
     parser.add_argument('-q', action='store', dest='qserv_server', default='',
-                        help='qserv server')
+                        help='qserv server name, like master.localdomain')
     parser.add_argument('-z', action='append', dest='czar_list',
-                        help='add czar to list of czars to update')
+                        help=('add czar to list of czars to update, '
+                              'like czar1.localdomain'))
     _args = parser.parse_args()
 
     return _args

@@ -41,12 +41,12 @@ from lsst.qserv.wmgr.client import WmgrClient
 
 
 class DbLoader(object):
-
+    '''
+    @param czar_list: A list of czar names (like czar1.localdomain) that 
+                      should be updated with database schema information.
+    '''
     def __init__(self, config, data_reader, db_name, multi_node, out_dirname, czar_list):
-        '''
-        @param czar_list: A list of czar names (like czar1.localdomain) that 
-                          be updated with database schema information.
-        '''
+       
         self.config = config
         self.dataConfig = data_reader
         self._dbName = db_name

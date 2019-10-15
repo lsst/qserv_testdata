@@ -47,11 +47,11 @@ from lsst.qserv.tests.benchmark import Benchmark, MODES
 # Exported definitions --
 # -----------------------
 
-_LOG = logging.getLogger(__name__)
-
 
 class TestIntegration(unittest.TestCase):
-
+    """
+    Run all test cases using values set by suite() below.
+    """
     runMulti = False
     qservServer = ''
     czar_list = []
@@ -107,6 +107,14 @@ class TestIntegration(unittest.TestCase):
 
 
 def suite(multi_node=False, qserv_server="", czar_list=[]):
+    """
+    @param multi_node:
+        true for test with multiple worker nodes
+    @param qserv_server:
+        master node addres or mono czar address when no separate master.
+    @param czar_list:
+        when there is a searate master, a list of czars that should be updated.
+    """
     TestIntegration.runMulti = multi_node
     TestIntegration.qservServer = qserv_server
     TestIntegration.czar_list = czar_list
