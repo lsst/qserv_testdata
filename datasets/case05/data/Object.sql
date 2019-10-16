@@ -246,8 +246,6 @@ CREATE TABLE `Object` (
   `yRadius_SG` float default NULL,
   `yRadius_SG_Sigma` float default NULL,
   `yFlags` int(11) default NULL,
-  `_chunkId` int(11) default NULL,
-  `_subChunkId` int(11) default NULL,
   PRIMARY KEY  (`objectId`),
   KEY `IDX_Object_decl` (`decl_PS`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
