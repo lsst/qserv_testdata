@@ -49,8 +49,12 @@ from lsst.qserv.tests.benchmark import Benchmark, MODES
 
 
 class TestIntegration(unittest.TestCase):
-
+    """
+    Run all test cases using values set by suite() below.
+    """
     runMulti = False
+    qservServer = ''
+    czar_list = []
 
     @classmethod
     def setUpClass(cls):
@@ -71,12 +75,13 @@ class TestIntegration(unittest.TestCase):
                                                 "datasets"
                                                 )
             TestIntegration.testdata_dir = os.path.abspath(fragile_testdata_dir)
+            
 
     def _runTestCase(self, case_id):
         self.assertTrue(os.path.exists(self.testdata_dir),
                         msg="non existing testdata_dir {0}".format(self.testdata_dir))
-        bench = Benchmark(case_id, self.runMulti, self.testdata_dir)
-        bench.run(self.modeList, self.loadData)
+        bench = Benchmark(case_id, self.runMulti, self.testdata_dir, czar_list=self.czar_list)
+        bench.run(self.modeList, self.loadData, qservServer=self.qservServer)
         failed_queries = bench.analyzeQueryResults(self.modeList)
         self.assertListEqual(failed_queries, [], msg="Queries in error: {0}".format(failed_queries))
 
@@ -101,6 +106,16 @@ class TestIntegration(unittest.TestCase):
         self._runTestCase(case_id)
 
 
-def suite(multi_node=False):
+def suite(multi_node=False, qserv_server="", czar_list=[]):
+    """
+    @param multi_node:
+        true for test with multiple worker nodes
+    @param qserv_server:
+        master node addres or mono czar address when no separate master.
+    @param czar_list:
+        when there is a separate master, a list of czars that should be updated.
+    """
     TestIntegration.runMulti = multi_node
+    TestIntegration.qservServer = qserv_server
+    TestIntegration.czar_list = czar_list
     return unittest.TestLoader().loadTestsFromTestCase(TestIntegration)

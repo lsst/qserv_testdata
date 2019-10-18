@@ -65,9 +65,9 @@ _LOG = logging.getLogger()
 # added below/after testIntegration.
 # At some point the data loader step should be pulled out of testIntegration and executed before running any
 # tests, probably in this file but maybe somewhere else? TBD by you, dear reader.
-all_tests = {'testIntegration': lambda: testIntegration.suite(multi_node),
-             'testCall': lambda : testCall.suite()}
-
+all_tests = {'testIntegration': lambda: testIntegration.suite(multi_node, qserv_server=qservServer,
+                                                              czar_list=czar_list),
+             'testCall': lambda : testCall.suite(qserv_server=qservServer)}
 
 def _parse_args():
 
@@ -85,8 +85,12 @@ def _parse_args():
         nargs = '+',
         default = all_tests.keys(),
         dest='run_tests')
-
     parser = logger.add_logfile_opt(parser)
+    parser.add_argument('-q', action='store', dest='qserv_server', default='',
+                        help='qserv server name, like master.localdomain')
+    parser.add_argument('-z', action='append', dest='czar_list',
+                        help=('add czar to list of czars to update, '
+                              'like czar1.localdomain'))
     _args = parser.parse_args()
 
     return _args
@@ -107,6 +111,8 @@ if __name__ == '__main__':
 
     args = _parse_args()
     logger.setup_logging(args.log_conf)
+    qservServer = args.qserv_server
+    czar_list = args.czar_list
 
     # configure log4cxx logging based on the logging level of Python logger
     levels = {logging.ERROR: lsst.log.ERROR,
@@ -120,6 +126,13 @@ if __name__ == '__main__':
     config_file = os.path.join(run_dir, "qserv-meta.conf")
 
     multi_node = benchmark.is_multi_node()
+
+    # czar_list requires multi_node
+    if czar_list:
+        if not multi_node:
+            _LOG.error("multi-czar requires multi_node, failed")
+            ret_code = 1
+            sys.exit(ret_code)
 
     testRunner = unittest.TextTestRunner(verbosity=2)
 

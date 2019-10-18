@@ -34,15 +34,19 @@ import logging
 import os
 
 from lsst.qserv import css
+from lsst.qserv import qmeta
 from lsst.qserv.admin import nodeAdmin
 from lsst.qserv.admin import nodeMgmt
 from lsst.qserv.wmgr.client import WmgrClient
 
 
 class DbLoader(object):
-
-    def __init__(self, config, data_reader, db_name, multi_node, out_dirname):
-
+    '''
+    @param czar_list: A list of czar names (like czar1.localdomain) that 
+                      should be updated with database schema information.
+    '''
+    def __init__(self, config, data_reader, db_name, multi_node, out_dirname, czar_list):
+       
         self.config = config
         self.dataConfig = data_reader
         self._dbName = db_name
@@ -60,7 +64,17 @@ class DbLoader(object):
             for node in self.nMgmt.select(nodeType='worker', state='ACTIVE'):
                 self.nWmgrs[node.name()] = node.wmgrClient()
 
+        self.czarWmgrs = []
+        self.logger.info("czar_list=%s", czar_list)
+        if czar_list is not None:
+            for cName in czar_list:
+                cClient = WmgrClient(host=cName, 
+                                     port=self.config['wmgr']['port'], 
+                                     secretFile=self.config['wmgr']['secret'])
+                self.czarWmgrs.append(cClient)
+
         # Host name for wmgr is the same as master qserv host
+        # TODO Rename: czar_wmgr is incorrect in multi czar. This describes the master, which is not a czar.
         self.czar_wmgr = WmgrClient(host=self.config['qserv']['master'],
                                     port=self.config['wmgr']['port'],
                                     secretFile=self.config['wmgr']['secret'])

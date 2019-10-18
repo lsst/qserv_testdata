@@ -44,13 +44,15 @@ class QservLoader(DbLoader):
                  data_reader,
                  db_name,
                  multi_node,
-                 out_dirname):
+                 out_dirname,
+                 czar_list=[]):
 
         super(self.__class__, self).__init__(config,
                                              data_reader,
                                              db_name,
                                              multi_node,
-                                             out_dirname)
+                                             out_dirname,
+                                             czar_list)
         self.logger = logging.getLogger(__name__)
 
         data_dir = self.config['qserv']['qserv_data_dir']
@@ -60,6 +62,7 @@ class QservLoader(DbLoader):
         self.dataConfig = data_reader
         self.tmpDir = self.config['qserv']['tmp_dir']
         self.multi_node = multi_node
+
 
     def createLoadTable(self, table):
         """
@@ -82,6 +85,8 @@ class QservLoader(DbLoader):
         if self.multi_node:
             for node in self.nWmgrs:
                 loaderCmd += ['--worker', node]
+            for cWmgr in self.czarWmgrs:
+                loaderCmd += ['-z', cWmgr.host]
 
         if self.dataConfig.duplicatedTables:
             loaderCmd += ['--skip-partition']
@@ -102,6 +107,7 @@ class QservLoader(DbLoader):
 
         # Use same logging configuration for loader and integration test
         # command line, this allow to redirect loader to sys.stdout, sys.stderr
+        self.logger.debug("loaderCmd=%s", loaderCmd)
         commons.run_command(loaderCmd,
                             stdout=sys.stdout,
                             stderr=sys.stderr)
@@ -130,6 +136,11 @@ class QservLoader(DbLoader):
                 wmgr.dropDb(self._dbName, mustExist=False)
                 wmgr.createDb(self._dbName)
 
+        # TODO This should be changed to notify the czars that master tables have been updated.
+        for cWmgr in self.czarWmgrs:
+            cWmgr.dropDb(self._dbName, mustExist=False)
+            cWmgr.createDb(self._dbName)
+
         self.logger.info("Drop CSS database for Qserv")
         self.dropCssDatabase()
 
@@ -151,6 +162,3 @@ class QservLoader(DbLoader):
         """
         self.workerInsertXrootdExportPath()
 
-        # xrootd is restarted by wmgr
-        # Reload Qserv (empty) chunk cache
-        self.resetChunksCache()
