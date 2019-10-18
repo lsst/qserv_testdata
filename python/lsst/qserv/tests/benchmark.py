@@ -170,7 +170,7 @@ class Benchmark(object):
         _LOG.debug("Running queries : (stop-at: %s)", stopAt)
         if mode in ('qserv', 'qserv_async'):
             withQserv = True
-            if (not qservServer):
+            if not qservServer:
                 sqlInterface = cmd.Cmd(config=self.config,
                                        mode=const.MYSQL_PROXY,
                                        database=dbName)

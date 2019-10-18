@@ -65,9 +65,9 @@ _LOG = logging.getLogger()
 # added below/after testIntegration.
 # At some point the data loader step should be pulled out of testIntegration and executed before running any
 # tests, probably in this file but maybe somewhere else? TBD by you, dear reader.
-all_tests = {'testIntegration': lambda: testIntegration.suite(multi_node),
-             'testCall': lambda : testCall.suite()}
-
+all_tests = {'testIntegration': lambda: testIntegration.suite(multi_node, qserv_server=qservServer,
+                                                              czar_list=czar_list),
+             'testCall': lambda : testCall.suite(qserv_server=qservServer)}
 
 def _parse_args():
 
@@ -127,41 +127,6 @@ if __name__ == '__main__':
 
     multi_node = benchmark.is_multi_node()
 
-#<<<<<<< HEAD
-#<<<<<<< HEAD
-#<<<<<<< HEAD
-#<<<<<<< HEAD
-#<<<<<<< HEAD &&&
-#    testRunner = unittest.TextTestRunner(verbosity=2)
-#=======
-#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
-#>>>>>>> Made changes to add czar server as command line argument.
-    
-#=======
-#    _LOG.error("&&& qservServer=%s", qservServer)
-#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qserv_server=qservServer))
-#>>>>>>> qserv on czar1.localdomain is now getting the query, but it doesn't find the database schema.
-#    testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qservServer))
-#=======
-#    _LOG.info("qservServer=%s", qservServer)
-#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, qserv_server=qservServer))
-#>>>>>>> Removed some log messages.
-#=======
-#    if not multi_node:
-#        multi_czar = False
-#
-#    _LOG.info("qservServer=%s", qservServer)
-#    result = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, 
-#                                                            qserv_server=qservServer,
-#                                                            multi_czar=multi_czar))
-#>>>>>>> Changed to create databases on all czars.
-
-    # multi_czar requires multi_node
-    if not multi_node:
-        _LOG.error("multi-czar requires multi_node, failed")
-        ret_code = 1
-        sys.exit(ret_code)
-
     # czar_list requires multi_node
     if czar_list:
         if not multi_node:
@@ -169,9 +134,7 @@ if __name__ == '__main__':
             ret_code = 1
             sys.exit(ret_code)
 
-    testRunner = unittest.TextTestRunner(verbosity=2).run(suite(multi_node, 
-                                                                qserv_server=qservServer,
-                                                                multi_czar=multi_czar))
+    testRunner = unittest.TextTestRunner(verbosity=2)
 
     for run_test in args.run_tests:
         verify(testRunner.run(all_tests[run_test]()))

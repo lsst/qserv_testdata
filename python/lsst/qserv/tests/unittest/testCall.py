@@ -29,9 +29,17 @@ from lsst.qserv.tests.sql import cmd, const
 
 class TestCall(unittest.TestCase):
 
+    qservServer = ''
+
     def test_call(self):
         self.config = commons.read_user_config()
-        sqlInterface = cmd.Cmd(config=self.config, mode=const.MYSQL_PROXY, database='qservTest_case01_qserv')
+        if self.qservServer:
+            self.config['qserv']['master'] = self.qservServer
+
+        sqlInterface = cmd.Cmd(config=self.config, 
+                               mode=const.MYSQL_PROXY, 
+                               database='qservTest_case01_qserv')
+
         queryText = "CALL QSERV_MANAGER('foo')"
         expected = ['response\n', 'foo\n']
         with tempfile.NamedTemporaryFile('r') as f:
@@ -40,7 +48,8 @@ class TestCall(unittest.TestCase):
             self.assertEqual(expected, f.readlines())
 
 
-def suite():
+def suite(qserv_server=""):
+    TestCall.qservServer = qserv_server
     return unittest.TestLoader().loadTestsFromTestCase(TestCall)
 
 
