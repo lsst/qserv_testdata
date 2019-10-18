@@ -1,4 +1,4 @@
--- Find an object with a particular object id
+-- Find an object with a particular object id using a fully qualified table name.
 -- http://dev.lsstcorp.org/trac/wiki/dbQuery009
 
 -- note that the data for mysql version is specially
@@ -34,5 +34,5 @@ SELECT objectId,iauId,ra_PS,ra_PS_Sigma,decl_PS,decl_PS_Sigma,radecl_PS_Cov,htmI
 	   yDeclOffset_SG,yDeclOffset_SG_Sigma,yRaDeclOffset_SG_Cov,yLnL_PS,yLnL_SG,yFlux_PS,yFlux_PS_Sigma,yFlux_ESG,
 	   yFlux_ESG_Sigma,yFlux_Gaussian,yFlux_Gaussian_Sigma,yTimescale,yEarliestObsTime,yLatestObsTime,ySersicN_SG,
 	   ySersicN_SG_Sigma,yE1_SG,yE1_SG_Sigma,yE2_SG,yE2_SG_Sigma,yRadius_SG,yRadius_SG_Sigma,yFlags
-FROM   Object
+FROM   {DBTAG_A}Object
 WHERE  objectId = 430213989148129

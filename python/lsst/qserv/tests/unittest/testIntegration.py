@@ -113,7 +113,7 @@ def suite(multi_node=False, qserv_server="", czar_list=[]):
     @param qserv_server:
         master node addres or mono czar address when no separate master.
     @param czar_list:
-        when there is a searate master, a list of czars that should be updated.
+        when there is a separate master, a list of czars that should be updated.
     """
     TestIntegration.runMulti = multi_node
     TestIntegration.qservServer = qserv_server
