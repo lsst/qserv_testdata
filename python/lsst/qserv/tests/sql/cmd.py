@@ -68,7 +68,7 @@ class Cmd(object):
         self._mysql_cmd.append("--user=%s" % self.config['mysqld']['user'])
         self._mysql_cmd.append("--password=%s" % self.config['mysqld']['pass'])
 
-    def execute(self, query, output=None, column_names=True, async_timeout=0):
+    def execute(self, query, output=None, column_names=True, async_timeout=0, output_err=None):
         """Execute query and send result to specified output.
 
         Parameters
@@ -82,6 +82,8 @@ class Cmd(object):
         async_timeout : int, optional
             If >0 then query will run disconnected, its value gives a timeout
             in seconds to wait for query completion.
+        output_err: object, optional
+            Either file object or file name to write error output to.
         """
         self.logger.debug("SQLCmd.execute:  %s", query)
         if async_timeout > 0:
@@ -134,4 +136,4 @@ class Cmd(object):
         if not column_names:
             commandLine.append('--skip-column-names')
         commandLine += ['-e', query]
-        commons.run_command(commandLine, stdout=output)
+        commons.run_command(commandLine, stdout=output, stderr=output_err)
