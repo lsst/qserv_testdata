@@ -28,7 +28,7 @@ from lsst.qserv.tests.sql import cmd, const
 
 
 
-class TestInvlidColumn(unittest.TestCase):
+class TestInvalidColumn(unittest.TestCase):
     """This is a suite of tests to test when invalid columns are used that it is caught by Qserv and that
     an expected error message is returned to the user.
     """
@@ -77,21 +77,21 @@ class TestInvlidColumn(unittest.TestCase):
                                database='qservTest_case01_qserv')
 
         queryText = "SELECT * FROM Object ORDER BY foo LIMIT 1"
-        expected = "ERROR 4005 (Proxy) at line 1: Exception in call to czar method: QI=123: Unknown column 'foo' in 'order clause'\n"
-        expected = TestCall.replace(expected, 'QI=[0-9]+', 'QI=nnn')
+        expected = "ERROR 4110 (Proxy) at line 1: Query processing error: QI=1435: Failed to instantiate query: Unknown column 'foo' in 'order clause'\n"
+        expected = TestInvalidColumn.replace(expected, 'QI=[0-9]+', 'QI=nnn')
         with tempfile.NamedTemporaryFile('r') as output:
             with tempfile.NamedTemporaryFile('r') as error:
                 sqlInterface.execute(queryText, output=output.name, output_err=error.name)
                 output.seek(0)
                 errmsg = error.readlines()
                 self.assertEqual(len(errmsg), 1)
-                errmsg = TestCall.replace(errmsg[0], 'QI=[0-9]+', 'QI=nnn')
+                errmsg = TestInvalidColumn.replace(errmsg[0], 'QI=[0-9]+', 'QI=nnn')
                 self.assertEqual(expected, errmsg)
 
 
 def suite(qserv_server=""):
-    TestCall.qservServer = qserv_server
-    return unittest.TestLoader().loadTestsFromTestCase(TestCall)
+    TestInvalidColumn.qservServer = qserv_server
+    return unittest.TestLoader().loadTestsFromTestCase(TestInvalidColumn)
 
 
 if __name__ == '__main__':

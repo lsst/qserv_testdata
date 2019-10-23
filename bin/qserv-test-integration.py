@@ -49,7 +49,7 @@ import lsst.log
 from lsst.qserv.admin import commons
 from lsst.qserv.admin import logger
 from lsst.qserv.tests import benchmark
-from lsst.qserv.tests.unittest import testIntegration, testCall
+from lsst.qserv.tests.unittest import testIntegration, testCall, testInvalidColumn
 
 # ---------------------------------
 # Local non-exported definitions --
@@ -67,7 +67,8 @@ _LOG = logging.getLogger()
 # tests, probably in this file but maybe somewhere else? TBD by you, dear reader.
 all_tests = {'testIntegration': lambda: testIntegration.suite(multi_node, qserv_server=qservServer,
                                                               czar_list=czar_list),
-             'testCall': lambda : testCall.suite(qserv_server=qservServer)}
+             'testCall': lambda : testCall.suite(qserv_server=qservServer),
+             'testInvalidColumn': lambda : testInvalidColumn.suite(qserv_server=qservServer)}
 
 def _parse_args():
 
