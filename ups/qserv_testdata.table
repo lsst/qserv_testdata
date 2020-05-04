@@ -1,8 +1,4 @@
-setupRequired(python)
-setupRequired(python_future)
-setupRequired(pyyaml)
 setupRequired(qserv)
-setupRequired(scons)
 setupRequired(sconsUtils)
 
 envPrepend(PATH, ${PRODUCT_DIR}/bin)
