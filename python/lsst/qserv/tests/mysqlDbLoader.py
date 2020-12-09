@@ -72,7 +72,7 @@ class MysqlLoader(DbLoader):
                       '--one-table']
 
         # include table-specific config if it exists
-        tableCfg = os.path.join(self.dataConfig.dataDir, table + ".cfg")
+        tableCfg = os.path.join(self.dataConfig.dataDir, table + ".json")
         if os.path.exists(tableCfg):
             loaderCmd += ['--config={0}'.format(tableCfg)]
 
