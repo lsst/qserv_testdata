@@ -20,7 +20,7 @@
 "out":{
     "csv":{
         "null":"\\N",
-        "delimiter":"\t",
+        "delimiter":",",
         "escape":"\\",
         "no-quote":true
     }

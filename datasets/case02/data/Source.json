@@ -14,14 +14,6 @@
 },
 "dirTable":"Object",
 "dirColName":"objectId",
-"out":{
-    "csv":{
-       "null":"\\N",
-       "delimiter":"\t",
-       "escape":"\\",
-       "no-quote":true
-    }
-},
 "in":{
     "csv":{
         "field":[
