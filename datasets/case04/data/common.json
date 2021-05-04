@@ -6,7 +6,7 @@
 "dirTable":"DeepSource",
 "part":{
     "num-stripes":85,
-    "num-sub-stripes":12,
+    "num-sub-stripes":14,
     "chunk":"chunkId",
     "sub-chunk":"subChunkId",
     "default-overlap":0.0001
