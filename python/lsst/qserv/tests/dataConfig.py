@@ -76,7 +76,7 @@ class DataConfig(dict):
         return self['extensions']['schema']
 
     @property
-    def _dataExt(self):
+    def dataExt(self):
         return self['extensions']['data']
 
     @property
@@ -172,7 +172,7 @@ class DataConfig(dict):
         return data_filename
 
     def _getInputDataBasename(self, table_name):
-        data_filename = table_name + self._dataExt
+        data_filename = table_name + self.dataExt
         if self._zipExt:
             data_filename += self._zipExt
         return data_filename
