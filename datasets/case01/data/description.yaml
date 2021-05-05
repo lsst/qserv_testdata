@@ -1,7 +1,6 @@
 tables:
-    load-order:
-    directors: ["Object"]
-    views:
+    directors:          ['Object']
+    partitioned-tables: ['Object', 'Source']
 extensions:
     data: '.tsv'
     schema: '.schema'
