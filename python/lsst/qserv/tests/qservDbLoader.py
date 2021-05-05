@@ -94,7 +94,7 @@ class QservLoader(DbLoader):
                                                                  self._out_dirname,
                                                                  "chunks/", table))]
         # include table-specific config if it exists
-        tableCfg = os.path.join(self.dataConfig.dataDir, table + ".json")
+        tableCfg = os.path.join(self.dataConfig.dataDir, "partition", table + ".json")
         if os.path.exists(tableCfg):
             loaderCmd += ['--config={0}'.format(tableCfg)]
 
