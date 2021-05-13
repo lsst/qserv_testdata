@@ -94,7 +94,7 @@ class DbLoader(object):
         elif logLevel is logging.INFO:
             cmd += ['-v']
 
-        cmd += ['--config=' + os.path.join(self.dataConfig.dataDir, "common.json"),
+        cmd += ['--config=' + os.path.join(self.dataConfig.dataDir, "partition", "common.json"),
                 '--host=' + self.config['qserv']['master'],
                 '--port=' + self.config['wmgr']['port'],
                 '--secret=' + self.config['wmgr']['secret'],
@@ -102,7 +102,7 @@ class DbLoader(object):
 
         if self.dataConfig.duplicatedTables:
             # Other parameters if using duplicated data
-            cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir,
+            cmd += ['--config={0}'.format(os.path.join(self.dataConfig.dataDir, "partition",
                                                        table+".json"))]
         else:
             # WARN: required to unzip input data file

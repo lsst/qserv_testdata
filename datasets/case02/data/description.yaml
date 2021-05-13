@@ -1,8 +1,7 @@
 tables:
-    load-order:
-    directors: ["Object"]
-    views:
+    directors:          ['Object']
+    partitioned-tables: ['Object', 'Source']
 extensions:
-    data: '.txt'
-    schema: '.sql'
+    data: '.csv'
+    schema: '.schema'
     zip: '.gz'

@@ -2,19 +2,20 @@
 "htm":{
     "level":8
 },
-"dirDb":"qservTest_case02_qserv",
-"dirTable":"Object",
+"dirDb":"qservTest_case03_qserv",
+"dirTable":"RunDeepSource",
 "part":{
     "num-stripes":85,
-    "num-sub-stripes":12,
+    "num-sub-stripes":14,
     "chunk":"chunkId",
     "sub-chunk":"subChunkId",
-    "default-overlap":0.016666
+    "default-overlap":0.0001
 },
 "in":{
     "csv":{
         "null":"\\N",
-        "delimiter":","
+        "delimiter":",",
+        "escape":"\\"
     }
 },
 "out":{

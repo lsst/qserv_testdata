@@ -6,10 +6,11 @@ tables:
         'DeepCoadd_Metadata', 'Science_Ccd_Exposure_To_Htm10_coadd_r',
         'LeapSeconds', 'DeepCoadd', 'DeepCoadd_Metadata', 'Filter', 'RunDeepSource',
         'RunDeepForcedSource',]
-    directors:          ["RunDeepSource"]
+    directors:          ['RunDeepSource']
+    partitioned-tables: ['RunDeepSource', 'RunDeepForcedSource']
     views:              ['DeepForcedSource','DeepSource']
     partitioned-views:  ['DeepForcedSource','DeepSource']
 extensions:
-    data:   '.txt'
-    schema: '.sql'
+    data:   '.csv'
+    schema: '.schema'
     zip:    '.gz'

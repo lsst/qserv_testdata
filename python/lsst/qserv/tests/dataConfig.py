@@ -76,7 +76,7 @@ class DataConfig(dict):
         return self['extensions']['schema']
 
     @property
-    def _dataExt(self):
+    def dataExt(self):
         return self['extensions']['data']
 
     @property
@@ -146,7 +146,7 @@ class DataConfig(dict):
         Return a list of orderedTables names deduced from the input data
         schema-file names
         """
-        files = os.listdir(self.dataDir)
+        files = os.listdir(os.path.join(self.dataDir, "schema"))
         tables = []
         for f in files:
             filename, fileext = os.path.splitext(f)
@@ -158,7 +158,7 @@ class DataConfig(dict):
         if table_name not in self.orderedTables:
             raise
         else:
-            prefix = os.path.join(self.dataDir, table_name)
+            prefix = os.path.join(self.dataDir, "schema", table_name)
             schema_filename = prefix + self._schemaExt
             return schema_filename
 
@@ -172,7 +172,7 @@ class DataConfig(dict):
         return data_filename
 
     def _getInputDataBasename(self, table_name):
-        data_filename = table_name + self._dataExt
+        data_filename = table_name + self.dataExt
         if self._zipExt:
             data_filename += self._zipExt
         return data_filename
