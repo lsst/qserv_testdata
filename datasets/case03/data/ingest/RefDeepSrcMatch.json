@@ -3,7 +3,6 @@
     "database":"qservTest_case03_qserv",
     "table":"RefDeepSrcMatch",
     "is_partitioned":0,
-    "is_director":0,
     "schema":[
         {"name":"refObjectId", "type":"bigint(20) DEFAULT NULL"},
         {"name":"deepSourceId", "type":"bigint(20) DEFAULT NULL"},

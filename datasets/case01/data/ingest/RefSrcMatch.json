@@ -3,7 +3,6 @@
     "database":"qservTest_case01_qserv",
     "table":"RefSrcMatch",
     "is_partitioned":0,
-    "is_director":0,
     "schema":[
         {"name":"refObjectId", "type":"bigint(20) DEFAULT NULL"},
         {"name":"sourceId", "type":"bigint(20) DEFAULT NULL"},
