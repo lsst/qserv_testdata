@@ -3,7 +3,6 @@
     "database":"qservTest_case01_qserv",
     "table":"SimRefObject",
     "is_partitioned":0,
-    "is_director":0,
     "schema":[
         {"name":"refObjectId", "type":"bigint(20) NOT NULL"},
         {"name":"isStar", "type":"tinyint(4) NOT NULL"},

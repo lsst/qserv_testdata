@@ -3,7 +3,6 @@
     "database":"qservTest_case03_qserv",
     "table":"DeepCoadd_Metadata",
     "is_partitioned":0,
-    "is_director":0,
     "schema":[
         {"name":"deepCoaddId", "type":"bigint(20) NOT NULL"},
         {"name":"metadataKey", "type":"varchar(255) NOT NULL"},

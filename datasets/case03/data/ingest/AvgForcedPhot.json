@@ -3,7 +3,6 @@
     "database":"qservTest_case03_qserv",
     "table":"AvgForcedPhot",
     "is_partitioned":0,
-    "is_director":0,
     "schema":[
         {"name":"deepSourceId", "type":"bigint(20) NOT NULL"},
         {"name":"ra", "type":"double NOT NULL"},

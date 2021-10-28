@@ -3,7 +3,6 @@
     "database":"qservTest_case01_qserv",
     "table":"sdqa_Metric",
     "is_partitioned":0,
-    "is_director":0,
     "schema":[
         {"name":"sdqa_metricId", "type":"smallint(6) NOT NULL"},
         {"name":"metricName", "type":"varchar(30) NOT NULL"},
